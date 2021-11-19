@@ -1,0 +1,423 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{26E994B5-3CD7-4B47-B13E-30490C91C08A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FIPToolKit</RootNamespace>
+    <AssemblyName>FIPToolKit</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefineConstants>DEBUG</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Accord, Version=3.8.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.3.8.0\lib\net462\Accord.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Video, Version=3.8.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Accord.Video.3.8.0\lib\net462\Accord.Video.dll</HintPath>
+    </Reference>
+    <Reference Include="Accord.Video.FFMPEG.x64, Version=3.8.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=AMD64">
+      <HintPath>..\packages\Accord.Video.FFMPEG.x64.3.8.0\lib\net462\Accord.Video.FFMPEG.x64.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="fsuipcClient, Version=3.2.10.379, Culture=neutral, PublicKeyToken=7e7559b53e380b17, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSUIPCClientDLL.3.2.10\lib\net40\fsuipcClient.dll</HintPath>
+    </Reference>
+    <Reference Include="GMap.NET.Core, Version=2.0.2.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.Core.2.0.2\lib\net46\GMap.NET.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="GMap.NET.WindowsForms, Version=2.0.2.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.WinForms.2.0.2\lib\net46\GMap.NET.WindowsForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.FlightSimulator.SimConnect, Version=10.0.62615.0, Culture=neutral, PublicKeyToken=5f523ae7e6e1b389, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\MSFS SDK\SimConnect SDK\lib\managed\Microsoft.FlightSimulator.SimConnect.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Coordination, Version=5.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.AsyncEx.Coordination.5.1.2\lib\net461\Nito.AsyncEx.Coordination.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.AsyncEx.Tasks, Version=5.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.AsyncEx.Tasks.5.1.2\lib\net461\Nito.AsyncEx.Tasks.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.Collections.Deque, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.Collections.Deque.1.1.1\lib\net461\Nito.Collections.Deque.dll</HintPath>
+    </Reference>
+    <Reference Include="Nito.Disposables, Version=2.2.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nito.Disposables.2.2.1\lib\net461\Nito.Disposables.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=106.12.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.106.12.0\lib\net452\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.5.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data.SqlClient, Version=4.6.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SqlClient.4.8.3\lib\net461\System.Data.SqlClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.EF6, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.EF6.1.0.115.0\lib\net46\System.Data.SQLite.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.Linq.1.0.115.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Unosquare.Labs.EmbedIO, Version=2.2.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EmbedIO.2.2.9\lib\net472\Unosquare.Labs.EmbedIO.dll</HintPath>
+    </Reference>
+    <Reference Include="Unosquare.Swan.Lite, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Unosquare.Swan.Lite.0.38.1\lib\net452\Unosquare.Swan.Lite.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Drawing\GraphicsHelper.cs" />
+    <Compile Include="FlightSim\CompassMode.cs" />
+    <Compile Include="FlightSim\GearType.cs" />
+    <Compile Include="FlightSim\InternationalUnits.cs" />
+    <Compile Include="FlightSim\MapType.cs" />
+    <Compile Include="FlightSim\NonLinearSetting.cs" />
+    <Compile Include="FlightSim\ReadyToFly.cs" />
+    <Compile Include="FlightSim\TemperatureUnit.cs" />
+    <Compile Include="FlightSim\VorToFromFlag.cs" />
+    <Compile Include="FlightSim\VSpeed.cs" />
+    <Compile Include="Models\FIPSimConnectAltimeter.cs" />
+    <Compile Include="Models\FIPFSUIPCAltimeter.cs" />
+    <Compile Include="Models\FIPSimConnectAirspeed.cs" />
+    <Compile Include="Models\FIPSimConnectAnalogGauge.cs" />
+    <Compile Include="Models\FIPFSUIPCCommandButton.cs" />
+    <Compile Include="Models\FIPFSUIPCCommandSequenceButton.cs" />
+    <Compile Include="Models\FIPFSUIPCNonLinearAnalogGauge.cs" />
+    <Compile Include="Models\FIPFSUIPCAnalogGauge.cs" />
+    <Compile Include="Models\FIPButton.cs" />
+    <Compile Include="Models\FIPAnalogClock.cs" />
+    <Compile Include="Models\FIPFSUIPCAirspeed.cs" />
+    <Compile Include="Models\FIPKeySequenceButton.cs" />
+    <Compile Include="Models\FIPKeyPressButton.cs" />
+    <Compile Include="Models\FIPFlightShare.cs" />
+    <Compile Include="Models\FIPSettableAnalogClock.cs" />
+    <Compile Include="Models\FIPFSUIPCPage.cs" />
+    <Compile Include="Models\FIPFSUIPCMap.cs" />
+    <Compile Include="Models\FIPSimConnectMap.cs" />
+    <Compile Include="Models\FIPSimConnectNonLinearAnalogGauge.cs" />
+    <Compile Include="Models\FIPSpotifyPlayer.cs" />
+    <Compile Include="Models\FIPWindowsCommandButton.cs" />
+    <Compile Include="Models\FIPOSCommandButton.cs" />
+    <Compile Include="Models\FIPDevice.cs" />
+    <Compile Include="Models\FIPEngine.cs" />
+    <Compile Include="Models\FIPPage.cs" />
+    <Compile Include="Models\FIPSlideShow.cs" />
+    <Compile Include="Models\FIPVideoPlayer.cs" />
+    <Compile Include="Models\FIPSimConnectPage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="FlightSim\Aircraft.cs" />
+    <Compile Include="FlightSim\AircraftData.cs" />
+    <Compile Include="FlightSim\Airport.cs" />
+    <Compile Include="FlightSim\EngineType.cs" />
+    <Compile Include="FlightSim\FlightShare.cs" />
+    <Compile Include="FlightSim\GMPAircraftMarker.cs" />
+    <Compile Include="FlightSim\GAirportMarker.cs" />
+    <Compile Include="FlightSim\GAircraftMarker.cs" />
+    <Compile Include="FlightSim\GPilotMarker.cs" />
+    <Compile Include="FlightSim\GImageMarker.cs" />
+    <Compile Include="FlightSim\LatLong.cs" />
+    <Compile Include="FlightSim\LaunchAddon.cs" />
+    <Compile Include="FlightSim\SimBaseDocument.cs" />
+    <Compile Include="FlightSim\SimConnect.cs" />
+    <Compile Include="FlightSim\Tools.cs" />
+    <Compile Include="FlightSim\Weather.cs" />
+    <Compile Include="SpotifyAPI.Web.Auth\AuthorizationCodeAuth.cs" />
+    <Compile Include="SpotifyAPI.Web.Auth\AuthUtil.cs" />
+    <Compile Include="SpotifyAPI.Web.Auth\CredentialsAuth.cs" />
+    <Compile Include="SpotifyAPI.Web.Auth\ImplictGrantAuth.cs" />
+    <Compile Include="SpotifyAPI.Web.Auth\SpotifyAuthServer.cs" />
+    <Compile Include="SpotifyAPI.Web\Enums\AlbumType.cs" />
+    <Compile Include="SpotifyAPI.Web\Enums\FollowType.cs" />
+    <Compile Include="SpotifyAPI.Web\Enums\RepeatState.cs" />
+    <Compile Include="SpotifyAPI.Web\Enums\Scope.cs" />
+    <Compile Include="SpotifyAPI.Web\Enums\SearchType.cs" />
+    <Compile Include="SpotifyAPI.Web\Enums\TimeRangeType.cs" />
+    <Compile Include="SpotifyAPI.Web\Enums\TrackType.cs" />
+    <Compile Include="SpotifyAPI.Web\IClient.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AnalysisMeta.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AnalysisSection.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AnalysisSegment.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AnalysisTimeSlice.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AnalysisTrack.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\ArrayResponse.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AudioAnalysis.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AudioFeatures.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\AvailabeDevices.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\BasicModel.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\Category.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\CategoryList.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\CategoryPlaylist.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\CursorPaging.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\Device.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\FeaturedPlaylists.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\FollowedArtists.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\FullAlbum.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\FullArtist.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\FullPlaylist.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\FullTrack.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\GeneralModels.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\NewAlbumReleases.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\Paging.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\PlaybackContext.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\PlayHistory.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\PrivateProfile.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\PublicProfile.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\Recommendations.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\RecommendationSeed .cs" />
+    <Compile Include="SpotifyAPI.Web\Models\RecommendationSeedGenres.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\ResponseInfo.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SearchItem.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SeveralAlbums.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SeveralArtists.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SeveralAudioFeatures.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SeveralTracks.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SimpleAlbum.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SimpleArtist.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SimplePlaylist.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\SimpleTrack.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\Snapshot.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\Token.cs" />
+    <Compile Include="SpotifyAPI.Web\Models\TuneableTrack.cs" />
+    <Compile Include="Tools\ByteExtensions.cs" />
+    <Compile Include="Tools\TimeSpanEx.cs" />
+    <Compile Include="Tools\KeyModifiers.cs" />
+    <Compile Include="Tools\KeyPress.cs" />
+    <Compile Include="Tools\MathExtensions.cs" />
+    <Compile Include="Tools\Net.cs" />
+    <Compile Include="Tools\PropertyCopier.cs" />
+    <Compile Include="Tools\SafeBool.cs" />
+    <Compile Include="Tools\StringExtensions.cs" />
+    <Compile Include="Tools\VirtualKeyCode.cs" />
+    <Compile Include="Tools\NativeMethods.cs" />
+    <Compile Include="Tools\VolumeMixer.cs" />
+    <Compile Include="Tools\WindowHandleInfo.cs" />
+    <None Include="app.config" />
+    <None Include="FIPToolKit.sqlite">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="SpotifyAPI.Web\PlayerClient.cs" />
+    <Compile Include="SpotifyAPI.Web\ProxyConfig.cs" />
+    <Compile Include="SpotifyAPI.Web\SpotifyWebAPI.cs" />
+    <Compile Include="SpotifyAPI.Web\SpotifyWebBuilder.cs" />
+    <Compile Include="SpotifyAPI.Web\SpotifyWebClient.cs" />
+    <Compile Include="SpotifyAPI.Web\Util.cs" />
+    <Compile Include="Threading\AbortableBackgroundWorker.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Drawing\FontEx.cs" />
+    <Compile Include="Drawing\ColorEx.cs" />
+    <Compile Include="Drawing\GifInfo.cs" />
+    <Compile Include="Drawing\ImageHelper.cs" />
+    <Compile Include="Tools\SerializerHelper.cs" />
+    <Compile Include="Tools\SpotifyController.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DirectOutputNet\DirectOutputNet.vcxproj">
+      <Project>{85d24812-9c8d-4ca4-a56d-15539faca9b2}</Project>
+      <Name>DirectOutputNet</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Cessna.Clock1.png" />
+    <None Include="Resources\Cessna.Clock2.png" />
+    <None Include="Resources\Cessna.Altimeter.png" />
+    <None Include="Resources\Paris.png" />
+    <None Include="Resources\Karachi.png" />
+    <None Include="Resources\Moscow.png" />
+    <None Include="Resources\NewYork.png" />
+    <None Include="Resources\LosAngeles.png" />
+    <None Include="Resources\Sydney.png" />
+    <None Include="Resources\London.png" />
+    <None Include="Resources\Chicago.png" />
+    <None Include="Resources\Berlin.png" />
+    <None Include="Resources\Tokyo.png" />
+    <None Include="Resources\Denver.png" />
+    <None Include="Resources\Honolulu.png" />
+    <None Include="Resources\Shanghai.png" />
+    <None Include="Resources\HongKong.png" />
+    <None Include="Resources\Fip1.jpg" />
+    <None Include="Resources\Fip2.jpg" />
+    <None Include="Resources\Fip3.jpg" />
+    <None Include="Resources\Fip4.jpg" />
+    <None Include="Resources\Fip5.jpg" />
+    <None Include="Resources\Fip0.png" />
+    <None Include="Resources\media_volumedown.png" />
+    <None Include="Resources\media_volumeup.png" />
+    <None Include="Resources\media_mute.png" />
+    <None Include="Resources\media_nexttrack.png" />
+    <None Include="Resources\media_playpause.png" />
+    <None Include="Resources\media_previoustrack.png" />
+    <None Include="Resources\media_stop.png" />
+    <None Include="Resources\email.png" />
+    <None Include="Resources\home.png" />
+    <None Include="Resources\calculator.png" />
+    <None Include="Resources\cancel.png" />
+    <None Include="Resources\checkmark.png" />
+    <None Include="Resources\pause.png" />
+    <None Include="Resources\play.png" />
+    <None Include="Resources\shuffle.png" />
+    <None Include="Resources\repeat.png" />
+    <None Include="Resources\repeat_one.png" />
+    <None Include="Resources\heart_online.png" />
+    <None Include="Resources\heart.png" />
+    <None Include="Resources\playlist.png" />
+    <None Include="Resources\plus.png" />
+    <None Include="Resources\minus.png" />
+    <None Include="Resources\map_adf.png" />
+    <None Include="Resources\map_buttonon.png" />
+    <None Include="Resources\map_center.png" />
+    <None Include="Resources\map_heading.png" />
+    <None Include="Resources\map_hybrid.png" />
+    <None Include="Resources\map_nav1.png" />
+    <None Include="Resources\map_nav2.png" />
+    <None Include="Resources\map_normal.png" />
+    <None Include="Resources\map_satellite.png" />
+    <None Include="Resources\map_set.png" />
+    <None Include="Resources\map_terrain.png" />
+    <None Include="Resources\map_track.png" />
+    <None Include="Resources\map_color.png" />
+    <None Include="Resources\map_traffic.png" />
+    <None Include="Resources\map_zoomout.png" />
+    <None Include="Resources\map_zoomin.png" />
+    <None Include="Resources\map_return.png" />
+    <None Include="Resources\map_waypoints.png" />
+    <None Include="Resources\map_data.png" />
+    <None Include="Resources\map_map.png" />
+    <None Include="Resources\map_track2.png" />
+    <None Include="Resources\map_background.png" />
+    <None Include="Resources\clock_set_minute.png" />
+    <None Include="Resources\clock_set_hour.png" />
+    <None Include="Resources\Cessna.Airspeed.png" />
+    <None Include="Resources\Cessna.Airspeed2.png" />
+    <None Include="Resources\helocopter.png" />
+    <None Include="Resources\map_fah.png" />
+    <None Include="Resources\map_cel.png" />
+    <None Include="Resources\map_gps.png" />
+    <None Include="Resources\airplane_jet.png" />
+    <None Include="Resources\airplane_sm.png" />
+    <None Include="Resources\airplane_heavy.png" />
+    <None Include="Resources\alarm.png" />
+    <None Include="Resources\time.png" />
+    <None Include="Resources\alarm_toggle.png" />
+    <None Include="Resources\alarm_beep.wav" />
+    <None Include="Resources\car.png" />
+    <None Include="Resources\sailplane.png" />
+    <None Include="Resources\rocket.png" />
+    <None Include="Resources\map_true.png" />
+    <None Include="Resources\map_magnetic.png" />
+    <None Include="Resources\altimeter_stripes.png" />
+    <None Include="Resources\cessna_logo.png" />
+    <None Include="Resources\cessna_logo_sm.png" />
+    <None Include="Resources\clear.png" />
+    <None Include="Resources\follow.png" />
+    <None Include="Resources\lock.png" />
+    <None Include="Resources\center.png" />
+    <None Include="Resources\go.png" />
+    <Content Include="SimConnect.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SpotifyAPI.Web.Auth\Resources\AuthorizationCodeAuth\css\bulma.min.css" />
+    <Content Include="SpotifyAPI.Web.Auth\Resources\AuthorizationCodeAuth\images\1.png" />
+    <Content Include="SpotifyAPI.Web.Auth\Resources\AuthorizationCodeAuth\images\2.png" />
+    <Content Include="SpotifyAPI.Web.Auth\Resources\AuthorizationCodeAuth\start.html" />
+    <Content Include="SpotifyAPI.Web.Auth\Resources\ImplicitGrantAuth\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Accord.3.8.0\build\Accord.targets" Condition="Exists('..\packages\Accord.3.8.0\build\Accord.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Accord.3.8.0\build\Accord.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.3.8.0\build\Accord.targets'))" />
+    <Error Condition="!Exists('..\packages\Accord.Video.FFMPEG.x64.3.8.0\build\Accord.Video.FFMPEG.x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Accord.Video.FFMPEG.x64.3.8.0\build\Accord.Video.FFMPEG.x64.targets'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\Accord.Video.FFMPEG.x64.3.8.0\build\Accord.Video.FFMPEG.x64.targets" Condition="Exists('..\packages\Accord.Video.FFMPEG.x64.3.8.0\build\Accord.Video.FFMPEG.x64.targets')" />
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+</Project>

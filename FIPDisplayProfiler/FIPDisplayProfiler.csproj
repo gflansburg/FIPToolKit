@@ -1,0 +1,355 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BE843D9C-B83D-44B2-8101-EB003A6E05AC}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>FIPDisplayProfiler</RootNamespace>
+    <AssemblyName>FIPDisplayProfiler</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>FIPToolKitIcon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="fsuipcClient, Version=3.2.10.379, Culture=neutral, PublicKeyToken=7e7559b53e380b17, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSUIPCClientDLL.3.2.10\lib\net40\fsuipcClient.dll</HintPath>
+    </Reference>
+    <Reference Include="GMap.NET.Core, Version=2.0.2.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.Core.2.0.2\lib\net46\GMap.NET.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="GMap.NET.WindowsForms, Version=2.0.2.0, Culture=neutral, PublicKeyToken=b85b9027b614afef, processorArchitecture=MSIL">
+      <HintPath>..\packages\GMap.NET.WinForms.2.0.2\lib\net46\GMap.NET.WindowsForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SqlClient, Version=4.6.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SqlClient.4.8.3\lib\net461\System.Data.SqlClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.EF6, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.EF6.1.0.115.0\lib\net46\System.Data.SQLite.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.115.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SQLite.Linq.1.0.115.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Serialization" />
+    <Reference Include="Telerik.WinControls, Version=2021.1.326.40, Culture=neutral, PublicKeyToken=5bb2a467cbec794e" />
+    <Reference Include="Telerik.WinControls.UI, Version=2021.1.326.40, Culture=neutral, PublicKeyToken=5bb2a467cbec794e, processorArchitecture=MSIL" />
+    <Reference Include="TelerikCommon, Version=2021.1.326.40, Culture=neutral, PublicKeyToken=5bb2a467cbec794e" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AboutDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutDlg.Designer.cs">
+      <DependentUpon>AboutDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddFSUIPCCommandDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddFSUIPCCommandDlg.Designer.cs">
+      <DependentUpon>AddFSUIPCCommandDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AnalogClockForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AnalogClockForm.Designer.cs">
+      <DependentUpon>AnalogClockForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AnalogClockTemplateDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AnalogClockTemplateDialog.Designer.cs">
+      <DependentUpon>AnalogClockTemplateDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AltimeterForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AltimeterForm.Designer.cs">
+      <DependentUpon>AltimeterForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FSUIPCMapForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FSUIPCMapForm.Designer.cs">
+      <DependentUpon>FSUIPCMapForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FSUIPCCommandDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FSUIPCCommandDlg.Designer.cs">
+      <DependentUpon>FSUIPCCommandDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FSUIPCCommandSequenceDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FSUIPCCommandSequenceDlg.Designer.cs">
+      <DependentUpon>FSUIPCCommandSequenceDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SimConnectMapForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SimConnectMapForm.Designer.cs">
+      <DependentUpon>SimConnectMapForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DeviceControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DeviceControl.Designer.cs">
+      <DependentUpon>DeviceControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FIPDisplayProfiler.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FIPDisplayProfiler.Designer.cs">
+      <DependentUpon>FIPDisplayProfiler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddPageDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddPageDialog.Designer.cs">
+      <DependentUpon>AddPageDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AddKeyPressDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddKeyPressDlg.Designer.cs">
+      <DependentUpon>AddKeyPressDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KeySequenceDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KeySequenceDlg.Designer.cs">
+      <DependentUpon>KeySequenceDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KeyPressDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KeyPressDlg.Designer.cs">
+      <DependentUpon>KeyPressDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolStripSubMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="OSCommandDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OSCommandDlg.Designer.cs">
+      <DependentUpon>OSCommandDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SpotifyControllerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SpotifyControllerForm.Designer.cs">
+      <DependentUpon>SpotifyControllerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AnalogGuageForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AnalogGuageForm.Designer.cs">
+      <DependentUpon>AnalogGuageForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="VideoPlayerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VideoPlayerForm.Designer.cs">
+      <DependentUpon>VideoPlayerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SlideShowForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SlideShowForm.Designer.cs">
+      <DependentUpon>SlideShowForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="AboutDlg.resx">
+      <DependentUpon>AboutDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddFSUIPCCommandDlg.resx">
+      <DependentUpon>AddFSUIPCCommandDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddPageDialog.resx">
+      <DependentUpon>AddPageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AnalogClockForm.resx">
+      <DependentUpon>AnalogClockForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AnalogClockTemplateDialog.resx">
+      <DependentUpon>AnalogClockTemplateDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AltimeterForm.resx">
+      <DependentUpon>AltimeterForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FSUIPCMapForm.resx">
+      <DependentUpon>FSUIPCMapForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FSUIPCCommandDlg.resx">
+      <DependentUpon>FSUIPCCommandDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FSUIPCCommandSequenceDlg.resx">
+      <DependentUpon>FSUIPCCommandSequenceDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SimConnectMapForm.resx">
+      <DependentUpon>SimConnectMapForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DeviceControl.resx">
+      <DependentUpon>DeviceControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FIPDisplayProfiler.resx">
+      <DependentUpon>FIPDisplayProfiler.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddKeyPressDlg.resx">
+      <DependentUpon>AddKeyPressDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="KeySequenceDlg.resx">
+      <DependentUpon>KeySequenceDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="KeyPressDlg.resx">
+      <DependentUpon>KeyPressDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="OSCommandDlg.resx">
+      <DependentUpon>OSCommandDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpotifyControllerForm.resx">
+      <DependentUpon>SpotifyControllerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AnalogGuageForm.resx">
+      <DependentUpon>AnalogGuageForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VideoPlayerForm.resx">
+      <DependentUpon>VideoPlayerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SlideShowForm.resx">
+      <DependentUpon>SlideShowForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="fip.ico" />
+    <Content Include="FIPToolKitIcon.ico" />
+    <None Include="Resources\add.png" />
+    <None Include="Resources\turn_right.png" />
+    <None Include="Resources\turn_left.png" />
+    <None Include="Resources\Fip0.png" />
+    <None Include="Resources\Fip0.jpg" />
+    <None Include="Resources\Fip5.jpg" />
+    <None Include="Resources\Fip4.jpg" />
+    <None Include="Resources\Fip3.jpg" />
+    <None Include="Resources\Fip2.jpg" />
+    <None Include="Resources\Fip1.jpg" />
+    <None Include="Resources\fip_knob.png" />
+    <None Include="Resources\fip_s6_off.png" />
+    <None Include="Resources\fip_s5_on.png" />
+    <None Include="Resources\fip_s5_off.png" />
+    <None Include="Resources\fip_s4_on.png" />
+    <None Include="Resources\fip_s4_off.png" />
+    <None Include="Resources\fip_s3_on.png" />
+    <None Include="Resources\fip_s3_off.png" />
+    <None Include="Resources\fip_s2_on.png" />
+    <None Include="Resources\fip_s2_off.png" />
+    <None Include="Resources\fip_s1_on.png" />
+    <None Include="Resources\fip_s1_off.png" />
+    <None Include="Resources\fip_page_on.png" />
+    <None Include="Resources\fip_page_off.png" />
+    <None Include="Resources\fip_s6_on.png" />
+    <None Include="Resources\delete.png" />
+    <None Include="Resources\down_arrow.png" />
+    <None Include="Resources\up_arrow.png" />
+    <None Include="Resources\fip_info.png" />
+    <None Include="Resources\fip.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DirectOutputNet\DirectOutputNet.vcxproj">
+      <Project>{85d24812-9c8d-4ca4-a56d-15539faca9b2}</Project>
+      <Name>DirectOutputNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FIPToolKit\FIPToolKit.csproj">
+      <Project>{26e994b5-3cd7-4b47-b13e-30490c91c08a}</Project>
+      <Name>FIPToolKit</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y "$(SolutionDir)FIPToolKit\FIPToolKit.sqlite" "$(ProjectDir)$(OutDir)"</PostBuildEvent>
+  </PropertyGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+    <Error Condition="!Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+  <Import Project="..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" Condition="Exists('..\packages\Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0\build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets')" />
+</Project>

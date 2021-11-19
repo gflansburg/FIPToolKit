@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FIPDisplayProfiler", "FIPDisplayProfiler\FIPDisplayProfiler.csproj", "{BE843D9C-B83D-44B2-8101-EB003A6E05AC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectOutputNet", "DirectOutputNet\DirectOutputNet.vcxproj", "{85D24812-9C8D-4CA4-A56D-15539FACA9B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FIPToolKit", "FIPToolKit\FIPToolKit.csproj", "{26E994B5-3CD7-4B47-B13E-30490C91C08A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FIPDisplayMSFS2020", "FIPDisplayMSFS2020\FIPDisplayMSFS2020.csproj", "{D9BDAA4A-DB6C-4D77-9AEB-8F0210EC4BAD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE843D9C-B83D-44B2-8101-EB003A6E05AC}.Debug|x64.ActiveCfg = Debug|x64
+		{BE843D9C-B83D-44B2-8101-EB003A6E05AC}.Debug|x64.Build.0 = Debug|x64
+		{BE843D9C-B83D-44B2-8101-EB003A6E05AC}.Release|x64.ActiveCfg = Release|x64
+		{BE843D9C-B83D-44B2-8101-EB003A6E05AC}.Release|x64.Build.0 = Release|x64
+		{85D24812-9C8D-4CA4-A56D-15539FACA9B2}.Debug|x64.ActiveCfg = Debug|x64
+		{85D24812-9C8D-4CA4-A56D-15539FACA9B2}.Debug|x64.Build.0 = Debug|x64
+		{85D24812-9C8D-4CA4-A56D-15539FACA9B2}.Release|x64.ActiveCfg = Release|x64
+		{85D24812-9C8D-4CA4-A56D-15539FACA9B2}.Release|x64.Build.0 = Release|x64
+		{26E994B5-3CD7-4B47-B13E-30490C91C08A}.Debug|x64.ActiveCfg = Debug|x64
+		{26E994B5-3CD7-4B47-B13E-30490C91C08A}.Debug|x64.Build.0 = Debug|x64
+		{26E994B5-3CD7-4B47-B13E-30490C91C08A}.Release|x64.ActiveCfg = Release|x64
+		{26E994B5-3CD7-4B47-B13E-30490C91C08A}.Release|x64.Build.0 = Release|x64
+		{D9BDAA4A-DB6C-4D77-9AEB-8F0210EC4BAD}.Debug|x64.ActiveCfg = Debug|x64
+		{D9BDAA4A-DB6C-4D77-9AEB-8F0210EC4BAD}.Debug|x64.Build.0 = Debug|x64
+		{D9BDAA4A-DB6C-4D77-9AEB-8F0210EC4BAD}.Release|x64.ActiveCfg = Release|x64
+		{D9BDAA4A-DB6C-4D77-9AEB-8F0210EC4BAD}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A63190C-6EC7-4308-BD9E-B0A0B6FE1A10}
+	EndGlobalSection
+EndGlobal

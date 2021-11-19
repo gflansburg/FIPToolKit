@@ -588,7 +588,7 @@ namespace FIPToolKit.Tools
                         }
                         if (index != -1 && !stopLazyLoader && index < track.Album.Images.Count)
                         {
-                            string filename = String.Format("{0}\\Images\\{1}.bmp", Directory.GetCurrentDirectory(), System.IO.Path.GetFileName(track.Album.Images[index].Url));
+                            string filename = String.Format("{0}\\Images\\{1}.bmp", FIPToolKit.FlightSim.Tools.GetExecutingDirectory(), System.IO.Path.GetFileName(track.Album.Images[index].Url));
                             if (CacheArtwork && System.IO.File.Exists(filename))
                             {
                                 try
@@ -664,7 +664,7 @@ namespace FIPToolKit.Tools
                                 if (index != -1 && !stopLazyLoader && index < fullArtist.Images.Count)
                                 {
                                     SpotifyAPI.Web.Models.Image image = fullArtist.Images[index];
-                                    string filename = String.Format("{0}\\Images\\{1}.bmp", Directory.GetCurrentDirectory(), System.IO.Path.GetFileName(image.Url));
+                                    string filename = String.Format("{0}\\Images\\{1}.bmp", FIPToolKit.FlightSim.Tools.GetExecutingDirectory(), System.IO.Path.GetFileName(image.Url));
                                     if (CacheArtwork && System.IO.File.Exists(filename))
                                     {
                                         try

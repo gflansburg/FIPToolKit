@@ -127,9 +127,15 @@ namespace FIPToolKit.FlightSim
             return dist;
         }
 
+        public static string GetExecutingDirectory()
+        {
+            var location = new Uri(System.Reflection.Assembly.GetEntryAssembly().GetName().CodeBase);
+            return new FileInfo(location.AbsolutePath).Directory.FullName;
+        }
+
         internal static AircraftData LoadAircraft(string atcType, string atcModel)
         {
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", System.IO.Directory.GetCurrentDirectory());
+            string cs = string.Format("{0}\\FIPToolKit.sqlite", GetExecutingDirectory());
             if (System.IO.File.Exists(cs))
             {
                 using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
@@ -157,7 +163,7 @@ namespace FIPToolKit.FlightSim
 
         internal static void LoadAirports()
         {
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", System.IO.Directory.GetCurrentDirectory());
+            string cs = string.Format("{0}\\FIPToolKit.sqlite", GetExecutingDirectory());
             if (System.IO.File.Exists(cs))
             {
                 using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
@@ -192,7 +198,7 @@ namespace FIPToolKit.FlightSim
 
         internal static AircraftData LoadAircraft(string atcModel)
         {
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", System.IO.Directory.GetCurrentDirectory());
+            string cs = string.Format("{0}\\FIPToolKit.sqlite", GetExecutingDirectory());
             if (System.IO.File.Exists(cs))
             {
                 using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))

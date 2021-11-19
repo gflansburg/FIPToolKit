@@ -343,7 +343,7 @@ namespace FIPDisplayProfiler
             }
             if (string.IsNullOrEmpty(ProfileName))
             {
-                saveFileDialog1.InitialDirectory = Directory.GetCurrentDirectory();
+                saveFileDialog1.InitialDirectory = FIPToolKit.FlightSim.Tools.GetExecutingDirectory();
                 if (!string.IsNullOrEmpty(ProfileName))
                 {
                     saveFileDialog1.InitialDirectory = System.IO.Path.GetDirectoryName(ProfileName);
@@ -384,7 +384,7 @@ namespace FIPDisplayProfiler
                     SaveSettings(ProfileName);
                 }
             }
-            openFileDialog1.InitialDirectory = Directory.GetCurrentDirectory();
+            openFileDialog1.InitialDirectory = FIPToolKit.FlightSim.Tools.GetExecutingDirectory();
             if (!string.IsNullOrEmpty(ProfileName))
             {
                 openFileDialog1.InitialDirectory = System.IO.Path.GetDirectoryName(ProfileName);
@@ -452,7 +452,7 @@ namespace FIPDisplayProfiler
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            saveFileDialog1.InitialDirectory = Directory.GetCurrentDirectory();
+            saveFileDialog1.InitialDirectory = FIPToolKit.FlightSim.Tools.GetExecutingDirectory();
             if (!string.IsNullOrEmpty(ProfileName))
             {
                 saveFileDialog1.InitialDirectory = System.IO.Path.GetDirectoryName(ProfileName);

@@ -130,7 +130,7 @@ namespace FIPToolKit.FlightSim
         public static string GetExecutingDirectory()
         {
             var location = new Uri(System.Reflection.Assembly.GetEntryAssembly().GetName().CodeBase);
-            return new FileInfo(location.AbsolutePath).Directory.FullName;
+            return System.Net.WebUtility.UrlDecode(new FileInfo(location.AbsolutePath).Directory.FullName);
         }
 
         internal static AircraftData LoadAircraft(string atcType, string atcModel)

@@ -35,7 +35,7 @@ namespace FIPToolKit.FlightSim
         public static List<VSpeed> LoadVSpeeds()
         {
             List<VSpeed> vSpeeds = new List<VSpeed>();
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", System.IO.Directory.GetCurrentDirectory());
+            string cs = string.Format("{0}\\FIPToolKit.sqlite", FIPToolKit.FlightSim.Tools.GetExecutingDirectory());
             if (System.IO.File.Exists(cs))
             {
                 using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))

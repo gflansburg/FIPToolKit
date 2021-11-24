@@ -223,6 +223,25 @@ namespace FIPToolKit.Drawing
                 }
             }
         }
+        public static void DrawRotatedImage(this Graphics gr, float angle, Image img, float x, float y)
+        {
+            // Save the graphics state.
+            GraphicsState state = gr.Save();
+            gr.ResetTransform();
+
+            // Rotate.
+            gr.RotateTransform(angle);
+
+            // Translate to desired position. Be sure to append
+            // the rotation so it occurs after the rotation.
+            gr.TranslateTransform(x, y, MatrixOrder.Append);
+
+            // Draw the text at the origin.
+            gr.DrawImage(img, -(img.Width / 2), -(img.Height /2));
+
+            // Restore the graphics state.
+            gr.Restore(state);
+        }
 
         public static void DrawRotatedTextAt(this Graphics gr, float angle, string txt, float x, float y, Font the_font, Brush the_brush)
         {

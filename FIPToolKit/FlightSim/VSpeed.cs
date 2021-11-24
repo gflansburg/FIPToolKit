@@ -24,7 +24,9 @@ namespace FIPToolKit.FlightSim
         public int HighLimit { get; set; }
         public int MaxSpeed { get; set; }
         public int TickSpan { get; set; }
-        public bool ShowPressureAltitude { get; set; }
+        public int TickStart { get; set; }
+        public int TickEnd { get; set; }
+        public bool ShowTrueAirspeed { get; set; }
         public List<NonLinearSetting> NonLinearSettings { get; set; }
 
         public VSpeed()
@@ -41,7 +43,7 @@ namespace FIPToolKit.FlightSim
                 using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
                 {
                     sqlConnection.Open();
-                    SQLiteCommand cmd = new SQLiteCommand("SELECT [VSpeeds].AircraftID, Aircraft.FriendlyName, [VSpeeds].[Min], [VSpeeds].[LowLimit], [VSpeeds].[WhiteStart], [VSpeeds].[WhiteEnd], [VSpeeds].[GreenStart], [VSpeeds].[GreenEnd], [VSpeeds].[YellowStart], [VSpeeds].[YellowEnd], [VSpeeds].[RedStart], [VSpeeds].[RedEnd], [VSpeeds].[HighLimit], [VSpeeds].[Max], [VSpeeds].[TickSpan], [VSpeeds].[ShowPressureAltitude] FROM [VSpeeds] INNER JOIN Aircraft ON Aircraft.AircraftID = [VSpeeds].AircraftID ORDER BY Aircraft.FriendlyName", sqlConnection);
+                    SQLiteCommand cmd = new SQLiteCommand("SELECT [VSpeeds].AircraftID, Aircraft.FriendlyName, [VSpeeds].[Min], [VSpeeds].[LowLimit], [VSpeeds].[WhiteStart], [VSpeeds].[WhiteEnd], [VSpeeds].[GreenStart], [VSpeeds].[GreenEnd], [VSpeeds].[YellowStart], [VSpeeds].[YellowEnd], [VSpeeds].[RedStart], [VSpeeds].[RedEnd], [VSpeeds].[HighLimit], [VSpeeds].[Max], [VSpeeds].[TickSpan], [VSpeeds].[TickStart], [VSpeeds].[TickEnd], [VSpeeds].[ShowTrueAirspeed] FROM [VSpeeds] INNER JOIN Aircraft ON Aircraft.AircraftID = [VSpeeds].AircraftID ORDER BY Aircraft.FriendlyName", sqlConnection);
                     using (SQLiteDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -62,7 +64,9 @@ namespace FIPToolKit.FlightSim
                             vSpeed.HighLimit = reader.GetInt32(12);
                             vSpeed.MaxSpeed = reader.GetInt32(13);
                             vSpeed.TickSpan = reader.GetInt32(14);
-                            vSpeed.ShowPressureAltitude = reader.GetBoolean(15);
+                            vSpeed.TickStart = reader.GetInt32(15);
+                            vSpeed.TickEnd = reader.GetInt32(16);
+                            vSpeed.ShowTrueAirspeed = reader.GetBoolean(17);
                             SQLiteCommand cmd2 = new SQLiteCommand(string.Format("SELECT Degree, Value, TickSpan FROM NonLinearVSpeeds WHERE AircraftID = {0} ORDER BY Degree", vSpeed.AircraftId), sqlConnection);
                             using (SQLiteDataReader reader2 = cmd2.ExecuteReader())
                             {

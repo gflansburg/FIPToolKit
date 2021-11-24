@@ -141,17 +141,18 @@ namespace FIPToolKit.FlightSim
                 using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
                 {
                     sqlConnection.Open();
-                    SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT Aircraft.FriendlyName, Aircraft.FriendlyType, Aircraft.FriendlyModel, Aircraft.EngineType, Aircraft.Heavy FROM Aircraft INNER JOIN AircraftTypes ON AircraftTypes.AircraftID = Aircraft.AircraftID INNER JOIN AircraftModels ON AircraftModels.AircraftID = Aircraft.AircraftID WHERE AircraftTypes.ATCType = '{0}' AND AircraftModels.ATCModel = '{1}'", (atcType ?? string.Empty).Left(23).Replace("'", "''"), (atcModel ?? string.Empty).Left(23).Replace("'", "''")), sqlConnection);
+                    SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT Aircraft.AircraftID, Aircraft.FriendlyName, Aircraft.FriendlyType, Aircraft.FriendlyModel, Aircraft.EngineType, Aircraft.Heavy FROM Aircraft INNER JOIN AircraftTypes ON AircraftTypes.AircraftID = Aircraft.AircraftID INNER JOIN AircraftModels ON AircraftModels.AircraftID = Aircraft.AircraftID WHERE AircraftTypes.ATCType = '{0}' AND AircraftModels.ATCModel = '{1}'", (atcType ?? string.Empty).Left(23).Replace("'", "''"), (atcModel ?? string.Empty).Left(23).Replace("'", "''")), sqlConnection);
                     using (SQLiteDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
                             AircraftData aircraftData = new AircraftData();
-                            aircraftData.Name = reader.GetString(0);
-                            aircraftData.Type = reader.GetString(1);
-                            aircraftData.Model = reader.GetString(2);
-                            aircraftData.EngineType = (EngineType)reader.GetInt32(3);
-                            aircraftData.IsHeavy = reader.GetBoolean(4);
+                            aircraftData.AircraftId = reader.GetInt32(0);
+                            aircraftData.Name = reader.GetString(1);
+                            aircraftData.Type = reader.GetString(2);
+                            aircraftData.Model = reader.GetString(3);
+                            aircraftData.EngineType = (EngineType)reader.GetInt32(4);
+                            aircraftData.IsHeavy = reader.GetBoolean(5);
                             return aircraftData;
                         }
                     }
@@ -204,17 +205,18 @@ namespace FIPToolKit.FlightSim
                 using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
                 {
                     sqlConnection.Open();
-                    SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT FriendlyName, FriendlyType, FriendlyModel, EngineType, Heavy FROM Aircraft WHERE FriendlyModel = '{0}'", (atcModel ?? string.Empty).Left(23).Replace("'", "''")), sqlConnection);
+                    SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT Aircraft.AircraftID, FriendlyName, FriendlyType, FriendlyModel, EngineType, Heavy FROM Aircraft WHERE FriendlyModel = '{0}'", (atcModel ?? string.Empty).Left(23).Replace("'", "''")), sqlConnection);
                     using (SQLiteDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
                             AircraftData aircraftData = new AircraftData();
-                            aircraftData.Name = reader.GetString(0);
-                            aircraftData.Type = reader.GetString(1);
-                            aircraftData.Model = reader.GetString(2);
-                            aircraftData.EngineType = (EngineType)reader.GetInt32(3);
-                            aircraftData.IsHeavy = reader.GetBoolean(4);
+                            aircraftData.AircraftId = reader.GetInt32(0);
+                            aircraftData.Name = reader.GetString(1);
+                            aircraftData.Type = reader.GetString(2);
+                            aircraftData.Model = reader.GetString(3);
+                            aircraftData.EngineType = (EngineType)reader.GetInt32(4);
+                            aircraftData.IsHeavy = reader.GetBoolean(5);
                             return aircraftData;
                         }
                     }

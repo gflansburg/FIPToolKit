@@ -60,6 +60,7 @@ namespace FIPToolKit.Models
     [XmlInclude(typeof(FIPFSUIPCMap))]
     [XmlInclude(typeof(FIPFSUIPCAirspeed))]
     [XmlInclude(typeof(FIPFSUIPCAltimeter))]
+    [XmlInclude(typeof(FIPScreenMirror))]
     public abstract class FIPPage : IDisposable
     {
         private Guid _id;

@@ -34,6 +34,26 @@ namespace FIPToolKit.Models
             }
         }
 
+        private static int _aircraftId = 0;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public static int AircraftId
+        {
+            get
+            {
+                return _aircraftId;
+            }
+            private set
+            {
+                if (_aircraftId != value)
+                {
+                    _aircraftId = value;
+                    OnAircraftChange?.Invoke(_aircraftId);
+                }
+            }
+        }
+
         [XmlIgnore]
         [JsonIgnore]
         public static bool IsConnected { get; private set; }
@@ -56,6 +76,9 @@ namespace FIPToolKit.Models
 
         protected static AbortableBackgroundWorker _timer;
         private static bool _stop = false;
+
+        public delegate void SimConnectAircraftChangeEventHandler(int aircraftId);
+        public static event SimConnectAircraftChangeEventHandler OnAircraftChange;
 
         public FIPSimConnectPage() : base()
         {
@@ -145,6 +168,7 @@ namespace FIPToolKit.Models
             AircraftData aircraftData = FlightSim.Tools.LoadAircraft(data.ATC_TYPE, data.ATC_MODEL);
             if(aircraftData != null)
             {
+                AircraftId = aircraftData.AircraftId;
                 EngineType = aircraftData.EngineType;
                 IsHeavy = aircraftData.IsHeavy;
             }

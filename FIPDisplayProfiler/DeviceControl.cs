@@ -40,7 +40,6 @@ namespace FIPDisplayProfiler
         {
             lbPages.Items.Remove(e.Page);
             lbPages.SelectedItem = Device.CurrentPage;
-            pbPageButtonsOff.Visible = lbPages.Items.Count == 0;
             pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
             btnDelete.Enabled = lbPages.SelectedIndex != -1;
             btnMoveUp.Enabled = lbPages.SelectedIndex > 0;
@@ -87,7 +86,6 @@ namespace FIPDisplayProfiler
             {
                 lbPages.SelectedItem = e.Page;
             }
-            pbPageButtonsOff.Visible = lbPages.Items.Count == 0;
             pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
             btnDelete.Enabled = lbPages.SelectedIndex != -1;
             btnMoveUp.Enabled = lbPages.SelectedIndex > 0;
@@ -339,6 +337,28 @@ namespace FIPDisplayProfiler
                             }
                         }
                         break;
+                    case PageType.ScreenMirror:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (fipPage.GetType() == typeof(FIPScreenMirror))
+                                {
+                                    MessageBox.Show(this, "You can only have one Screen Mirror per device.", "Screen Mirror", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            FIPPage page = new FIPScreenMirror();
+                            DefaultForm form = new DefaultForm()
+                            {
+                                Text = "Screen Mirror",
+                                Page = page
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                Device.AddPage(form.Page, true);
+                            }
+                        }
+                        break;
                     case PageType.FlightShare:
                         {
                             foreach (FIPPage fipPage in Device.Pages)
@@ -379,18 +399,20 @@ namespace FIPDisplayProfiler
                             {
                                 if (fipPage.GetType() == typeof(FIPSimConnectAirspeed))
                                 {
-                                    MessageBox.Show(this, "You can only have one SimConnect Airspeed Indicator (Linear) per device.", "SimConnect Airspeed Indicator (Linear)", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    MessageBox.Show(this, "You can only have one SimConnect Airspeed Indicator per device.", "SimConnect Airspeed Indicator", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                                     return;
                                 }
                             }
                             FIPPage page = new FIPSimConnectAirspeed();
-                            AnalogGaugeForm form = new AnalogGaugeForm()
+                            AirspeedForm form = new AirspeedForm()
                             {
-                                AnalogGauge = page
+                                AirspeedGauge = page,
+                                AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.AnalogGauge, true);
+                                ((FIPFSUIPCAirspeed)form.AirspeedGauge).AutoSelectAircraft = form.AutoSelectAircraft;
+                                Device.AddPage(form.AirspeedGauge, true);
                             }
                         }
                         break;
@@ -439,13 +461,15 @@ namespace FIPDisplayProfiler
                                 }
                             }
                             FIPPage page = new FIPFSUIPCAirspeed();
-                            AnalogGaugeForm form = new AnalogGaugeForm()
+                            AirspeedForm form = new AirspeedForm()
                             {
-                                AnalogGauge = page
+                                AirspeedGauge = page,
+                                AutoSelectAircraft = ((FIPFSUIPCAirspeed)page).AutoSelectAircraft
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.AnalogGauge, true);
+                                ((FIPFSUIPCAirspeed)form.AirspeedGauge).AutoSelectAircraft = form.AutoSelectAircraft;
+                                Device.AddPage(form.AirspeedGauge, true);
                             }
                         }
                         break;
@@ -588,6 +612,16 @@ namespace FIPDisplayProfiler
                         // No "Name" field to change so no need to force a reload
                         dlg.ShowDialog(this);
                     }
+                    else if(typeof(FIPScreenMirror).IsAssignableFrom(page.GetType()))
+                    {
+                        DefaultForm dlg = new DefaultForm()
+                        {
+                            Text = "Screen Mirror",
+                            Page = page
+                        };
+                        // No "Name" field to change so no need to force a reload
+                        dlg.ShowDialog(this);
+                    }
                     else if (typeof(FIPFSUIPCAltimeter).IsAssignableFrom(page.GetType()))
                     {
                         AltimeterForm dlg = new AltimeterForm()
@@ -614,6 +648,32 @@ namespace FIPDisplayProfiler
                             lbPages.SelectedIndex = index;
                         }
                     }
+                    else if (typeof(FIPSimConnectAirspeed).IsAssignableFrom(page.GetType()))
+                    {
+                        AirspeedForm dlg = new AirspeedForm()
+                        {
+                            AirspeedGauge = page,
+                            AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
+                        };
+                        // No "Name" field to change so no need to force a reload
+                        if (dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            ((FIPSimConnectAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
+                        }
+                    }
+                    else if (typeof(FIPSimConnectAirspeed).IsAssignableFrom(page.GetType()))
+                    {
+                        AirspeedForm dlg = new AirspeedForm()
+                        {
+                            AirspeedGauge = page,
+                            AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
+                        };
+                        // No "Name" field to change so no need to force a reload
+                        if (dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            ((FIPSimConnectAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
+                        }
+                    }
                     else if (typeof(FIPSimConnectAnalogGauge).IsAssignableFrom(page.GetType()))
                     {
                         AnalogGaugeForm dlg = new AnalogGaugeForm()
@@ -622,6 +682,19 @@ namespace FIPDisplayProfiler
                         };
                         // No "Name" field to change so no need to force a reload
                         dlg.ShowDialog(this);
+                    }
+                    else if (typeof(FIPFSUIPCAirspeed).IsAssignableFrom(page.GetType()))
+                    {
+                        AirspeedForm dlg = new AirspeedForm()
+                        {
+                            AirspeedGauge = page,
+                            AutoSelectAircraft = ((FIPFSUIPCAirspeed)page).AutoSelectAircraft
+                        };
+                        // No "Name" field to change so no need to force a reload
+                        if(dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            ((FIPFSUIPCAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
+                        }
                     }
                     else if (typeof(FIPFSUIPCAnalogGauge).IsAssignableFrom(page.GetType()))
                     {
@@ -655,7 +728,7 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void UpdateLeds()
+        public void UpdateLeds()
         {
             if (this.InvokeRequired)
             {
@@ -683,6 +756,7 @@ namespace FIPDisplayProfiler
                     pbS1ButtonOff.Visible = pbS2ButtonOff.Visible = pbS3ButtonOff.Visible = pbS4ButtonOff.Visible = pbS5ButtonOff.Visible = pbS6ButtonOff.Visible = true;
                     pbS1ButtonOn.Visible = pbS2ButtonOn.Visible = pbS3ButtonOn.Visible = pbS4ButtonOn.Visible = pbS5ButtonOn.Visible = pbS6ButtonOn.Visible = false;
                 }
+                pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
             }
         }
 
@@ -1604,6 +1678,11 @@ namespace FIPDisplayProfiler
                     page.StartTimer();
                 }
             }
+        }
+
+        private void DeviceControl_Load(object sender, EventArgs e)
+        {
+            UpdateLeds();
         }
 
         /*protected override void WndProc(ref Message m)

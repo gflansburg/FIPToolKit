@@ -79,6 +79,7 @@ namespace FIPDisplayProfiler
 
         private void Engine_OnDeviceAdded(object sender, FIPEngineEventArgs e)
         {
+            e.Device.OnPageAdded += Device_OnPageAdded;
             if (lblFipDisplays.InvokeRequired)
             {
                 this.Invoke((Action)(() =>
@@ -106,6 +107,22 @@ namespace FIPDisplayProfiler
                     {
                         LoadSettings(ProfileName, e.Device.SerialNumber);
                     }
+                }
+            }
+        }
+
+        private void Device_OnPageAdded(object sender, FIPDeviceEventArgs e)
+        {
+            e.Page.OnSettingsChange += Page_OnSettingsChange;
+        }
+
+        private void Page_OnSettingsChange(object sender, FIPPageEventArgs e)
+        {
+            if(Properties.Settings.Default.AutoSave && !_loading)
+            {
+                if (!String.IsNullOrEmpty(ProfileName))
+                {
+                    SaveSettings(ProfileName);
                 }
             }
         }
@@ -191,7 +208,7 @@ namespace FIPDisplayProfiler
             bool saveActivePages = Engine.IsActivePagesDirty;
             if(Engine.IsDirty)
             {
-                if (!Properties.Settings.Default.AutoSave)
+                if (!Properties.Settings.Default.AutoSave || String.IsNullOrEmpty(ProfileName))
                 {
                     _saveChangesDialogShowing = true;
                     DialogResult result = MessageBox.Show(this, "Do you want to save changes?", "FIP Display Profiler", MessageBoxButtons.YesNoCancel);
@@ -255,6 +272,8 @@ namespace FIPDisplayProfiler
 
         private void LoadSettings(string fileName, string serialNumber = null)
         {
+            bool loading = _loading;
+            _loading = true;
             if (File.Exists(fileName))
             {
                 string xmlData = File.ReadAllText(fileName);
@@ -332,6 +351,7 @@ namespace FIPDisplayProfiler
                     }
                 }
             }
+            _loading = loading;
         }
 
         private bool SaveSettings(string fileName)
@@ -358,8 +378,15 @@ namespace FIPDisplayProfiler
                 _saveChangesDialogShowing = false;
                 ProfileName = fileName = saveFileDialog1.FileName;
             }
-            File.WriteAllText(fileName, xmlData);
-            Engine.IsDirty = false;
+            try
+            {
+                File.WriteAllText(fileName, xmlData);
+                Engine.IsDirty = false;
+            }
+            catch(Exception)
+            {
+                return false;
+            }
             return true;
         }
 
@@ -446,6 +473,11 @@ namespace FIPDisplayProfiler
                 {
                     Properties.Settings.Default.LastSelectedDevice = tabDevices.SelectedTab.Text;
                     Properties.Settings.Default.Save();
+                    if (tabDevices.SelectedTab.Controls.Count > 0 && tabDevices.SelectedTab.Controls[0].GetType() == typeof(DeviceControl))
+                    {
+                        DeviceControl deviceControl = tabDevices.SelectedTab.Controls[0] as DeviceControl;
+                        deviceControl.UpdateLeds();
+                    }
                 }
             }
         }

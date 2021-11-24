@@ -391,6 +391,43 @@ namespace FIPToolKit.Drawing
             return CaptureApplication(procs[0], makeForeground);
         }
 
+        public static Bitmap CaptureScreen(int displayIndex)
+        {
+            if (displayIndex >= 0 && displayIndex < System.Windows.Forms.Screen.AllScreens.Length)
+            {
+                Rectangle rect = System.Windows.Forms.Screen.AllScreens[displayIndex].Bounds;
+                Bitmap bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format24bppRgb);
+                using(Graphics graphics = Graphics.FromImage(bmp))
+                {
+                    graphics.CopyFromScreen(rect.Left, rect.Top, 0, 0, rect.Size);
+                }
+                return bmp;
+            }
+            return null;
+        }
+
+        public static Image Crop(this Image img)
+        {
+            return img.Crop(4, 3);
+        }
+
+        public static Image Crop(this Image img, double aspectRatio_X, double aspectRatio_Y)
+        {
+            double imgWidth = Convert.ToDouble(img.Width);
+            double imgHeight = Convert.ToDouble(img.Height);
+
+            if (imgWidth / imgHeight > (aspectRatio_X / aspectRatio_Y))
+            {
+                double extraWidth = imgWidth - (imgHeight * (aspectRatio_X / aspectRatio_Y));
+                double cropStartFrom = extraWidth / 2;
+                Bitmap bmp = new Bitmap((int)(img.Width - extraWidth), img.Height);
+                Graphics grp = Graphics.FromImage(bmp);
+                grp.DrawImage(img, new Rectangle(0, 0, (int)(img.Width - extraWidth), img.Height), new Rectangle((int)cropStartFrom, 0, (int)(imgWidth - extraWidth), img.Height), GraphicsUnit.Pixel);
+                return (Image)bmp;
+            }
+            return null;
+        }
+
         public static Bitmap RotateImage(this Bitmap bmp, float angle)
         {
             if (angle != 0)

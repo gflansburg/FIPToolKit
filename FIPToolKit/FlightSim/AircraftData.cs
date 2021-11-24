@@ -9,6 +9,7 @@ namespace FIPToolKit.FlightSim
 {
     public class AircraftData
     {
+        public int AircraftId { get; set; }
         public int GroundAltitude { get; set; }
         public int IndicatedSpeed { get; set; }
         public int TrueSpeed { get; set; }
@@ -58,6 +59,7 @@ namespace FIPToolKit.FlightSim
         public void Reset()
         {
             Position = new PointLatLng(0, 0);
+            AircraftId = 0;
             IndicatedSpeed = 0;
             TrueSpeed = 0;
             HeadingTrue = 0;

@@ -929,6 +929,7 @@ namespace FIPToolKit.Models
                     airplaneMarker.Nav1Available = Nav1Available;
                     airplaneMarker.Nav2Available = Nav2Available;
                     airplaneMarker.AdfRelativeBearing = AdfRelativeBearing;
+                    airplaneMarker.HeadingBug = HeadingBug;
                     route.Stroke = new Pen(TrackColor, 1);
                     UpdateMap();
                 }
@@ -1071,6 +1072,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.GPSTrackDistance = 0;
                         airplaneMarker.Nav1Available = false;
                         airplaneMarker.Nav2Available = false;
+                        airplaneMarker.HeadingBug = 0;
                         airplaneMarker.IsRunning = false;
                         Map.Position = airplaneMarker.Position = new PointLatLng(0, 0);
                     }
@@ -1120,6 +1122,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.Nav1Available = Nav1Available;
                         airplaneMarker.Nav2Available = Nav2Available;
                         airplaneMarker.AdfRelativeBearing = AdfRelativeBearing;
+                        airplaneMarker.HeadingBug = HeadingBug;
                         route.Points.Add(new PointLatLng(Latitude, Longitude));
                         if (FollowMyPlane || _centerOnPlane)
                         {
@@ -1172,6 +1175,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.GPSTrackDistance = 0;
                         airplaneMarker.Nav1Available = false;
                         airplaneMarker.Nav2Available = false;
+                        airplaneMarker.HeadingBug = 0;
                         route.Points.Clear();
                         Map.Position = airplaneMarker.Position = new PointLatLng(0, 0);
                     }
@@ -1275,7 +1279,8 @@ namespace FIPToolKit.Models
                     Nav2RelativeBearing = Nav2Radial + 180,
                     Nav1Available = Nav1Available,
                     Nav2Available = Nav2Available,
-                    AdfRelativeBearing = AdfRelativeBearing
+                    AdfRelativeBearing = AdfRelativeBearing,
+                    HeadingBug = HeadingBug
                 };
                 route.Stroke = new Pen(_trackColor, 1);
                 overlay.Markers.Add(airplaneMarker);
@@ -1336,7 +1341,7 @@ namespace FIPToolKit.Models
                                     {
                                         using (Bitmap rotated = map.RotateImageByRadians(-(CompassMode == CompassMode.Magnetic ? HeadingMagneticRadians : HeadingTrueRadians)))
                                         {
-                                            Rectangle srcRect = new Rectangle((rotated.Width - 286) / 2, (rotated.Height - 240) / 2, 286, 240);
+                                            Rectangle srcRect = new Rectangle((rotated.Width - 286) / 2, ((rotated.Height - 240) / 2) - 15, 286, 240);
                                             graphics.DrawImage(rotated, destRect, srcRect, GraphicsUnit.Pixel);
                                             using(Bitmap overlay = airplaneMarker.CreateDataOverlay())
                                             {

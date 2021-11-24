@@ -35,6 +35,11 @@ namespace FIPToolKit.Drawing
             }
         }
 
+        public Color InvertColor()
+        {
+            return Color.FromArgb(Color.ToArgb() ^ 0xffffff);
+        }
+
         public static implicit operator Color(ColorEx colorEx)
         {
             return colorEx.Color;

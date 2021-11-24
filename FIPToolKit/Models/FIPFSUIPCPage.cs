@@ -19,6 +19,26 @@ namespace FIPToolKit.Models
     [Serializable]
     public abstract class FIPFSUIPCPage : FIPPage
     {
+        private static int _aircraftId = 0;
+        
+        [XmlIgnore]
+        [JsonIgnore]
+        public static int AircraftId 
+        { 
+            get
+            {
+                return _aircraftId;
+            }
+            private set
+            {
+                if(_aircraftId != value)
+                {
+                    _aircraftId = value;
+                    OnAircraftChange?.Invoke(_aircraftId);
+                }
+            }
+        }
+
         [XmlIgnore]
         [JsonIgnore]
         public static bool IsConnected { get; private set; }
@@ -366,7 +386,8 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return gpsRequiredMagneticHeading.Value;
+                // F/A-18 glitch: add PI radians
+                return (AircraftId == 50 ? gpsRequiredMagneticHeading.Value + Math.PI : gpsRequiredMagneticHeading.Value);
             }
         }
 
@@ -376,7 +397,8 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return (gpsRequiredMagneticHeading.Value * (180 / Math.PI));
+                // F/A-18 glitch: add 180 degrees
+                return (AircraftId == 50 ? gpsRequiredMagneticHeading.Value + Math.PI : gpsRequiredMagneticHeading.Value) * (180 / Math.PI);
             }
         }
 
@@ -936,6 +958,25 @@ namespace FIPToolKit.Models
             }
         }
 
+        [XmlIgnore]
+        [JsonIgnore]
+        public static int HeadingBug
+        {
+            get
+            {
+                int bug = (headingBug.Value / (65536 / 360));
+                if(bug < 0)
+                {
+                    bug += 360;
+                }
+                else if(bug >= 360)
+                {
+                    bug -= 360;
+                }
+                return bug;
+            }
+        }
+
         private static AbortableBackgroundWorker _timerConnection;
         private static AbortableBackgroundWorker _timerMain;
         private static bool initialized = false;
@@ -948,6 +989,7 @@ namespace FIPToolKit.Models
         private static Offset<int> airSpeedBarberPole = new Offset<int>(0x02C4);
         private static Offset<int> groundSpeed = new Offset<int>(0x02B4);
         private static Offset<int> verticalSpeed = new Offset<int>(0x02C8);
+        private static Offset<short> headingBug = new Offset<short>(0x07CC);
         private static Offset<double> headingMagnetic = new Offset<double>(0x02CC);
         private static Offset<uint> headingTrue = new Offset<uint>(0x0580);
         private static Offset<ushort> onGround = new Offset<ushort>(0x0366);
@@ -1028,6 +1070,9 @@ namespace FIPToolKit.Models
         public delegate void FSUIPCReadyEventHandler(ReadyToFly readyToFly);
         public static event FSUIPCReadyEventHandler OnReadyToFly;
 
+        public delegate void FSUIPCAircraftChangeEventHandler(int aircraftId);
+        public static event FSUIPCAircraftChangeEventHandler OnAircraftChange;
+
         public FIPFSUIPCPage() : base()
         {
             Initialize();
@@ -1096,6 +1141,7 @@ namespace FIPToolKit.Models
                         AircraftData data = FlightSim.Tools.LoadAircraft(aircraftType.Value, aircraftModel.Value);
                         if (data != null)
                         {
+                            AircraftId = data.AircraftId;
                             AircraftName = data.Name;
                             _aircraftType = data.Type;
                             _aircraftModel = data.Model;
@@ -1104,6 +1150,7 @@ namespace FIPToolKit.Models
                         }
                         else
                         {
+                            AircraftId = 0;
                             IsHeavy = false;
                             AircraftName = title.Value;
                             _engineType = (EngineType)engineType.Value;
@@ -1169,16 +1216,23 @@ namespace FIPToolKit.Models
             List<AIPlaneInfo> allPlanes = FSUIPCConnection.AITrafficServices.AllTraffic;
             foreach (AIPlaneInfo plane in allPlanes)
             {
-                if (!Traffic.ContainsKey(plane.ATCIdentifier))
+                try
                 {
-                    Aircraft aircraft = new Aircraft(plane);
-                    Traffic.Add(plane.ATCIdentifier, aircraft);
-                    OnTrafficReceived?.Invoke(plane.ATCIdentifier, aircraft, TrafficEvent.Add);
+                    if (!Traffic.ContainsKey(plane.ATCIdentifier))
+                    {
+                        Aircraft aircraft = new Aircraft(plane);
+                        Traffic.Add(plane.ATCIdentifier, aircraft);
+                        OnTrafficReceived?.Invoke(plane.ATCIdentifier, aircraft, TrafficEvent.Add);
+                    }
+                    else
+                    {
+                        Traffic[plane.ATCIdentifier].UpdateAircraft(plane);
+                        OnTrafficReceived?.Invoke(plane.ATCIdentifier, Traffic[plane.ATCIdentifier], TrafficEvent.Update);
+                    }
                 }
-                else
+                catch(Exception)
                 {
-                    Traffic[plane.ATCIdentifier].UpdateAircraft(plane);
-                    OnTrafficReceived?.Invoke(plane.ATCIdentifier, Traffic[plane.ATCIdentifier], TrafficEvent.Update);
+
                 }
             }
             List<Aircraft> aircraftToRemove = Traffic.Values.Where(a => !allPlanes.Any(p => p.ATCIdentifier == a.Callsign)).ToList();

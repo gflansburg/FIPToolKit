@@ -69,12 +69,39 @@ namespace FIPToolKit.Models
             }
         }
 
+        private bool _autoSelectAircraft;
+        public bool AutoSelectAircraft
+        {
+            get
+            {
+                return _autoSelectAircraft;
+            }
+            set
+            {
+                if (_autoSelectAircraft != value)
+                {
+                    _autoSelectAircraft = value;
+                    IsDirty = true;
+                }
+            }
+        }
+
         public FIPFSUIPCAirspeed() : base()
         {
             Name = "FSUIPC Airspeed Indicator Gauge";
             vSpeeds = VSpeed.LoadVSpeeds();
             IsDirty = false;
+            _autoSelectAircraft = true;
             OnFlightDataReceived += FIPCessnaAirspeedLinear_OnFlightDataReceived;
+            OnAircraftChange += FIPFSUIPCAirspeed_OnAircraftChange;
+        }
+
+        private void FIPFSUIPCAirspeed_OnAircraftChange(int aircraftId)
+        {
+            if(AutoSelectAircraft && aircraftId > 0)
+            {
+                SelectedAircraftId = aircraftId;
+            }
         }
 
         private void FIPCessnaAirspeedLinear_OnFlightDataReceived()

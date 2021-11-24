@@ -68,12 +68,38 @@ namespace FIPToolKit.Models
             }
         }
 
+        private bool _autoSelectAircraft;
+        public bool AutoSelectAircraft
+        {
+            get
+            {
+                return _autoSelectAircraft;
+            }
+            set
+            {
+                if (_autoSelectAircraft != value)
+                {
+                    _autoSelectAircraft = value;
+                    IsDirty = true;
+                }
+            }
+        }
+
         public FIPSimConnectAirspeed() : base()
         {
             Name = "SimConnect Airspeed Indicator Gauge (Linear)";
             vSpeeds = VSpeed.LoadVSpeeds();
-            GaugeImage = Properties.Resources.CessnaAirspeed_FaceImage;
+            _autoSelectAircraft = true;
             IsDirty = false;
+            OnAircraftChange += FIPSimConnectAirspeed_OnAircraftChange;
+        }
+
+        private void FIPSimConnectAirspeed_OnAircraftChange(int aircraftId)
+        {
+            if (AutoSelectAircraft && aircraftId > 0)
+            {
+                SelectedAircraftId = aircraftId;
+            }
         }
 
         protected override void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)

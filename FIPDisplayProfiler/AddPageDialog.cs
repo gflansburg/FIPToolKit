@@ -16,6 +16,7 @@ namespace FIPDisplayProfiler
         Slideshow,
         VideoPlayer,
         SpotifyPlayer,
+        ScreenMirror,
         FlightShare,
         SimConnectMap,
         SimConnectAirspeed,
@@ -125,6 +126,13 @@ namespace FIPDisplayProfiler
         private void rbFSUIPCAltimeter_CheckedChanged(object sender, EventArgs e)
         {
             PageType = PageType.FSUIPCAltimeter;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbScreenMirror_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.ScreenMirror;
             btnOK.Enabled = true;
             cbSettable.Enabled = false;
         }

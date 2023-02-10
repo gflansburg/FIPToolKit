@@ -74,15 +74,18 @@ namespace FIPToolKit.FlightSim
                 Offset = new Point(-Size.Width / 2, -Size.Height / 2);
                 g.DrawImage(bmp, LocalPosition.X, LocalPosition.Y, Size.Width, Size.Height);
             }
-            using (Font font = new Font("Arial", 14f, FontStyle.Bold))
+            if (Aircraft.GetType() != typeof(FlightShareAircraft))
             {
-                if (Aircraft.Altitude > CurrentAltitude)
+                using (Font font = new Font("Arial", 14f, FontStyle.Bold))
                 {
-                    g.DrawString("+", font, Brushes.DarkGray, LocalPosition.X + 12, LocalPosition.Y - 12);
-                }
-                else if (Aircraft.Altitude < CurrentAltitude)
-                {
-                    g.DrawString("-", font, Brushes.DarkGray, LocalPosition.X + 12, LocalPosition.Y - 12);
+                    if (Aircraft.Altitude > CurrentAltitude)
+                    {
+                        g.DrawString("+", font, Brushes.DarkGray, LocalPosition.X + 12, LocalPosition.Y - 12);
+                    }
+                    else if (Aircraft.Altitude < CurrentAltitude)
+                    {
+                        g.DrawString("-", font, Brushes.DarkGray, LocalPosition.X + 12, LocalPosition.Y - 12);
+                    }
                 }
             }
         }

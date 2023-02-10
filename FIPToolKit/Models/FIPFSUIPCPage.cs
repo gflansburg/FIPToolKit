@@ -468,7 +468,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return (Kollsman.Value / 16d) * 0.029529983071d;
+                return (Kollsman.Value == 0 ? 29.92d : ((Kollsman.Value / 16d) * 0.029529983071d));
             }
         }
 
@@ -965,11 +965,11 @@ namespace FIPToolKit.Models
             get
             {
                 int bug = (headingBug.Value / (65536 / 360));
-                if(bug < 0)
+                if(bug <= 0)
                 {
                     bug += 360;
                 }
-                else if(bug >= 360)
+                else if(bug > 360)
                 {
                     bug -= 360;
                 }

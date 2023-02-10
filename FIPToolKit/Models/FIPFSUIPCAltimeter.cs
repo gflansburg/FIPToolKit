@@ -374,11 +374,18 @@ namespace FIPToolKit.Models
 							int radius = (rect.Width / 2) - ((DrawRim ? RimWidth : 0) + 10);
 							if (ShowKollsmanWindow)
 							{
-								using (Brush brush = new SolidBrush(FontColor))
+								using (StringFormat format = new StringFormat())
 								{
-									string text = string.Format("{0:0.00}", KollsmanInchesMercury);
-									SizeF size = grfx.MeasureString(text, Font);
-									grfx.DrawString(text, Font, brush, new PointF(midx + 20, midy - (size.Height / 2)));
+									format.Alignment = StringAlignment.Far;
+									format.LineAlignment = StringAlignment.Center;
+									format.Trimming = StringTrimming.None;
+									using (Brush brush = new SolidBrush(FontColor))
+									{
+										string text = "29.92";
+										SizeF size = grfx.MeasureString(text, Font);
+										Rectangle rectKollsman = new Rectangle((int)(midx + 18), (int)(midy - ((size.Height) / 2) + 2), (int)size.Width + 2, (int)size.Height);
+										grfx.DrawString(string.Format("{0:00.00}", KollsmanInchesMercury), Font, brush, rectKollsman, format);
+									}
 								}
 							}
 							if (ShowAltitiudeStripes)
@@ -638,7 +645,7 @@ namespace FIPToolKit.Models
                 {
 					if (ShowKollsmanWindow)
 					{
-						string text = "00.00";
+						string text = "29.92";
 						SizeF size2 = grfx.MeasureString(text, Font);
 						Rectangle rectKollsman = new Rectangle((int)(midx + 20), (int)(midy - ((size2.Height) / 2)), (int)size2.Width, (int)size2.Height);
 						grfx.DrawRectangle(pen, rectKollsman);

@@ -57,8 +57,6 @@ namespace FIPToolKit.Models
     {
         private static Token _token;
         private static bool isAuthenticating = false;
-        private static string _clientId = "yourclientid";
-        private static string _secretId = "yoursecretid";
         private static AuthorizationCodeAuth authorizationCodeAuth;
         private static bool _showArtistImages;
         private static bool _cacheArtwork;
@@ -212,6 +210,42 @@ namespace FIPToolKit.Models
 
         private int ImageIndex { get;set; }
 
+        private string _clientId = string.Empty;
+        public string ClientId
+        {
+            get
+            {
+                return _clientId;
+            }
+            set
+            {
+                if (!(_clientId ?? string.Empty).Equals(value ?? string.Empty))
+                {
+                    _clientId = value;
+                    IsDirty = true;
+                    InitAuthServer();
+                }
+            }
+        }
+
+        private string _secretId = string.Empty;
+        public string SecretId
+        {
+            get
+            {
+                return _secretId;
+            }
+            set
+            {
+                if (!(_secretId ?? string.Empty).Equals(value ?? string.Empty))
+                {
+                    _secretId = value;
+                    IsDirty = true;
+                    InitAuthServer();
+                }
+            }
+        }
+
         private FontEx _artistFont;
         public FontEx ArtistFont
         { 
@@ -244,12 +278,6 @@ namespace FIPToolKit.Models
             {
                 PlayLists = new List<SpotifyPlaylist>();
             }
-            if (authorizationCodeAuth == null)
-            {
-                authorizationCodeAuth = new AuthorizationCodeAuth(_clientId, _secretId, "http://localhost:51400", "http://localhost:51400", Scope.PlaylistReadPrivate | Scope.PlaylistReadCollaborative | Scope.UserReadCurrentlyPlaying | Scope.UserReadPlaybackState | Scope.UserModifyPlaybackState | Scope.UserLibraryRead | Scope.UserLibraryModify);
-                authorizationCodeAuth.AuthReceived += AuthOnAuthReceived;
-            }
-            authorizationCodeAuth.AuthReceived += LoadController;
             if (SpotifyController == null)
             {
                 SpotifyController = new SpotifyController();
@@ -267,6 +295,21 @@ namespace FIPToolKit.Models
             _playList = new FIPPlayList();
             IsDirty = false;
             UpdatePage();
+            InitAuthServer();
+        }
+
+        private void InitAuthServer()
+        {
+            if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_secretId))
+            {
+                authorizationCodeAuth = new AuthorizationCodeAuth(_clientId, _secretId, "http://localhost:51400", "http://localhost:51400", Scope.PlaylistReadPrivate | Scope.PlaylistReadCollaborative | Scope.UserReadCurrentlyPlaying | Scope.UserReadPlaybackState | Scope.UserModifyPlaybackState | Scope.UserLibraryRead | Scope.UserLibraryModify);
+                authorizationCodeAuth.AuthReceived += AuthOnAuthReceived;
+                authorizationCodeAuth.AuthReceived += LoadController;
+            }
+            else
+            {
+                authorizationCodeAuth = null;
+            }
         }
 
         private void FIPSpotifyController_ShowArtistImagesChanged()
@@ -369,8 +412,6 @@ namespace FIPToolKit.Models
             if ((Token == null || Token.IsExpired()) && !isAuthenticating && authorizationCodeAuth != null)
             {
                 isAuthenticating = true;
-                _clientId = string.IsNullOrEmpty(_clientId) ? Environment.GetEnvironmentVariable("SPOTIFY_CLIENT_ID") : _clientId;
-                _secretId = string.IsNullOrEmpty(_secretId) ? Environment.GetEnvironmentVariable("SPOTIFY_SECRET_ID") : _secretId;
                 authorizationCodeAuth.Start();
                 authorizationCodeAuth.OpenBrowser();
             }
@@ -719,7 +760,7 @@ namespace FIPToolKit.Models
                                 graphics.AddButtonIcon(SpotifyController.SpotifyState == SpotifyStateType.Playing ? Properties.Resources.pause : Properties.Resources.play, SpotifyController.SpotifyState == SpotifyStateType.Playing ? Color.Yellow : Color.Blue, true, SoftButtons.Button2);
                                 graphics.AddButtonIcon(Properties.Resources.shuffle, SpotifyController.ShuffleState == true ? Color.Green : Color.White, true, SoftButtons.Button3);
                                 graphics.AddButtonIcon(SpotifyController.RepeatState == RepeatState.Track ? Properties.Resources.repeat_one : Properties.Resources.repeat, SpotifyController.RepeatState != RepeatState.Off ? Color.Green : Color.White, true, SoftButtons.Button4);
-                                graphics.AddButtonIcon(CurrentPlaybackContext != null && CurrentPlaybackContext.Item != null && SpotifyController.IsLiked(CurrentPlaybackContext.Item.Id) ? Properties.Resources.heart : Properties.Resources.heart_online, Color.Pink, true, SoftButtons.Button5);
+                                graphics.AddButtonIcon(CurrentPlaybackContext != null && CurrentPlaybackContext.Item != null && SpotifyController.IsLiked(CurrentPlaybackContext.Item.Id) ? Properties.Resources.heart : Properties.Resources.heart_outline, Color.Pink, true, SoftButtons.Button5);
                                 graphics.AddButtonIcon(Properties.Resources.playlist, Color.Orange, true, SoftButtons.Button6);
                             }
                         }

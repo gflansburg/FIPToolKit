@@ -75,9 +75,16 @@ namespace FIPToolKit.Models
         public bool IsDirty { get; set; }
     }
 
-    [Serializable]
     public class FIPEngine : IDisposable
     {
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool IsDisposed { get; private set; }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool IsDisposing { get; private set; }
+
         [XmlIgnore]
         [JsonIgnore]
         public DirectOutputClient DirectOutput { get; private set; }
@@ -103,17 +110,24 @@ namespace FIPToolKit.Models
         {
             get
             {
-                foreach (FIPDevice device in _devices)
-                {
-                    yield return device;
-                }
+                return _devices.Where(d => d.DeviceType == DeviceType.Fip);
             }
             set
             {
-                foreach(FIPDevice device in value)
+                foreach (FIPDevice device in value)
                 {
                     _devices.Add(device);
                 }
+            }
+        }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public IEnumerable<FIPDevice> Joysticks
+        {
+            get
+            {
+                return _devices.Where(d => d.DeviceType != DeviceType.Fip && d.DeviceType != DeviceType.Unknown);
             }
         }
 
@@ -135,9 +149,15 @@ namespace FIPToolKit.Models
         {
             if (DirectOutput == null)
             {
-                DirectOutput = new DirectOutputClient();
-                DirectOutput.Initialize();
-                DirectOutput.DeviceChanged += OnDeviceChange;
+                try
+                {
+                    DirectOutput = new DirectOutputClient();
+                    DirectOutput.Initialize();
+                    DirectOutput.DeviceChanged += OnDeviceChange;
+                }
+                catch (Exception)
+                {
+                }
             }
             SearchForFIPPanels();
         }
@@ -153,9 +173,9 @@ namespace FIPToolKit.Models
 
         public FIPDevice FindDevice(string serialNumber)
         {
-            foreach(FIPDevice device in Devices)
+            foreach (FIPDevice device in Devices)
             {
-                if(device.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
+                if (device.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
                 {
                     return device;
                 }
@@ -169,23 +189,32 @@ namespace FIPToolKit.Models
             {
                 if (e.Added)
                 {
-                    FIPDevice device = new FIPDevice(DirectOutput.CreateDeviceClient(e.Device), e.Device);
-                    _devices.Add(device);
-                    OnDeviceAdded?.Invoke(this, new FIPEngineEventArgs(device, true));
-                    DeviceActivePage activePage = FindActivePage(device.SerialNumber);
-                    if (activePage == null)
+                    DeviceClient deviceClient = DirectOutput.CreateDeviceClient(e.Device);
+                    Guid deviceType = deviceClient.GetDeviceType();
+                    if (deviceType == DeviceTypes.Fip)
                     {
-                        activePage = new DeviceActivePage()
+                        FIPDevice device = new FIPDevice(this, deviceClient, e.Device);
+                        _devices.Add(device);
+                        OnDeviceAdded?.Invoke(this, new FIPEngineEventArgs(device, true));
+                        DeviceActivePage activePage = FindActivePage(device.SerialNumber);
+                        if (activePage == null)
                         {
-                            SerialNumber = device.SerialNumber
-                        };
-                        ActivePages.Pages.Add(activePage);
+                            activePage = new DeviceActivePage()
+                            {
+                                SerialNumber = device.SerialNumber
+                            };
+                            ActivePages.Pages.Add(activePage);
+                        }
+                        else
+                        {
+                            device.ActivePage = activePage.Page;
+                        }
+                        device.OnPageChanged += Device_OnPageChanged;
                     }
                     else
                     {
-                        device.ActivePage = activePage.Page;
+                        deviceClient.Dispose();
                     }
-                    device.OnPageChanged += Device_OnPageChanged;
                 }
                 else
                 {
@@ -224,31 +253,46 @@ namespace FIPToolKit.Models
 
         private void SearchForFIPPanels()
         {
-            IntPtr[] devices = DirectOutput.GetDeviceHandles();
-            foreach (IntPtr deviceId in devices)
+            if (DirectOutput != null)
             {
-                try
+                IntPtr[] devices = DirectOutput.GetDeviceHandles();
+                foreach (IntPtr deviceId in devices)
                 {
-                    FIPDevice device = new FIPDevice(DirectOutput.CreateDeviceClient(deviceId), deviceId);
-                    _devices.Add(device);
-                    DeviceActivePage activePage = FindActivePage(device.SerialNumber);
-                    if (activePage == null)
+                    try
                     {
-                        activePage = new DeviceActivePage()
+                        DeviceClient deviceClient = DirectOutput.CreateDeviceClient(deviceId);
+                        Guid deviceType = deviceClient.GetDeviceType();
+                        if (deviceType == DeviceTypes.Fip)
                         {
-                            SerialNumber = device.SerialNumber
-                        };
-                        ActivePages.Pages.Add(activePage);
+                            FIPDevice device = new FIPDevice(this, deviceClient, deviceId);
+                            _devices.Add(device);
+                            if (device.DeviceType == DeviceType.Fip)
+                            {
+                                DeviceActivePage activePage = FindActivePage(device.SerialNumber);
+                                if (activePage == null)
+                                {
+                                    activePage = new DeviceActivePage()
+                                    {
+                                        SerialNumber = device.SerialNumber
+                                    };
+                                    ActivePages.Pages.Add(activePage);
+                                }
+                                else
+                                {
+                                    device.ActivePage = activePage.Page;
+                                }
+                            }
+                            OnDeviceAdded?.Invoke(this, new FIPEngineEventArgs(device));
+                            device.OnPageChanged += Device_OnPageChanged;
+                        }
+                        else
+                        {
+                            deviceClient.Dispose();
+                        }
                     }
-                    else
+                    catch (Exception)
                     {
-                        device.ActivePage = activePage.Page;
                     }
-                    OnDeviceAdded?.Invoke(this, new FIPEngineEventArgs(device));
-                    device.OnPageChanged += Device_OnPageChanged;
-                }
-                catch (Exception)
-                {
                 }
             }
         }
@@ -333,8 +377,14 @@ namespace FIPToolKit.Models
 
         public void Dispose()
         {
-            ClearDevices();
-            Deinitialize();
+            if (!IsDisposed && !IsDisposing)
+            {
+                IsDisposing = true;
+                ClearDevices();
+                Deinitialize();
+                IsDisposed = true;
+                IsDisposing = false;
+            }
         }
     }
 }

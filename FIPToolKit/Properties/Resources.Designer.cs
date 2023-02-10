@@ -442,9 +442,9 @@ namespace FIPToolKit.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap heart_online {
+        internal static System.Drawing.Bitmap heart_outline {
             get {
-                object obj = ResourceManager.GetObject("heart_online", resourceCulture);
+                object obj = ResourceManager.GetObject("heart_outline", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

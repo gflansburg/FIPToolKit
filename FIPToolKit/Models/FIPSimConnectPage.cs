@@ -232,7 +232,13 @@ namespace FIPToolKit.Models
                 _timer.Dispose();
                 _timer = null;
             }
-            SimConnect.Deinitialize();
+            try
+            {
+                SimConnect.Deinitialize();
+            }
+            catch(Exception)
+            {
+            }
         }
     }
 }

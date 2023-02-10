@@ -428,9 +428,6 @@ namespace FIPToolKit.Models
         private const int VATSIM_REFRESH_RATE = 60000;
         private const int FLIGHTSHARE_REFRESH_RATE = 5000;
 
-        private bool FlightShareIsLoggedIn { get; set; }
-        private int FlightSharePilotId { get; set; }
-
         private string FlightShareId
         {
             get
@@ -462,7 +459,7 @@ namespace FIPToolKit.Models
         
         [XmlIgnore]
         [JsonIgnore]
-        public Dictionary<uint, Aircraft> MPTraffic { get; private set; }
+        public Dictionary<string, Aircraft> MPTraffic { get; private set; }
 
         private List<Color> Colors = new List<Color>();
 
@@ -483,7 +480,7 @@ namespace FIPToolKit.Models
             GMap.NET.GMaps.Instance.Mode = GMap.NET.AccessMode.ServerOnly;
             if(MPTraffic == null)
             {
-                MPTraffic = new Dictionary<uint, Aircraft>();
+                MPTraffic = new Dictionary<string, Aircraft>();
             }
             trafficWorker = new AbortableBackgroundWorker();
             trafficWorker.DoWork += TrafficWorker_DoWork;
@@ -524,43 +521,54 @@ namespace FIPToolKit.Models
                     {
                         if ((DateTime.Now - lastVatSimQuery).TotalMilliseconds >= VATSIM_REFRESH_RATE)
                         {
-                            Dictionary<uint, VatSimAircraft> currentTraffic = new Dictionary<uint, VatSimAircraft>();
-                            JsonSerializer jsonSerializer = new JsonSerializer();
-                            string json = Tools.Net.GetURL("https://map.vatsim.net/livedata/live.json");
-                            using (JsonTextReader jsonReader = new JsonTextReader(new StringReader(json)))
+                            Dictionary<string, VatSimAircraft> currentTraffic = new Dictionary<string, VatSimAircraft>();
+                            RestClient restClient = new RestClient("https://api2.simaware.ca");
+                            IRestRequest request = new RestRequest("/api/livedata/live.json")
                             {
-                                while (jsonReader.Read())
+                                Timeout = 10000,
+                                Method = Method.GET
+                            };
+                            request.AddHeader("credentials", "omit");
+                            IRestResponse response = restClient.Execute(request);
+                            if (response.IsSuccessful)
+                            {
+                                string json = response.Content;
+                                JsonSerializer jsonSerializer = new JsonSerializer();
+                                using (JsonTextReader jsonReader = new JsonTextReader(new StringReader(json)))
                                 {
-                                    if (Stop)
+                                    while (jsonReader.Read())
                                     {
-                                        break;
-                                    }
-                                    if (jsonReader.TokenType == JsonToken.PropertyName)
-                                    {
-                                        Guid guid;
-                                        if (Guid.TryParse(jsonReader.Value.ToString(), out guid))
+                                        if (Stop)
                                         {
-                                            jsonReader.Read();
-                                            VatSimAircraft aircraft = jsonSerializer.Deserialize<VatSimAircraft>(jsonReader);
-                                            //double distance = FlightSim.Tools.DistanceTo(Latitude, Longitude, aircraft.Lat, aircraft.Lon);
-                                            //if (distance < SearchRadius)
-                                            if (aircraft.Id != VatSimId)
+                                            break;
+                                        }
+                                        if (jsonReader.TokenType == JsonToken.PropertyName)
+                                        {
+                                            Guid guid;
+                                            if (Guid.TryParse(jsonReader.Value.ToString(), out guid))
                                             {
-                                                // Add 1,000,000 to differenciate between FlightShare and VatSim user id's.
-                                                if (!MPTraffic.ContainsKey(aircraft.Id + 1000000))
+                                                jsonReader.Read();
+                                                VatSimAircraft aircraft = jsonSerializer.Deserialize<VatSimAircraft>(jsonReader);
+                                                //double distance = FlightSim.Tools.DistanceTo(Latitude, Longitude, aircraft.Lat, aircraft.Lon);
+                                                //if (distance < SearchRadius)
+                                                if (aircraft.Id != VatSimId)
                                                 {
-                                                    MPTraffic.Add(aircraft.Id + 1000000, aircraft);
+                                                    // Add 1,000,000 to differenciate between FlightShare and VatSim user id's.
+                                                    if (!MPTraffic.ContainsKey(aircraft.Id.ToString()))
+                                                    {
+                                                        MPTraffic.Add(aircraft.Id.ToString(), aircraft);
+                                                    }
+                                                    else
+                                                    {
+                                                        MPTraffic[aircraft.Id.ToString()].Altitude = aircraft.Altitude;
+                                                        MPTraffic[aircraft.Id.ToString()].Latitude = aircraft.Latitude;
+                                                        MPTraffic[aircraft.Id.ToString()].Longitude = aircraft.Longitude;
+                                                        MPTraffic[aircraft.Id.ToString()].Heading = aircraft.Heading;
+                                                        MPTraffic[aircraft.Id.ToString()].AirSpeedIndicated = aircraft.AirSpeedIndicated;
+                                                    }
                                                 }
-                                                else
-                                                {
-                                                    MPTraffic[aircraft.Id + 1000000].Altitude = aircraft.Altitude;
-                                                    MPTraffic[aircraft.Id + 1000000].Latitude = aircraft.Latitude;
-                                                    MPTraffic[aircraft.Id + 1000000].Longitude = aircraft.Longitude;
-                                                    MPTraffic[aircraft.Id + 1000000].Heading = aircraft.Heading;
-                                                    MPTraffic[aircraft.Id + 1000000].AirSpeedIndicated = aircraft.AirSpeedIndicated;
-                                                }
+                                                currentTraffic.Add(aircraft.Id.ToString(), aircraft);
                                             }
-                                            currentTraffic.Add(aircraft.Id + 1000000, aircraft);
                                         }
                                     }
                                 }
@@ -582,87 +590,48 @@ namespace FIPToolKit.Models
                     //FlightShare MP Traffic
                     if ((DateTime.Now - lastFlightShareQuery).TotalMilliseconds >= FLIGHTSHARE_REFRESH_RATE)
                     {
-                        if (!String.IsNullOrEmpty(FlightShareId) && IsStarted && !Stop)
+                        if (!string.IsNullOrEmpty(FlightShareId) && IsStarted && !Stop)
                         {
-                            RestClient restClient = new RestClient("https://fswc.azurewebsites.net/d/")
+                            RestClient restClient = new RestClient("https://www.flightshareapp.com");
+                            IRestRequest request = new RestRequest("/PilotData")
                             {
-                                UserAgent = "CS8E4MobmYE",
-                                Timeout = 10000
+                                Timeout = 10000,
+                                Method = Method.GET
                             };
-                            if (!FlightShareIsLoggedIn)
+                            Dictionary<string, FlightShareAircraft> currentTraffic = new Dictionary<string, FlightShareAircraft>();
+                            IRestResponse response = restClient.Execute(request);
+                            string json = response.Content;
+                            if (response.IsSuccessful && json != "Error")
                             {
-                                string filename = Process.GetCurrentProcess().MainModule.FileName;
-                                DateTime timeStamp = System.IO.File.GetLastWriteTime(filename);
-                                string version = timeStamp.ToString("yyyy.MM.dd.HH.mm");
-                                IRestRequest restRequest = new RestRequest("PilotLogin/{clientId}/{pilotName}/{version}")
-                                    .AddUrlSegment("clientId", FlightShareId)
-                                    .AddUrlSegment("pilotName", FlightSharePilotName)
-                                    .AddUrlSegment("version", version);  //2021.06.30.14.06
-                                PilotLoginResult result = JsonConvert.DeserializeObject<PilotLoginResult>(restClient.Execute(restRequest).Content);
-                                if (result != null)
+                                List<FlightShareAircraft> traffic = JsonConvert.DeserializeObject<List<FlightShareAircraft>>(json);
+                                if (traffic != null)
                                 {
-                                    FlightShareIsLoggedIn = result.Message.Equals("Success");
-                                    FlightSharePilotId = result.PilotID;
-                                }
-                            }
-                            if (FlightShareIsLoggedIn)
-                            {
-                                Dictionary<uint, FlightShareAircraft> currentTraffic = new Dictionary<uint, FlightShareAircraft>();
-                                IRestRequest restRequest = new RestRequest("InsertPilotLocationWithSelect/{clientID}/{latitude}/{longitude}/{altitude}/{speed}/{magHeading}/{trueHeading}/{engineType}", DataFormat.Json)
-                                    .AddUrlSegment("clientID", FlightShareId)
-                                    .AddUrlSegment("latitude", Latitude)
-                                    .AddUrlSegment("longitude", Longitude)
-                                    .AddUrlSegment("altitude", (int)AltitudeFeet)
-                                    .AddUrlSegment("speed", OnGround ? (int)GroundSpeedKnots : (int)AirSpeedIndicatedKnots)
-                                    .AddUrlSegment("magHeading", (int)HeadingMagneticDegrees)
-                                    .AddUrlSegment("trueHeading", (int)HeadingTrueDegrees)
-                                    .AddUrlSegment("engineType", AircraftModel);
-                                string json = restClient.Execute(restRequest).Content;
-                                if (json != "Error")
-                                {
-                                    List<FlightShareAircraft> traffic = JsonConvert.DeserializeObject<List<FlightShareAircraft>>(json);
-                                    if (traffic != null)
+                                    foreach (FlightShareAircraft flightShareAircraft in traffic)
                                     {
-                                        foreach (FlightShareAircraft flightShareAircraft in traffic)
+                                        if (Stop)
                                         {
-                                            if (Stop)
-                                            {
-                                                break;
-                                            }
-                                            if (flightShareAircraft.Id != FlightSharePilotId)
-                                            {
-                                                AircraftData data = FlightSim.Tools.LoadAircraft(flightShareAircraft.AircraftModel);
-                                                if(data != null)
-                                                {
-                                                    flightShareAircraft.IsHeavy = data.IsHeavy;
-                                                    flightShareAircraft.EngineType = data.EngineType;
-                                                    flightShareAircraft.AircraftType = data.Type;
-                                                    flightShareAircraft.AircraftName = data.Name;
-                                                }
-                                                if (!MPTraffic.ContainsKey(flightShareAircraft.Id))
-                                                {
-                                                    MPTraffic.Add(flightShareAircraft.Id, flightShareAircraft);
-                                                }
-                                                else
-                                                {
-                                                    MPTraffic[flightShareAircraft.Id].IsHeavy = flightShareAircraft.IsHeavy;
-                                                    MPTraffic[flightShareAircraft.Id].EngineType = flightShareAircraft.EngineType;
-                                                    MPTraffic[flightShareAircraft.Id].AircraftType = flightShareAircraft.AircraftType;
-                                                    MPTraffic[flightShareAircraft.Id].AircraftName = flightShareAircraft.AircraftName;
-                                                    MPTraffic[flightShareAircraft.Id].AircraftModel = flightShareAircraft.AircraftModel;
-                                                    MPTraffic[flightShareAircraft.Id].Altitude = flightShareAircraft.Altitude;
-                                                    MPTraffic[flightShareAircraft.Id].Latitude = flightShareAircraft.Latitude;
-                                                    MPTraffic[flightShareAircraft.Id].Longitude = flightShareAircraft.Longitude;
-                                                    MPTraffic[flightShareAircraft.Id].Heading = flightShareAircraft.Heading;
-                                                    MPTraffic[flightShareAircraft.Id].AirSpeedIndicated = flightShareAircraft.AirSpeedIndicated;
-                                                }
-                                            }
-                                            currentTraffic.Add(flightShareAircraft.Id, flightShareAircraft);
+                                            break;
                                         }
-                                        if (!Stop)
+                                        if (flightShareAircraft.Callsign != FlightSharePilotName)
                                         {
-                                            CleanUpFlightShareTraffic(currentTraffic);
+                                            flightShareAircraft.IsHeavy = true;
+                                            flightShareAircraft.EngineType = EngineType.Jet;
+                                            if (!MPTraffic.ContainsKey(flightShareAircraft.Callsign))
+                                            {
+                                                MPTraffic.Add(flightShareAircraft.Callsign, flightShareAircraft);
+                                            }
+                                            else
+                                            {
+                                                MPTraffic[flightShareAircraft.Callsign].Latitude = flightShareAircraft.Latitude;
+                                                MPTraffic[flightShareAircraft.Callsign].Longitude = flightShareAircraft.Longitude;
+                                                MPTraffic[flightShareAircraft.Callsign].Heading = flightShareAircraft.Heading;
+                                            }
                                         }
+                                        currentTraffic.Add(flightShareAircraft.Callsign, flightShareAircraft);
+                                    }
+                                    if (!Stop)
+                                    {
+                                        CleanUpFlightShareTraffic(currentTraffic);
                                     }
                                 }
                             }
@@ -809,12 +778,12 @@ namespace FIPToolKit.Models
             }
         }
 
-        private void CleanUpVatSimTraffic(Dictionary<uint, VatSimAircraft> currentAircraft)
+        private void CleanUpVatSimTraffic(Dictionary<string, VatSimAircraft> currentAircraft)
         {
-            List<Aircraft> aircraftToRemove = MPTraffic.Values.Where(mp => mp.GetType() == typeof(VatSimAircraft) && !currentAircraft.ContainsKey(mp.Id + 1000000)).ToList();
+            List<Aircraft> aircraftToRemove = MPTraffic.Values.Where(mp => mp.GetType() == typeof(VatSimAircraft) && !currentAircraft.ContainsKey(mp.Id.ToString())).ToList();
             foreach(Aircraft aircraft in aircraftToRemove)
             {
-                MPTraffic.Remove(aircraft.Id + 1000000);
+                MPTraffic.Remove(aircraft.Id.ToString());
             }
             //for (int i = MPTraffic.Count - 1; i >= 0 ; i--)
             //{
@@ -831,12 +800,12 @@ namespace FIPToolKit.Models
             //}
         }
 
-        private void CleanUpFlightShareTraffic(Dictionary<uint, FlightShareAircraft> currentAircraft)
+        private void CleanUpFlightShareTraffic(Dictionary<string, FlightShareAircraft> currentAircraft)
         {
-            List<Aircraft> aircraftToRemove = MPTraffic.Values.Where(mp => mp.GetType() == typeof(FlightShareAircraft) && !currentAircraft.ContainsKey(mp.Id)).ToList();
+            List<Aircraft> aircraftToRemove = MPTraffic.Values.Where(mp => mp.GetType() == typeof(FlightShareAircraft) && !currentAircraft.ContainsKey(mp.Callsign)).ToList();
             foreach (Aircraft aircraft in aircraftToRemove)
             {
-                MPTraffic.Remove(aircraft.Id);
+                MPTraffic.Remove(aircraft.Callsign);
             }
             //for (int i = MPTraffic.Count - 1; i >= 0; i--)
             //{
@@ -1066,7 +1035,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.Nav1RelativeBearing = 0;
                         airplaneMarker.Nav2RelativeBearing = 0;
                         airplaneMarker.AdfRelativeBearing = 0;
-                        airplaneMarker.KollsmanInchesMercury = 0;
+                        airplaneMarker.KollsmanInchesMercury = 29.92d;
                         airplaneMarker.GPSHeading = 0;
                         airplaneMarker.GPSIsActive = false;
                         airplaneMarker.GPSTrackDistance = 0;
@@ -1169,7 +1138,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.Nav1RelativeBearing = 0;
                         airplaneMarker.Nav2RelativeBearing = 0;
                         airplaneMarker.AdfRelativeBearing = 0;
-                        airplaneMarker.KollsmanInchesMercury = 0;
+                        airplaneMarker.KollsmanInchesMercury = 29.92d;
                         airplaneMarker.GPSHeading = 0;
                         airplaneMarker.GPSIsActive = false;
                         airplaneMarker.GPSTrackDistance = 0;

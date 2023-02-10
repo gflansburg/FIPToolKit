@@ -28,6 +28,8 @@ namespace FIPDisplayProfiler
             SpotifyController.Font = _fontHolderTitle;
             SpotifyController.ArtistFont = _fontHolderArtist;
             SpotifyController.FontColor = btnFontColor.BackColor;
+            SpotifyController.ClientId = tbClientId.Text;
+            SpotifyController.SecretId = tbSecretId.Text;
             SpotifyController.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
@@ -64,6 +66,8 @@ namespace FIPDisplayProfiler
             tbTitleFont.Text = SpotifyController.Font.FontFamily.Name;
             tbArtistFont.Font = new Font(SpotifyController.ArtistFont.FontFamily, tbArtistFont.Font.Size, SpotifyController.ArtistFont.Style, SpotifyController.ArtistFont.Unit, SpotifyController.ArtistFont.GdiCharSet);
             tbArtistFont.Text = SpotifyController.ArtistFont.FontFamily.Name;
+            tbClientId.Text = SpotifyController.ClientId;
+            tbSecretId.Text = SpotifyController.SecretId;
             btnFontColor.BackColor = SpotifyController.FontColor;
         }
 
@@ -76,6 +80,11 @@ namespace FIPDisplayProfiler
                 tbArtistFont.Font = new Font(fontDialog1.Font.FontFamily, tbArtistFont.Font.Size, fontDialog1.Font.Style, fontDialog1.Font.Unit, fontDialog1.Font.GdiCharSet);
                 tbArtistFont.Text = fontDialog1.Font.Name;
             }
+        }
+
+        private void lnkSpotifyDeveloper_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            SpotifyAPI.Web.Auth.AuthUtil.OpenBrowser("https://developer.spotify.com/dashboard/");
         }
     }
 }

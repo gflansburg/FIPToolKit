@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace SpotifyAPI.Web.Auth
 {
-    internal static class AuthUtil
+    public static class AuthUtil
     {
-        internal static string GetSystemDefaultBrowser()
+        private static string GetSystemDefaultBrowser()
         {
             string name = string.Empty;
 

@@ -41,13 +41,18 @@ namespace FIPDisplayProfiler
             this.btnArtistFont = new System.Windows.Forms.Button();
             this.tbArtistFont = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.tbClientId = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.tbSecretId = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.lnkSpotifyDeveloper = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(313, 69);
+            this.btnCancel.Location = new System.Drawing.Point(313, 151);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 6;
@@ -57,7 +62,7 @@ namespace FIPDisplayProfiler
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(394, 69);
+            this.btnOK.Location = new System.Drawing.Point(394, 151);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -148,13 +153,67 @@ namespace FIPDisplayProfiler
             this.label1.TabIndex = 51;
             this.label1.Text = "Artist Font:";
             // 
+            // tbClientId
+            // 
+            this.tbClientId.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbClientId.Location = new System.Drawing.Point(68, 96);
+            this.tbClientId.Name = "tbClientId";
+            this.tbClientId.Size = new System.Drawing.Size(401, 20);
+            this.tbClientId.TabIndex = 52;
+            this.tbClientId.TabStop = false;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 99);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(50, 13);
+            this.label2.TabIndex = 53;
+            this.label2.Text = "Client ID:";
+            // 
+            // tbSecretId
+            // 
+            this.tbSecretId.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbSecretId.Location = new System.Drawing.Point(68, 122);
+            this.tbSecretId.Name = "tbSecretId";
+            this.tbSecretId.Size = new System.Drawing.Size(401, 20);
+            this.tbSecretId.TabIndex = 54;
+            this.tbSecretId.TabStop = false;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(7, 125);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(55, 13);
+            this.label3.TabIndex = 55;
+            this.label3.Text = "Secret ID:";
+            // 
+            // lnkSpotifyDeveloper
+            // 
+            this.lnkSpotifyDeveloper.AutoSize = true;
+            this.lnkSpotifyDeveloper.Location = new System.Drawing.Point(186, 156);
+            this.lnkSpotifyDeveloper.Name = "lnkSpotifyDeveloper";
+            this.lnkSpotifyDeveloper.Size = new System.Drawing.Size(121, 13);
+            this.lnkSpotifyDeveloper.TabIndex = 56;
+            this.lnkSpotifyDeveloper.TabStop = true;
+            this.lnkSpotifyDeveloper.Text = "Spotify Developer Portal";
+            this.lnkSpotifyDeveloper.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkSpotifyDeveloper_LinkClicked);
+            // 
             // SpotifyControllerForm
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(482, 101);
+            this.ClientSize = new System.Drawing.Size(482, 183);
+            this.Controls.Add(this.lnkSpotifyDeveloper);
+            this.Controls.Add(this.tbSecretId);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.tbClientId);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.btnArtistFont);
             this.Controls.Add(this.tbArtistFont);
             this.Controls.Add(this.label1);
@@ -191,5 +250,10 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.Button btnArtistFont;
         private System.Windows.Forms.TextBox tbArtistFont;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox tbClientId;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox tbSecretId;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.LinkLabel lnkSpotifyDeveloper;
     }
 }

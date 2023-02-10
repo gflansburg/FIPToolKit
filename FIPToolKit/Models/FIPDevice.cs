@@ -15,6 +15,15 @@ using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
+    public enum DeviceType
+    {
+        Unknown,
+        Fip,
+        X52Pro,
+        X56RhinoStick,
+        X56RhinoThrottle
+    }
+
     public class FIPDeviceEventArgs : EventArgs
     {
         public bool IsActive { get; private set; }
@@ -35,12 +44,24 @@ namespace FIPToolKit.Models
     [Serializable]
     public class FIPDevice : IDisposable
     {
-        private DeviceClient _deviceClient;
-        
         [XmlIgnore]
         [JsonIgnore]
-        public DeviceClient DeviceClient 
-        { 
+        public bool IsDisposed { get; private set; }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public FIPEngine FIPEngine { get; private set; }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool IsDisposing { get; private set; }
+
+        private DeviceClient _deviceClient;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public DeviceClient DeviceClient
+        {
             get
             {
                 return _deviceClient;
@@ -48,7 +69,7 @@ namespace FIPToolKit.Models
             private set
             {
                 _deviceClient = value;
-                if(_deviceClient != null)
+                if (_deviceClient != null && DeviceType == DeviceType.Fip)
                 {
                     SerialNumber = DeviceClient.GetSerialNumber();
                     DeviceClient.Page += DeviceClient_Page;
@@ -58,13 +79,17 @@ namespace FIPToolKit.Models
                         CurrentPage.UpdatePage();
                     }
                 }
+                else
+                {
+                    SerialNumber = DeviceType.ToString();
+                }
             }
         }
-        
+
         [XmlIgnore]
         [JsonIgnore]
         public IntPtr DeviceId { get; private set; }
-        
+
         public string SerialNumber { get; set; }
 
 
@@ -145,7 +170,7 @@ namespace FIPToolKit.Models
         [XmlIgnore]
         [JsonIgnore]
         public uint ActivePage { get; set; }
-        
+
         [XmlIgnore]
         [JsonIgnore]
         public FIPPage CurrentPage
@@ -187,108 +212,154 @@ namespace FIPToolKit.Models
             _pages = new List<FIPPage>();
         }
 
-        public FIPDevice(DeviceClient deviceClient, IntPtr deviceId)
+        public FIPDevice(FIPEngine engine, DeviceClient deviceClient, IntPtr deviceId)
         {
             _pages = new List<FIPPage>();
+            FIPEngine = engine;
             DeviceId = deviceId;
             DeviceClient = deviceClient;
         }
 
+        [XmlIgnore]
+        [JsonIgnore]
+        public DeviceType DeviceType
+        {
+            get
+            {
+                if (FIPEngine != null)
+                {
+                    Guid deviceType = DeviceClient.GetDeviceType();
+                    if (deviceType == DeviceTypes.Fip)
+                    {
+                        return DeviceType.Fip;
+                    }
+                    else if (deviceType == DeviceTypes.X52Pro)
+                    {
+                        return DeviceType.X52Pro;
+                    }
+                    else if (deviceType == DeviceTypes.X56RhinoStick)
+                    {
+                        return DeviceType.X56RhinoStick;
+                    }
+                    else if (deviceType == DeviceTypes.X56RhinoThrottle)
+                    {
+                        return DeviceType.X56RhinoThrottle;
+                    }
+                }
+                return DeviceType.Unknown;
+            }
+        }
+
         public void ReloadPages(FIPPage activePage = null)
         {
-            for (uint i = 0; i < this.PageCount; i++)
+            if (DeviceType == DeviceType.Fip)
             {
-                // Temporarily remove from the FIP device
-                try
+                for (uint i = 0; i < this.PageCount; i++)
                 {
-                    DeviceClient.RemovePage(_pages[(int)i].Page);
+                    // Temporarily remove from the FIP device
+                    try
+                    {
+                        DeviceClient.RemovePage(_pages[(int)i].Page);
+                    }
+                    catch
+                    {
+                    }
+                    // Reorder the page index
+                    _pages[(int)i].Page = i + 1;
+                    IsDirty = true;
                 }
-                catch
+                foreach (FIPPage page in this.Pages)
                 {
-                }
-                // Reorder the page index
-                _pages[(int)i].Page = i + 1;
-                IsDirty = true;
-            }
-            foreach(FIPPage page in this.Pages)
-            {
-                // Readd the page to the FIP device
-                if (activePage != null)
-                {
-                    // Set a new active page. Not sure what happens if we add all pages without setting one as active.
-                    DeviceClient.AddPage(page.Page, activePage.Page == page.Page ? PageFlags.SetAsActive : PageFlags.None);
-                    page.IsAddedToDevice = true;
-                    CurrentPage = activePage;
-                }
-                else
-                {
-                    // Restore the currently active page
-                    DeviceClient.AddPage(page.Page, CurrentPage != null && CurrentPage.Page == page.Page ? PageFlags.SetAsActive : PageFlags.None);
-                    page.IsAddedToDevice = true;
+                    // Readd the page to the FIP device
+                    if (activePage != null)
+                    {
+                        // Set a new active page. Not sure what happens if we add all pages without setting one as active.
+                        DeviceClient.AddPage(page.Page, activePage.Page == page.Page ? PageFlags.SetAsActive : PageFlags.None);
+                        page.IsAddedToDevice = true;
+                        CurrentPage = activePage;
+                    }
+                    else
+                    {
+                        // Restore the currently active page
+                        DeviceClient.AddPage(page.Page, CurrentPage != null && CurrentPage.Page == page.Page ? PageFlags.SetAsActive : PageFlags.None);
+                        page.IsAddedToDevice = true;
+                    }
                 }
             }
         }
 
         public void AddPage(FIPPage page, bool isActive = false, bool sendNotifcation = true)
         {
-            if (page != null)
+            if (DeviceType == DeviceType.Fip)
             {
-                _pages.Add(page);
-                page.Page = (uint)PageCount;
-                if (isActive)
+                if (page != null)
                 {
-                    CurrentPage = page;
-                }
-                DeviceClient.AddPage(page.Page, isActive ? PageFlags.SetAsActive : PageFlags.None);
-                page.IsAddedToDevice = true;
-                page.Device = this;
-                IsDirty = true;
-                if (sendNotifcation)
-                {
-                    OnPageAdded?.Invoke(this, new FIPDeviceEventArgs(page, isActive));
+                    _pages.Add(page);
+                    page.Page = (uint)PageCount;
                     if (isActive)
                     {
-                        // Fire the OnPageChanged event manually since when PageFlags is SetAsActive the DeviceClient will not fire the ChangePage event.
-                        OnPageChanged?.Invoke(this, new FIPDeviceEventArgs(page, true));
+                        CurrentPage = page;
                     }
-                }
-                if (isActive)
-                {
-                    page.StartTimer();
+                    DeviceClient.AddPage(page.Page, isActive ? PageFlags.SetAsActive : PageFlags.None);
+                    page.IsAddedToDevice = true;
+                    page.Device = this;
+                    IsDirty = true;
+                    if (sendNotifcation)
+                    {
+                        OnPageAdded?.Invoke(this, new FIPDeviceEventArgs(page, isActive));
+                        if (isActive)
+                        {
+                            // Fire the OnPageChanged event manually since when PageFlags is SetAsActive the DeviceClient will not fire the ChangePage event.
+                            OnPageChanged?.Invoke(this, new FIPDeviceEventArgs(page, true));
+                        }
+                    }
+                    if (isActive)
+                    {
+                        page.StartTimer();
+                    }
                 }
             }
         }
 
         public void RemovePage(FIPPage page, bool sendNotifcation = true)
         {
-            if (page != null)
+            if (DeviceType == DeviceType.Fip)
             {
-                DeviceClient.RemovePage(page.Page);
-                _pages.Remove(page);
-                page.StopTimer();
-                IsDirty = true;
-                if (sendNotifcation)
+                if (page != null)
                 {
-                    OnPageRemoved?.Invoke(this, new FIPDeviceEventArgs(page));
+                    DeviceClient.RemovePage(page.Page);
+                    _pages.Remove(page);
+                    page.StopTimer();
+                    IsDirty = true;
+                    if (sendNotifcation)
+                    {
+                        OnPageRemoved?.Invoke(this, new FIPDeviceEventArgs(page));
+                    }
                 }
             }
         }
 
         public void AddSoftButtonHandler(SoftButtonsEventHandler handler)
         {
-            if (!SoftButtonHandlerAttached)
+            if (DeviceType == DeviceType.Fip)
             {
-                DeviceClient.SoftButtons += handler;
-                SoftButtonHandlerAttached = true;
+                if (!SoftButtonHandlerAttached)
+                {
+                    DeviceClient.SoftButtons += handler;
+                    SoftButtonHandlerAttached = true;
+                }
             }
         }
 
         public void RemoveSoftButtonHandler(SoftButtonsEventHandler handler)
         {
-            if (SoftButtonHandlerAttached)
+            if (DeviceType == DeviceType.Fip)
             {
-                DeviceClient.SoftButtons -= handler;
-                SoftButtonHandlerAttached = false;
+                if (SoftButtonHandlerAttached)
+                {
+                    DeviceClient.SoftButtons -= handler;
+                    SoftButtonHandlerAttached = false;
+                }
             }
         }
 
@@ -322,7 +393,7 @@ namespace FIPToolKit.Models
 
         private void DeviceClient_SoftButtons(object sender, SoftButtonsEventArgs e)
         {
-            if(CurrentPage != null)
+            if (CurrentPage != null)
             {
                 CurrentPage.ExecuteSoftButton(e.Buttons);
             }
@@ -351,19 +422,25 @@ namespace FIPToolKit.Models
 
         public void SetLEDs()
         {
-            if (CurrentPage != null)
+            if (DeviceType == DeviceType.Fip)
             {
-                CurrentPage.SetLEDs();
+                if (CurrentPage != null)
+                {
+                    CurrentPage.SetLEDs();
+                }
             }
         }
 
         public FIPPage FindPage(Guid id)
         {
-            foreach (FIPPage fipPage in _pages)
+            if (DeviceType == DeviceType.Fip)
             {
-                if (fipPage.Id == id)
+                foreach (FIPPage fipPage in _pages)
                 {
-                    return fipPage;
+                    if (fipPage.Id == id)
+                    {
+                        return fipPage;
+                    }
                 }
             }
             return null;
@@ -371,11 +448,14 @@ namespace FIPToolKit.Models
 
         public FIPPage FindPage(uint page)
         {
-            foreach(FIPPage fipPage in _pages)
+            if (DeviceType == DeviceType.Fip)
             {
-                if(fipPage.Page == page)
+                foreach (FIPPage fipPage in _pages)
                 {
-                    return fipPage;
+                    if (fipPage.Page == page)
+                    {
+                        return fipPage;
+                    }
                 }
             }
             return null;
@@ -383,36 +463,46 @@ namespace FIPToolKit.Models
 
         public void ClearPages(bool dispose = true)
         {
-            foreach (FIPPage page in _pages)
+            if (DeviceType == DeviceType.Fip)
             {
-                try
+                foreach (FIPPage page in _pages)
                 {
-                    if (page.IsAddedToDevice && DeviceClient != null)
+                    try
                     {
-                        DeviceClient.RemovePage(page.Page);
+                        if (page.IsAddedToDevice && DeviceClient != null)
+                        {
+                            DeviceClient.RemovePage(page.Page);
+                        }
+                        OnPageRemoved?.Invoke(this, new FIPDeviceEventArgs(page));
+                        if (dispose)
+                        {
+                            page.Dispose();
+                        }
                     }
-                    OnPageRemoved?.Invoke(this, new FIPDeviceEventArgs(page));
+                    catch
+                    {
+                    }
                     if (dispose)
                     {
-                        page.Dispose();
+                        page.StopTimer();
                     }
                 }
-                catch
-                {
-                }
-                if (dispose)
-                {
-                    page.StopTimer();
-                }
+                _pages.Clear();
+                ActivePage = 0;
+                IsDirty = true;
             }
-            _pages.Clear();
-            ActivePage = 0;
-            IsDirty = true;
         }
 
         public void Dispose()
         {
-            ClearPages();
+            if (!IsDisposing && !IsDisposed)
+            {
+                IsDisposing = true;
+                ClearPages();
+                IsDisposed = true;
+                IsDisposing = false;
+            }
         }
     }
 }
+

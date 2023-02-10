@@ -16,36 +16,11 @@ namespace FIPToolKit.FlightSim
         [JsonProperty(PropertyName = "longitude")]
         public override double Longitude { get; set; }
 
-        [JsonProperty(PropertyName = "altitude")]
-        public override int Altitude { get; set; }
-
-        [JsonProperty(PropertyName = "pilotID")]
-        public override uint Id { get; set; }
-
         [JsonProperty(PropertyName = "trueHeading")]
         public override float Heading { get; set; }
 
-        [JsonProperty(PropertyName = "speed")]
-        public override int AirSpeedIndicated { get; set; }
-
         [JsonProperty(PropertyName = "pilotName")]
         public override string Callsign { get; set; }
-
-        [JsonProperty(PropertyName = "engineType")]
-        public override string AircraftModel { get; set; }
-
-        public bool IsFollowingMe { get; set; }
-        public DateTime UpdateDate { get; set; }
-        public double POILatitude { get; set; }
-        public double POILongitude { get; set; }
-        public double WaypointLatitude { get; set; }
-        public double WaypointLongitude { get; set; }
-        public int MagHeading { get; set; }
-        public string FollowPilotName { get; set; }
-        public string PilotRank { get; set; }
-        public string AirSpace { get; set; }
-        public double DistanceFlownToday { get; set; }
-        public int DistanceFlownTodayRank { get; set; }
     }
 
     public class VatSimAircraft : Aircraft

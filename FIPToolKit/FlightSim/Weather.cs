@@ -15,6 +15,7 @@ namespace FIPToolKit.FlightSim
 
         public Weather()
         {
+            KollsmanHG = 29.92d;
         }
 
         public Weather(SimConnect.FLIGHT_DATA data)

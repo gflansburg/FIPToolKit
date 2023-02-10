@@ -63,16 +63,24 @@ namespace FIPToolKit.Models
     [XmlInclude(typeof(FIPScreenMirror))]
     public abstract class FIPPage : IDisposable
     {
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool IsDisposed { get; private set; }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool IsDisposing { get; private set; }
+
         private Guid _id;
         public Guid Id
-        { 
+        {
             get
             {
                 return _id;
             }
             set
             {
-                if(_id != value)
+                if (_id != value)
                 {
                     _id = value;
                     IsDirty = true;
@@ -96,7 +104,7 @@ namespace FIPToolKit.Models
 
         private FontEx _font;
         public virtual FontEx Font
-        { 
+        {
             get
             {
                 return _font;
@@ -120,7 +128,7 @@ namespace FIPToolKit.Models
             }
             set
             {
-                if(_fontColor.Color != value.Color)
+                if (_fontColor.Color != value.Color)
                 {
                     _fontColor = value;
                     IsDirty = true;
@@ -130,14 +138,14 @@ namespace FIPToolKit.Models
 
         private uint _page;
         public uint Page
-        { 
+        {
             get
             {
                 return _page;
             }
             set
             {
-                if(_page != value)
+                if (_page != value)
                 {
                     _page = value;
                     IsDirty = true;
@@ -195,10 +203,10 @@ namespace FIPToolKit.Models
         [XmlIgnore]
         [JsonIgnore]
         public IEnumerable<FIPButton> Buttons
-        { 
+        {
             get
             {
-                foreach(FIPButton button in _buttons)
+                foreach (FIPButton button in _buttons)
                 {
                     yield return button;
                 }
@@ -206,7 +214,7 @@ namespace FIPToolKit.Models
             set
             {
                 _buttons.Clear();
-                foreach(FIPButton button in value)
+                foreach (FIPButton button in value)
                 {
                     AddButton(button);
                 }
@@ -225,11 +233,11 @@ namespace FIPToolKit.Models
         }
 
         private FIPDevice _device;
-        
+
         [XmlIgnore]
         [JsonIgnore]
         public FIPDevice Device  // Reference back owner. Set from FIPDevice.AddPage. Do not dispose.
-        { 
+        {
             get
             {
                 return _device;
@@ -237,7 +245,7 @@ namespace FIPToolKit.Models
             set
             {
                 _device = value;
-                if(_device != null)
+                if (_device != null)
                 {
                     _image = _device.GetDefaultPageImage;
                     UpdatePage();
@@ -353,7 +361,7 @@ namespace FIPToolKit.Models
             }
             else
             {
-                using(Graphics g = Graphics.FromImage(_image))
+                using (Graphics g = Graphics.FromImage(_image))
                 {
                     g.DrawImage(image, new Rectangle(0, 0, _image.Width, _image.Height), 0, 0, _image.Width, _image.Height, GraphicsUnit.Pixel);
                 }
@@ -442,7 +450,7 @@ namespace FIPToolKit.Models
             UpdatePage();
             SetLEDs();
             button.OnButtonChange += Button_OnButtonChange;
-            
+
         }
 
         private void Button_OnButtonChange(object sender, FIPButtonEventArgs e)
@@ -542,7 +550,7 @@ namespace FIPToolKit.Models
 
         public static bool IsKnobSoftButton(SoftButtons softButton)
         {
-            switch(softButton)
+            switch (softButton)
             {
                 case SoftButtons.Up:
                 case SoftButtons.Down:
@@ -576,7 +584,7 @@ namespace FIPToolKit.Models
             float size = 0f;
             foreach (FIPButton button in _buttons)
             {
-                switch(button.SoftButton)
+                switch (button.SoftButton)
                 {
                     case SoftButtons.Button1:
                     case SoftButtons.Button2:
@@ -605,12 +613,18 @@ namespace FIPToolKit.Models
 
         public virtual void Dispose()
         {
-            StopTimer();
-            ClearButtons(false);
-            if(_image != null)
+            if (!IsDisposing && !IsDisposed)
             {
-                _image.Dispose();
-                _image = null;
+                IsDisposing = true;
+                StopTimer();
+                ClearButtons(false);
+                if (_image != null)
+                {
+                    _image.Dispose();
+                    _image = null;
+                }
+                IsDisposed = true;
+                IsDisposing = false;
             }
         }
     }

@@ -339,22 +339,21 @@ namespace FIPDisplayProfiler
                         break;
                     case PageType.ScreenMirror:
                         {
-                            foreach (FIPPage fipPage in Device.Pages)
-                            {
-                                if (fipPage.GetType() == typeof(FIPScreenMirror))
-                                {
-                                    MessageBox.Show(this, "You can only have one Screen Mirror per device.", "Screen Mirror", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                                    return;
-                                }
-                            }
                             FIPPage page = new FIPScreenMirror();
-                            DefaultForm form = new DefaultForm()
+                            ScreenMirrorForm form = new ScreenMirrorForm()
                             {
-                                Text = "Screen Mirror",
-                                Page = page
+                                Page = page as FIPScreenMirror
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
+                                foreach (FIPPage fipPage in Device.Pages)
+                                {
+                                    if (fipPage.GetType() == typeof(FIPScreenMirror) && ((FIPScreenMirror)fipPage).ScreenIndex == form.Page.ScreenIndex)
+                                    {
+                                        MessageBox.Show(this, "You can only have one Screen Mirror per screen per device.", "Screen Mirror", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                        return;
+                                    }
+                                }
                                 Device.AddPage(form.Page, true);
                             }
                         }
@@ -411,7 +410,7 @@ namespace FIPDisplayProfiler
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                ((FIPFSUIPCAirspeed)form.AirspeedGauge).AutoSelectAircraft = form.AutoSelectAircraft;
+                                ((FIPSimConnectAirspeed)form.AirspeedGauge).AutoSelectAircraft = form.AutoSelectAircraft;
                                 Device.AddPage(form.AirspeedGauge, true);
                             }
                         }
@@ -614,13 +613,24 @@ namespace FIPDisplayProfiler
                     }
                     else if(typeof(FIPScreenMirror).IsAssignableFrom(page.GetType()))
                     {
-                        DefaultForm dlg = new DefaultForm()
+                        ScreenMirrorForm dlg = new ScreenMirrorForm()
                         {
-                            Text = "Screen Mirror",
-                            Page = page
+                            Page = page as FIPScreenMirror
                         };
                         // No "Name" field to change so no need to force a reload
-                        dlg.ShowDialog(this);
+                        int screenIndex = dlg.Page.ScreenIndex;
+                        if (dlg.ShowDialog(this) == DialogResult.OK)
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (fipPage.GetType() == typeof(FIPScreenMirror) && fipPage != page  && ((FIPScreenMirror)fipPage).ScreenIndex == dlg.Page.ScreenIndex)
+                                {
+                                    dlg.Page.ScreenIndex = screenIndex;
+                                    MessageBox.Show(this, "You can only have one Screen Mirror per screen per device.", "Screen Mirror", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                        }
                     }
                     else if (typeof(FIPFSUIPCAltimeter).IsAssignableFrom(page.GetType()))
                     {

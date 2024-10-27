@@ -447,9 +447,9 @@ namespace FIPToolKit.FlightSim
             for (int i = 0; i < data.dwArraySize; i++)
             {
                 SIMCONNECT_DATA_FACILITY_AIRPORT airport = (SIMCONNECT_DATA_FACILITY_AIRPORT)data.rgData[i];
-                if (!airports.ContainsKey(airport.Icao))
+                if (!airports.ContainsKey(airport.Ident))
                 {
-                    airports.Add(airport.Icao, new Airport(airport));
+                    airports.Add(airport.Ident, new Airport(airport));
                 }
             }
             if (data.dwEntryNumber >= data.dwOutOf - 1)

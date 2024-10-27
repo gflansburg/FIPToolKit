@@ -377,7 +377,7 @@ namespace FIPToolKit.Models
                 {
                     TimeSpan t = TimeSpan.FromSeconds(SpotifyController.RetryAfter);
                     string time = string.Format("{0:D2}h:{1:D2}m:{2:D2}s", t.Hours, t.Minutes, t.Seconds);
-                    ErrorMessage += String.Format("\nRetrying in {0}", time);
+                    ErrorMessage += string.Format("\nRetrying in {0}", time);
                 }
                 Bitmap bmp = Drawing.ImageHelper.GetErrorImage(ErrorMessage);
                 SendImage(bmp);

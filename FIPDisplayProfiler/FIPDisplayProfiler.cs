@@ -294,7 +294,7 @@ namespace FIPDisplayProfiler
                                     }
                                 }
                             }
-                            foreach (FIPDevice device in deviceConfigs.Devices)
+                            foreach (FIPDevice device in deviceConfigs._devices)
                             {
                                 if (serialNumber == null || device.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
                                 {

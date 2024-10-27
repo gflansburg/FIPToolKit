@@ -7,7 +7,7 @@ namespace SpotifyAPI.Web.Auth
 {
     public static class AuthUtil
     {
-        private static string GetSystemDefaultBrowser()
+        internal static string GetSystemDefaultBrowser()
         {
             string name = string.Empty;
 
@@ -15,22 +15,28 @@ namespace SpotifyAPI.Web.Auth
             {
                 using (RegistryKey regDefault = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.htm\\UserChoice", false))
                 {
-                    var stringDefault = regDefault.GetValue("ProgId");
-                    using (RegistryKey regKey = Registry.ClassesRoot.OpenSubKey(string.Format("{0}\\shell\\open\\command", stringDefault), false))
+                    if (regDefault != null)
                     {
-                        name = regKey.GetValue(string.Empty).ToString();
-                        if (!string.IsNullOrEmpty(name))
+                        var stringDefault = regDefault.GetValue("ProgId");
+                        using (RegistryKey regKey = Registry.ClassesRoot.OpenSubKey(string.Format("{0}\\shell\\open\\command", stringDefault), false))
                         {
-                            name = name.Replace("\"", string.Empty);
-                            int indexExe = name.LastIndexOf(".exe", StringComparison.OrdinalIgnoreCase);
-                            if (!name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && indexExe != -1)
+                            if (regKey != null)
                             {
-                                name = name.Substring(0, indexExe + 4);
+                                name = regKey.GetValue(string.Empty).ToString();
+                                if (!string.IsNullOrEmpty(name))
+                                {
+                                    name = name.Replace("\"", string.Empty);
+                                    int indexExe = name.LastIndexOf(".exe", StringComparison.OrdinalIgnoreCase);
+                                    if (!name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && indexExe != -1)
+                                    {
+                                        name = name.Substring(0, indexExe + 4);
+                                    }
+                                }
+                                regKey.Close();
                             }
                         }
-                        regKey.Close();
+                        regDefault.Close();
                     }
-                    regDefault.Close();
                 }
             }
             catch (Exception)
@@ -60,12 +66,19 @@ namespace SpotifyAPI.Web.Auth
                 // throw 
             }
 #else
+            string defaultBrowser = GetSystemDefaultBrowser();
+            string args = string.Format("\"{0}\"", url);
+            if (string.IsNullOrEmpty(defaultBrowser))
+            {
+                defaultBrowser = url;
+                args = string.Empty;
+            }
             Process process = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = GetSystemDefaultBrowser(),
-                    Arguments = string.Format("\"{0}\"", url),
+                    FileName = defaultBrowser,
+                    Arguments = args,
                     UseShellExecute = true,
                     RedirectStandardOutput = false,
                     CreateNoWindow = false

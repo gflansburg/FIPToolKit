@@ -333,10 +333,56 @@ void DeviceClient::SetLed(DWORD page, DWORD index, bool value) {
 	switchHr(_client->_SetLed(_device, page, index, value)) {
 	case S_OK: break;
 		deviceThrowIfPageNotActive("The specified page is not active. Displaying information is not permitted when the page is not active.")
+		throwIfInvalidArg("The page does not reference a valid page id, or the index does not specifiy a valid LED id.", "page|id")
+		deviceThrowIfHandle
+		throwHr("Unable to set LED.")
+	}
+}
+
+void DeviceClient::SetLedColor(DWORD red, DWORD green, DWORD blue, DWORD brightness) {
+	if (!_client->_SetLed)
+		throw gcnew NotImplementedException;
+	_client->_AddPage(_device, 1, 1);
+	switchHr(_client->_SetLed(_device, 1, 0, brightness)) {
+	case S_OK: break;
+		deviceThrowIfPageNotActive("The specified page is not active. Displaying information is not permitted when the page is not active.")
+		throwIfInvalidArg("The page does not reference a valid page id, or the index does not specifiy a valid LED id.", "page|id")
+		deviceThrowIfHandle
+		throwHr("Unable to set LED.")
+	}
+	HRESULT result = _client->_SetLed(_device, 1, 1, System::Drawing::ColorTranslator::ToWin32(System::Drawing::Color::FromArgb(255, red, green, blue)));
+	switch(result)
+	{
+		case S_OK: break;
+		deviceThrowIfPageNotActive("The specified page is not active. Displaying information is not permitted when the page is not active.")
+		throwIfInvalidArg("The page does not reference a valid page id, or the index does not specifiy a valid LED id.", "page|id")
+		deviceThrowIfHandle
+		throwHr("Unable to set LED.")
+	}
+	_client->_RemovePage(_device, 1);
+}
+
+void DeviceClient::SetLedColor(System::Drawing::Color color, DWORD brightness) {
+	if (!_client->_SetLed)
+		throw gcnew NotImplementedException;
+	_client->_AddPage(_device, 1, 1);
+	switchHr(_client->_SetLed(_device, 1, 0, brightness)) {
+	case S_OK: break;
+		deviceThrowIfPageNotActive("The specified page is not active. Displaying information is not permitted when the page is not active.")
 			throwIfInvalidArg("The page does not reference a valid page id, or the index does not specifiy a valid LED id.", "page|id")
 			deviceThrowIfHandle
 			throwHr("Unable to set LED.")
 	}
+	HRESULT result = _client->_SetLed(_device, 1, 1, System::Drawing::ColorTranslator::ToWin32(color));
+	switch(result)
+	{
+		case S_OK: break;
+		deviceThrowIfPageNotActive("The specified page is not active. Displaying information is not permitted when the page is not active.")
+		throwIfInvalidArg("The page does not reference a valid page id, or the index does not specifiy a valid LED id.", "page|id")
+		deviceThrowIfHandle
+		throwHr("Unable to set LED.")
+	}
+	_client->_RemovePage(_device, 1);
 }
 
 void DeviceClient::SetString(DWORD page, DWORD index, String^ value) {

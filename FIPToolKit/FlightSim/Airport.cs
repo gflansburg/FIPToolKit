@@ -25,7 +25,7 @@ namespace FIPToolKit.FlightSim
             Latitude = airport.Latitude;
             Longitude = airport.Longitude;
             Altitude = airport.Altitude;
-            ICAO = airport.Icao;
+            ICAO = airport.Ident;
             AirportType = "airport";
         }
 

@@ -432,11 +432,14 @@ namespace FIPToolKit.Models
         {
             get
             {
-                string clientId = String.Empty;
+                string clientId = string.Empty;
                 using (RegistryKey regFlightShare = Registry.CurrentUser.OpenSubKey("Software\\FlightShare", false))
                 {
-                    clientId = regFlightShare.GetValue("FlightShareClientID", String.Empty).ToString();
-                    regFlightShare.Close();
+                    if (regFlightShare != null)
+                    {
+                        clientId = regFlightShare.GetValue("FlightShareClientID", string.Empty).ToString();
+                        regFlightShare.Close();
+                    }
                 }
                 return clientId;
             }
@@ -446,13 +449,16 @@ namespace FIPToolKit.Models
         {
             get
             {
-                string clientId = String.Empty;
+                string pilotName = string.Empty;
                 using (RegistryKey regFlightShare = Registry.CurrentUser.OpenSubKey("Software\\FlightShare", false))
                 {
-                    clientId = regFlightShare.GetValue("FlightSharePilotName", String.Empty).ToString();
-                    regFlightShare.Close();
+                    if (regFlightShare != null)
+                    {
+                        pilotName = regFlightShare.GetValue("FlightSharePilotName", string.Empty).ToString();
+                        regFlightShare.Close();
+                    }
                 }
-                return clientId;
+                return pilotName;
             }
         }
 
@@ -523,13 +529,12 @@ namespace FIPToolKit.Models
                         {
                             Dictionary<string, VatSimAircraft> currentTraffic = new Dictionary<string, VatSimAircraft>();
                             RestClient restClient = new RestClient("https://api2.simaware.ca");
-                            IRestRequest request = new RestRequest("/api/livedata/live.json")
+                            RestRequest request = new RestRequest("/api/livedata/live.json", Method.Get)
                             {
-                                Timeout = 10000,
-                                Method = Method.GET
+                                Timeout = new TimeSpan(10000)
                             };
                             request.AddHeader("credentials", "omit");
-                            IRestResponse response = restClient.Execute(request);
+                            RestResponse response = restClient.Execute(request);
                             if (response.IsSuccessful)
                             {
                                 string json = response.Content;
@@ -593,13 +598,12 @@ namespace FIPToolKit.Models
                         if (!string.IsNullOrEmpty(FlightShareId) && IsStarted && !Stop)
                         {
                             RestClient restClient = new RestClient("https://www.flightshareapp.com");
-                            IRestRequest request = new RestRequest("/PilotData")
+                            RestRequest request = new RestRequest("/PilotData", Method.Get)
                             {
-                                Timeout = 10000,
-                                Method = Method.GET
+                                Timeout = new TimeSpan(10000)
                             };
                             Dictionary<string, FlightShareAircraft> currentTraffic = new Dictionary<string, FlightShareAircraft>();
-                            IRestResponse response = restClient.Execute(request);
+                            RestResponse response = restClient.Execute(request);
                             string json = response.Content;
                             if (response.IsSuccessful && json != "Error")
                             {

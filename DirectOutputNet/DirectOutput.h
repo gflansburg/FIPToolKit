@@ -195,6 +195,10 @@ namespace Saitek {
 
 			void SetLed(DWORD page, DWORD index, bool value);
 
+			void SetLedColor(DWORD red, DWORD green, DWORD blue, DWORD brightness);
+
+			void SetLedColor(System::Drawing::Color color, DWORD brightness);
+
 			void SetString(DWORD page, DWORD index, System::String^ value);
 
 			void SetImage(DWORD page, DWORD index, array<System::Byte>^ value);
@@ -225,6 +229,7 @@ namespace Saitek {
 
 		public value struct DeviceTypes {
 			static const System::Guid
+				Unknown = FromGUID(DeviceType_Unknown),
 				Fip = FromGUID(DeviceType_Fip),
 				X52Pro = FromGUID(DeviceType_X52Pro),
 				X56RhinoStick = FromGUID(DeviceType_X56_Stick),

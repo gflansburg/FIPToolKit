@@ -11,13 +11,13 @@ using System.Windows.Forms;
 
 namespace FIPDisplayProfiler
 {
-    public partial class DefaultForm : Form
+    public partial class ScreenMirrorForm : Form
     {
-        public FIPPage Page { get; set; }
+        public FIPScreenMirror Page { get; set; }
         
         private Font _fontHolder;
 
-        public DefaultForm()
+        public ScreenMirrorForm()
         {
             InitializeComponent();
         }
@@ -27,6 +27,7 @@ namespace FIPDisplayProfiler
             Page.Font = _fontHolder;
             Page.FontColor = btnFontColor.BackColor;
             Page.IsDirty = true;
+            Page.ScreenIndex = cbScreen.SelectedIndex;
             DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -54,12 +55,17 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void DefaultForm_Load(object sender, EventArgs e)
+        private void ScreenMirrorForm_Load(object sender, EventArgs e)
         {
             _fontHolder = Page.Font;
             tbFont.Font = new Font(Page.Font.FontFamily, tbFont.Font.Size, Page.Font.Style, Page.Font.Unit, Page.Font.GdiCharSet);
             tbFont.Text = Page.Font.FontFamily.Name;
             btnFontColor.BackColor = Page.FontColor;
+            foreach (var screen in Screen.AllScreens)
+            {
+                cbScreen.Items.Add(screen.DeviceName);
+            }
+            cbScreen.SelectedIndex = Page.ScreenIndex;
         }
     }
 }

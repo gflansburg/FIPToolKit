@@ -1,7 +1,7 @@
 ﻿
 namespace FIPDisplayProfiler
 {
-    partial class DefaultForm
+    partial class ScreenMirrorForm
     {
         /// <summary>
         /// Required designer variable.
@@ -38,13 +38,15 @@ namespace FIPDisplayProfiler
             this.btnFontColor = new System.Windows.Forms.Button();
             this.label18 = new System.Windows.Forms.Label();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.label1 = new System.Windows.Forms.Label();
+            this.cbScreen = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(313, 40);
+            this.btnCancel.Location = new System.Drawing.Point(313, 77);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 6;
@@ -54,7 +56,7 @@ namespace FIPDisplayProfiler
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(394, 40);
+            this.btnOK.Location = new System.Drawing.Point(394, 77);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -113,13 +115,35 @@ namespace FIPDisplayProfiler
             this.label18.TabIndex = 48;
             this.label18.Text = "Color:";
             // 
-            // DefaultForm
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(204, 45);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(44, 13);
+            this.label1.TabIndex = 49;
+            this.label1.Text = "Screen:";
+            // 
+            // cbScreen
+            // 
+            this.cbScreen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbScreen.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbScreen.FormattingEnabled = true;
+            this.cbScreen.Location = new System.Drawing.Point(254, 40);
+            this.cbScreen.Name = "cbScreen";
+            this.cbScreen.Size = new System.Drawing.Size(215, 21);
+            this.cbScreen.TabIndex = 50;
+            // 
+            // ScreenMirrorForm
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(482, 72);
+            this.ClientSize = new System.Drawing.Size(482, 109);
+            this.Controls.Add(this.cbScreen);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.btnFontColor);
             this.Controls.Add(this.label18);
             this.Controls.Add(this.btnFont);
@@ -130,11 +154,11 @@ namespace FIPDisplayProfiler
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "DefaultForm";
+            this.Name = "ScreenMirrorForm";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Page";
-            this.Load += new System.EventHandler(this.DefaultForm_Load);
+            this.Text = "Screen Mirror";
+            this.Load += new System.EventHandler(this.ScreenMirrorForm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -150,5 +174,7 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.Button btnFontColor;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ColorDialog colorDialog1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox cbScreen;
     }
 }

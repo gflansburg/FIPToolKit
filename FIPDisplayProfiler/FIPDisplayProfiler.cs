@@ -54,7 +54,7 @@ namespace FIPDisplayProfiler
 
         private void Engine_OnPageChanged(object sender, DeviceActivePage page)
         {
-            if (!String.IsNullOrEmpty(ProfileName))
+            if (!string.IsNullOrEmpty(ProfileName))
             {
                 SaveActivePages(ProfileName);
             }

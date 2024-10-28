@@ -208,30 +208,33 @@ namespace FIPToolKit.Models
 						{
 							using (Bitmap screen = ImageHelper.CaptureScreen(ScreenIndex))
 							{
-								graphics.FillRectangle(Brushes.Black, 0, 0, 320, 240);
-								double ratioX = (double)bmp.Width / screen.Width;
-								double ratioY = (double)bmp.Height / screen.Height;
-								double ratio = Math.Min(ratioX, ratioY);
-								int newWidth = (int)(screen.Width * ratio);
-								int newHeight = (int)(screen.Height * ratio);
-								Rectangle destRect = new Rectangle((320 - newWidth) / 2, (240 - newHeight) / 2, newWidth, newHeight);
-								Rectangle srcRect = new Rectangle(0, 0, screen.Width, screen.Height);
-								if (Fit == ScreenFit.Stretch)
+								if (screen != null)
 								{
-									destRect = new Rectangle(0, 0, 320, 240);
-								}
-								if (Fit == ScreenFit.Fill)
-								{
-									using (Image img = screen.Crop())
+									graphics.FillRectangle(Brushes.Black, 0, 0, 320, 240);
+									double ratioX = (double)bmp.Width / screen.Width;
+									double ratioY = (double)bmp.Height / screen.Height;
+									double ratio = Math.Min(ratioX, ratioY);
+									int newWidth = (int)(screen.Width * ratio);
+									int newHeight = (int)(screen.Height * ratio);
+									Rectangle destRect = new Rectangle((320 - newWidth) / 2, (240 - newHeight) / 2, newWidth, newHeight);
+									Rectangle srcRect = new Rectangle(0, 0, screen.Width, screen.Height);
+									if (Fit == ScreenFit.Stretch)
 									{
 										destRect = new Rectangle(0, 0, 320, 240);
-										srcRect = new Rectangle(0, 0, img.Width, img.Height);
-										graphics.DrawImage(img, destRect, srcRect, GraphicsUnit.Pixel);
 									}
-								}
-								else
-								{
-									graphics.DrawImage(screen, destRect, srcRect, GraphicsUnit.Pixel);
+									if (Fit == ScreenFit.Fill)
+									{
+										using (Image img = screen.Crop())
+										{
+											destRect = new Rectangle(0, 0, 320, 240);
+											srcRect = new Rectangle(0, 0, img.Width, img.Height);
+											graphics.DrawImage(img, destRect, srcRect, GraphicsUnit.Pixel);
+										}
+									}
+									else
+									{
+										graphics.DrawImage(screen, destRect, srcRect, GraphicsUnit.Pixel);
+									}
 								}
 							}
 						}

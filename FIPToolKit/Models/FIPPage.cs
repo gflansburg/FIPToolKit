@@ -65,6 +65,10 @@ namespace FIPToolKit.Models
     {
         [XmlIgnore]
         [JsonIgnore]
+        public bool IsActive { get; set; }
+
+        [XmlIgnore]
+        [JsonIgnore]
         public bool IsDisposed { get; private set; }
 
         [XmlIgnore]
@@ -361,9 +365,15 @@ namespace FIPToolKit.Models
             }
             else
             {
-                using (Graphics g = Graphics.FromImage(_image))
+                try
                 {
-                    g.DrawImage(image, new Rectangle(0, 0, _image.Width, _image.Height), 0, 0, _image.Width, _image.Height, GraphicsUnit.Pixel);
+                    using (Graphics g = Graphics.FromImage(_image))
+                    {
+                        g.DrawImage(image, new Rectangle(0, 0, _image.Width, _image.Height), 0, 0, _image.Width, _image.Height, GraphicsUnit.Pixel);
+                    }
+                }
+                catch(Exception)
+                {
                 }
                 //try
                 //{
@@ -609,6 +619,18 @@ namespace FIPToolKit.Models
                 }
             }
             return size;
+        }
+
+        public virtual void Active()
+        {
+            IsActive = true;
+            StartTimer();
+        }
+
+        public virtual void Inactive()
+        {
+            IsActive = false;
+            StopTimer();
         }
 
         public virtual void Dispose()

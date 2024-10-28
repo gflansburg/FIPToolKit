@@ -1302,7 +1302,13 @@ namespace FIPToolKit.Models
                                     {
                                         Map.Invoke((Action)(() =>
                                         {
-                                            Map.DrawToBitmap(map, mapRect);
+                                            try
+                                            {
+                                                Map.DrawToBitmap(map, mapRect);
+                                            }
+                                            catch(Exception)
+                                            {
+                                            }
                                         }));
                                     }
                                     else

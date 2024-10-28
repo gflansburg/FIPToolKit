@@ -1,6 +1,7 @@
 ﻿using FIPToolKit.Tools;
 using Newtonsoft.Json;
 using Saitek.DirectOutput;
+using SpotifyAPI.Web.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -315,7 +316,14 @@ namespace FIPToolKit.Models
                     }
                     if (isActive)
                     {
-                        page.StartTimer();
+                        page.Active();
+                        foreach (FIPPage p in Pages)
+                        {
+                            if (p != page)
+                            {
+                                p.Inactive();
+                            }
+                        }
                     }
                 }
             }
@@ -329,7 +337,7 @@ namespace FIPToolKit.Models
                 {
                     DeviceClient.RemovePage(page.Page);
                     _pages.Remove(page);
-                    page.StopTimer();
+                    page.Inactive();
                     IsDirty = true;
                     if (sendNotifcation)
                     {
@@ -407,12 +415,19 @@ namespace FIPToolKit.Models
                 if (e.Activated)
                 {
                     CurrentPage = page;
-                    CurrentPage.StartTimer();
+                    CurrentPage.Active();
                     CurrentPage.UpdatePage();
+                    foreach(FIPPage p in Pages)
+                    {
+                        if (p != page)
+                        {
+                            p.Inactive();
+                        }
+                    }
                 }
                 else if (CurrentPage == page)
                 {
-                    page.StopTimer();
+                    page.Inactive();
                     _currentPage = null;
                     ActivePage = 0;
                 }
@@ -484,7 +499,7 @@ namespace FIPToolKit.Models
                     }
                     if (dispose)
                     {
-                        page.StopTimer();
+                        page.Inactive();
                     }
                 }
                 _pages.Clear();

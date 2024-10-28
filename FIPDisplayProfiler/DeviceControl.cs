@@ -5,6 +5,7 @@ using Saitek.DirectOutput;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace FIPDisplayProfiler
 {
@@ -532,9 +533,9 @@ namespace FIPDisplayProfiler
 
         private void lbPages_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(SelectedPage != null && SelectedPage != Device.CurrentPage)
+            if(SelectedPage != null /*&& SelectedPage != Device.CurrentPage*/)
             {
-                SelectedPage.StopTimer();
+                SelectedPage.Inactive();
             }
             SelectedPage = lbPages.SelectedItem as FIPPage;
             if (SelectedPage == null)
@@ -544,9 +545,16 @@ namespace FIPDisplayProfiler
             else
             {
                 SetFIPImage(SelectedPage.Image != null ? SelectedPage.Image : Device.GetDefaultPageImage);
-                if (SelectedPage != Device.CurrentPage)
+                //if (SelectedPage != Device.CurrentPage)
                 {
-                    SelectedPage.StartTimer();
+                    SelectedPage.Active();
+                    foreach (FIPPage p in Device.Pages)
+                    {
+                        if (p != SelectedPage)
+                        {
+                            p.Inactive();
+                        }
+                    }
                 }
             }
             UpdateLeds();
@@ -1685,7 +1693,14 @@ namespace FIPDisplayProfiler
                     Device.DeviceClient.AddPage(page.Page, PageFlags.SetAsActive);
                     //DirectOutput doesn't fire a page change notification when PageFlags.SetAsActive, so...
                     Device.CurrentPage = page;
-                    page.StartTimer();
+                    page.Active();
+                    foreach (FIPPage pg in Device.Pages)
+                    {
+                        if (pg != SelectedPage)
+                        {
+                            pg.Inactive();
+                        }
+                    }
                 }
             }
         }

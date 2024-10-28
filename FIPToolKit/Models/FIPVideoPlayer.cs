@@ -15,6 +15,7 @@ using System.Threading;
 using Saitek.DirectOutput;
 using SpotifyAPI.Web.Enums;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using System.Reflection;
 
 namespace FIPToolKit.Models
 {
@@ -82,8 +83,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        private bool Stop { get; set; }
-
         [XmlIgnore]
         [JsonIgnore]
         public static bool PreviewVideo { get; set; }
@@ -111,6 +110,7 @@ namespace FIPToolKit.Models
         {
             Name = "Video Player";
             IsDirty = false;
+            Core.Initialize();
             libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-playlist-autostart", "--quiet", "--no-sout-video", "--sout-transcode-scale=Auto", string.Format("--sout-transcode-width={0}", Width), string.Format("--sout-transcode-height={0}", Height), string.Format("--sout-transcode-maxwidth={0}", Width), string.Format("--sout-transcode-maxheight={0}", Height) });
             player = new MediaPlayer(libVLC);
             player.SetVideoFormat("RV24", Width, Height, Pitch);
@@ -118,15 +118,23 @@ namespace FIPToolKit.Models
             player.EnableHardwareDecoding = true;
             player.EncounteredError += (s, e) =>
             {
-                Stop = true;
+                if (media != null)
+                {
+                    media.Dispose();
+                    media = null;
+                }
+                player.Media = null;
+                using (Bitmap bmp = ImageHelper.GetErrorImage("An Error Has Occured."))
+                {
+                    SendImage(bmp);
+                }
             };
-            player.Playing += (s, e) =>
+            player.Opening += (s, e) =>
             {
-                Stop = false;
-            };
-            player.Stopped += (s, e) =>
-            {
-                Stop = true;
+                using (Bitmap bmp = ImageHelper.GetErrorImage(Path.GetFileNameWithoutExtension(Filename)))
+                {
+                    SendImage(bmp);
+                }
             };
             player.EndReached += (s, e) =>
             {
@@ -217,6 +225,10 @@ namespace FIPToolKit.Models
                         {
                             player.Play();
                         }
+                    }
+                    else if (player != null && media == null && !string.IsNullOrEmpty(Filename))
+                    {
+                        LoadVideo();
                     }
                     break;
             }

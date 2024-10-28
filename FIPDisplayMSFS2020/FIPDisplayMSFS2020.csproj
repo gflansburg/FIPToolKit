@@ -44,17 +44,11 @@
     <Reference Include="CommandLine, Version=2.9.1.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
       <HintPath>..\packages\CommandLineParser.2.9.1\lib\net461\CommandLine.dll</HintPath>
     </Reference>
-    <Reference Include="CSharpx, Version=2.7.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CSharpx.2.7.3\lib\net47\CSharpx.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="FSharp.Core, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FSharp.Core.8.0.401\lib\netstandard2.0\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.FlightSimulator.SimConnect, Version=10.0.62615.0, Culture=neutral, PublicKeyToken=5f523ae7e6e1b389, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>

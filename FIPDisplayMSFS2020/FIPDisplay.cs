@@ -1,22 +1,14 @@
 ﻿using CommandLine;
 using CommandLine.Text;
-using CSharpx;
 using FIPToolKit.Models;
 using FIPToolKit.Tools;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Media;
-using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using FIPToolKit.FlightSim;
 

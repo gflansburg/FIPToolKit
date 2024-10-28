@@ -22,13 +22,64 @@ namespace FIPDisplayProfiler
             InitializeComponent();
         }
 
+        public string VideoName
+        {
+            get
+            {
+                return System.IO.Path.GetFileNameWithoutExtension(tbFilename.Text);
+            }
+        }
+
+        public string Filename
+        {
+            get
+            {
+                return tbFilename.Text;
+            }
+        }
+
+        public Font PlayerFont
+        {
+            get
+            {
+                return _fontHolder;
+            }
+        }
+
+        public Color FontColor
+        {
+            get
+            {
+                return btnFontColor.BackColor;
+            }
+        }
+
+        public bool MaintainAspectRatio
+        {
+            get
+            {
+                return chkMaintainAspectRadio.Checked;
+            }
+        }
+
+        public bool PortraitMode
+        {
+            get
+            {
+                return chkPortraitMode.Checked;
+            }
+        }
+
+        public bool ShowControls
+        {
+            get
+            {
+                return chkShowControls.Checked;
+            }
+        }
+
         private void btnOK_Click(object sender, EventArgs e)
         {
-            VideoPlayer.Name = System.IO.Path.GetFileNameWithoutExtension(tbFilename.Text);
-            VideoPlayer.Filename = tbFilename.Text;
-            VideoPlayer.Font = _fontHolder;
-            VideoPlayer.FontColor = btnFontColor.BackColor;
-            VideoPlayer.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -73,6 +124,9 @@ namespace FIPDisplayProfiler
             tbFont.Font = new Font(VideoPlayer.Font.FontFamily, tbFont.Font.Size, VideoPlayer.Font.Style, VideoPlayer.Font.Unit, VideoPlayer.Font.GdiCharSet);
             tbFont.Text = VideoPlayer.Font.FontFamily.Name;
             btnFontColor.BackColor = VideoPlayer.FontColor;
+            chkMaintainAspectRadio.Checked = VideoPlayer.MaintainAspectRatio;
+            chkPortraitMode.Checked = VideoPlayer.PortraitMode;
+            chkShowControls.Checked = VideoPlayer.ShowControls;
             btnOK.Enabled = !String.IsNullOrEmpty(tbFilename.Text);
         }
     }

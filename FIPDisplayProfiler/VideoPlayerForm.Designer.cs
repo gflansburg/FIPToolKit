@@ -42,13 +42,16 @@ namespace FIPDisplayProfiler
             this.label5 = new System.Windows.Forms.Label();
             this.tbFilename = new System.Windows.Forms.TextBox();
             this.btnBrowse = new System.Windows.Forms.Button();
+            this.chkMaintainAspectRadio = new System.Windows.Forms.CheckBox();
+            this.chkPortraitMode = new System.Windows.Forms.CheckBox();
+            this.chkShowControls = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(313, 68);
+            this.btnCancel.Location = new System.Drawing.Point(313, 103);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 6;
@@ -58,7 +61,7 @@ namespace FIPDisplayProfiler
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(394, 68);
+            this.btnOK.Location = new System.Drawing.Point(394, 103);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -153,13 +156,46 @@ namespace FIPDisplayProfiler
             this.btnBrowse.UseVisualStyleBackColor = true;
             this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
+            // chkMaintainAspectRadio
+            // 
+            this.chkMaintainAspectRadio.AutoSize = true;
+            this.chkMaintainAspectRadio.Location = new System.Drawing.Point(68, 106);
+            this.chkMaintainAspectRadio.Name = "chkMaintainAspectRadio";
+            this.chkMaintainAspectRadio.Size = new System.Drawing.Size(130, 17);
+            this.chkMaintainAspectRadio.TabIndex = 51;
+            this.chkMaintainAspectRadio.Text = "Maintain Aspect Ratio";
+            this.chkMaintainAspectRadio.UseVisualStyleBackColor = true;
+            // 
+            // chkPortraitMode
+            // 
+            this.chkPortraitMode.AutoSize = true;
+            this.chkPortraitMode.Location = new System.Drawing.Point(380, 72);
+            this.chkPortraitMode.Name = "chkPortraitMode";
+            this.chkPortraitMode.Size = new System.Drawing.Size(89, 17);
+            this.chkPortraitMode.TabIndex = 52;
+            this.chkPortraitMode.Text = "Portrait Mode";
+            this.chkPortraitMode.UseVisualStyleBackColor = true;
+            // 
+            // chkShowControls
+            // 
+            this.chkShowControls.AutoSize = true;
+            this.chkShowControls.Location = new System.Drawing.Point(228, 73);
+            this.chkShowControls.Name = "chkShowControls";
+            this.chkShowControls.Size = new System.Drawing.Size(94, 17);
+            this.chkShowControls.TabIndex = 53;
+            this.chkShowControls.Text = "Show Controls";
+            this.chkShowControls.UseVisualStyleBackColor = true;
+            // 
             // VideoPlayerForm
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(482, 100);
+            this.ClientSize = new System.Drawing.Size(482, 135);
+            this.Controls.Add(this.chkShowControls);
+            this.Controls.Add(this.chkPortraitMode);
+            this.Controls.Add(this.chkMaintainAspectRadio);
             this.Controls.Add(this.btnBrowse);
             this.Controls.Add(this.tbFilename);
             this.Controls.Add(this.label5);
@@ -197,5 +233,8 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox tbFilename;
         private System.Windows.Forms.Button btnBrowse;
+        private System.Windows.Forms.CheckBox chkMaintainAspectRadio;
+        private System.Windows.Forms.CheckBox chkPortraitMode;
+        private System.Windows.Forms.CheckBox chkShowControls;
     }
 }

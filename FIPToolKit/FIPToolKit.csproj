@@ -49,6 +49,9 @@
     <Reference Include="LibVLCSharp, Version=3.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\LibVLCSharp.3.9.0\lib\net471\LibVLCSharp.dll</HintPath>
     </Reference>
+    <Reference Include="MediaToolkit, Version=1.1.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MediaToolkit.1.1.0.1\lib\net40\MediaToolkit.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -153,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Drawing\GraphicsHelper.cs" />
+    <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="FlightSim\CompassMode.cs" />
     <Compile Include="FlightSim\GearType.cs" />
     <Compile Include="FlightSim\InternationalUnits.cs" />
@@ -307,6 +311,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ffmpeg.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="Resources\Cessna.Clock1.png" />
     <None Include="Resources\Cessna.Clock2.png" />
     <None Include="Resources\Cessna.Altimeter.png" />
@@ -347,7 +354,6 @@
     <None Include="Resources\shuffle.png" />
     <None Include="Resources\repeat.png" />
     <None Include="Resources\repeat_one.png" />
-    <None Include="Resources\heart_online.png" />
     <None Include="Resources\heart.png" />
     <None Include="Resources\playlist.png" />
     <None Include="Resources\plus.png" />
@@ -404,6 +410,7 @@
     <None Include="Resources\go.png" />
     <None Include="Resources\heading_arrow.png" />
     <None Include="Resources\heading_bug.png" />
+    <None Include="Resources\rotate.png" />
     <Content Include="SimConnect.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

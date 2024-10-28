@@ -4,7 +4,9 @@ using FIPToolKit.Tools;
 using Saitek.DirectOutput;
 using System;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
+using Telerik.Collections.Generic;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace FIPDisplayProfiler
@@ -306,13 +308,20 @@ namespace FIPDisplayProfiler
                         break;
                     case PageType.VideoPlayer:
                         {
-                            FIPPage page = new FIPVideoPlayer();
+                            FIPVideoPlayer page = new FIPVideoPlayer();
+                            page.OnSettingsUpdated += Page_OnSettingsUpdated;
                             VideoPlayerForm form = new VideoPlayerForm()
                             {
-                                VideoPlayer = page as FIPVideoPlayer
+                                VideoPlayer = page
                             };
                             if(form.ShowDialog(this) == DialogResult.OK)
                             {
+                                form.VideoPlayer.Name = form.VideoName;
+                                form.VideoPlayer.Filename = form.Filename;
+                                form.VideoPlayer.Font = form.PlayerFont;
+                                form.VideoPlayer.FontColor = form.FontColor;
+                                form.VideoPlayer.MaintainAspectRatio = form.MaintainAspectRatio;
+                                form.VideoPlayer.IsDirty = true;
                                 Device.AddPage(form.VideoPlayer, true);
                             }
                         }
@@ -490,6 +499,17 @@ namespace FIPDisplayProfiler
             }
         }
 
+        private void Page_OnSettingsUpdated(object sender, FIPVideoPlayerEventArgs e)
+        {
+            lbPages.Invoke((Action)(() =>
+            {
+                lbPages.DrawMode = DrawMode.OwnerDrawFixed;
+                lbPages.DrawMode = DrawMode.Normal;
+                lbPages.SelectedIndex = e.Index;
+            }));
+            e.Page.OnSettingsUpdated -= Page_OnSettingsUpdated;
+        }
+
         private void FIPSpotifyController_OnTrackStateChanged(SpotifyAPI.Web.Models.PlaybackContext playback, FIPToolKit.Tools.SpotifyStateType state)
         {
             lbPages.Invoke((Action)(() =>
@@ -605,9 +625,11 @@ namespace FIPDisplayProfiler
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
-                            lbPages.Items.Remove(page);
-                            lbPages.Items.Insert(index, page);
-                            lbPages.SelectedIndex = index;
+                            ((FIPVideoPlayer)page).OnSettingsUpdated += Page_OnSettingsUpdated;
+                            ThreadPool.QueueUserWorkItem(_ =>
+                            {
+                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls);
+                            });
                         }
                     }
                     else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))

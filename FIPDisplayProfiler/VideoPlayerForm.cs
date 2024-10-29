@@ -78,6 +78,14 @@ namespace FIPDisplayProfiler
             }
         }
 
+        public bool ResumePlayback
+        {
+            get
+            {
+                return chkResumePlayback.Checked;
+            }
+        }
+
         private void btnOK_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.OK;
@@ -127,6 +135,7 @@ namespace FIPDisplayProfiler
             chkMaintainAspectRadio.Checked = VideoPlayer.MaintainAspectRatio;
             chkPortraitMode.Checked = VideoPlayer.PortraitMode;
             chkShowControls.Checked = VideoPlayer.ShowControls;
+            chkResumePlayback.Checked = VideoPlayer.ResumePlayback;
             btnOK.Enabled = !String.IsNullOrEmpty(tbFilename.Text);
         }
     }

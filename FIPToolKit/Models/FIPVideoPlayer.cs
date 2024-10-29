@@ -14,6 +14,8 @@ using SixLabors.ImageSharp.Processing;
 using System.Threading;
 using Saitek.DirectOutput;
 using System.Linq;
+using System.Windows;
+using System.Diagnostics;
 
 namespace FIPToolKit.Models
 {
@@ -141,6 +143,44 @@ namespace FIPToolKit.Models
             }
         }
 
+        private bool _resumePlayback = true;
+        public bool ResumePlayback
+        {
+            get
+            {
+                return _resumePlayback;
+            }
+            set
+            {
+                if (_resumePlayback != value)
+                {
+                    _resumePlayback = value;
+                    IsDirty = true;
+                }
+            }
+        }
+
+        private float _position = 0;
+        public float Position
+        {
+            get
+            {
+                return _position;
+            }
+            set
+            {
+                if (_position != value)
+                {
+                    _position = value;
+                    if (media != null && player != null)
+                    {
+                        player.Position = _position;
+                    }
+                    IsDirty = true;
+                }
+            }
+        }
+
         private bool _portraitMode = false;
         public bool PortraitMode
         {
@@ -190,6 +230,8 @@ namespace FIPToolKit.Models
         public delegate void FIPVideoPlayerEventHandler(object sender, FIPVideoPlayerEventArgs e);
         public event FIPVideoPlayerEventHandler OnVideoLoop;
         public event FIPVideoPlayerEventHandler OnSettingsUpdated;
+        private bool opening = false;
+        private float start = 0;
 
         public FIPVideoPlayer() : base()
         {
@@ -215,9 +257,25 @@ namespace FIPToolKit.Models
             };
             player.Opening += (s, e) =>
             {
+                opening = true;
+                start = _position;
                 using (Bitmap bmp = ImageHelper.GetErrorImage(Name))
                 {
                     SendImage(bmp);
+                }
+            };
+            player.Playing += (s, e) =>
+            {
+                if (opening)
+                {
+                    opening = false;
+                    if (_resumePlayback)
+                    {
+                        ThreadPool.QueueUserWorkItem(_ =>
+                        {
+                            player.Position = start;
+                        });
+                    }
                 }
             };
             player.EndReached += (s, e) =>
@@ -225,6 +283,8 @@ namespace FIPToolKit.Models
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
                     player.Stop();
+                    _position = 0;
+                    IsDirty = true;
                     player.Position = CurrentFrame = 0;
                     player.Play();
                     OnVideoLoop?.Invoke(this, new FIPVideoPlayerEventArgs(this));
@@ -273,6 +333,8 @@ namespace FIPToolKit.Models
 
         private void Display(IntPtr opaque, IntPtr picture)
         {
+            _position = player.Position;
+            IsDirty = true;
             if (CurrentFrame % 2 == 0)
             {
                 using (var image = new Image<SixLabors.ImageSharp.PixelFormats.Rgb24>((int)(Pitch / BytePerPixel), (int)Lines))
@@ -330,24 +392,57 @@ namespace FIPToolKit.Models
             switch (softButton)
             {
                 case SoftButtons.Button1:
-                    if (player != null && media != null)
+                    ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        if (player.IsPlaying)
+                        if (player != null && media != null)
                         {
-                            player.Pause();
+                            if (player.IsPlaying)
+                            {
+                                player.Pause();
+                            }
+                            else
+                            {
+                                player.Play();
+                            }
                         }
-                        else
+                        else if (player != null && media == null && !string.IsNullOrEmpty(Filename))
                         {
-                            player.Play();
+                            LoadVideo();
                         }
-                    }
-                    else if (player != null && media == null && !string.IsNullOrEmpty(Filename))
-                    {
-                        LoadVideo();
-                    }
+                    });
                     break;
                 case SoftButtons.Button2:
                     PortraitMode = !PortraitMode;
+                    break;
+                case SoftButtons.Up:
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        int newVolume = player.Volume + 5;
+                        newVolume = Math.Max(0, Math.Min(newVolume, 100));
+                        player.Volume = newVolume;
+                    });
+                    break;
+                case SoftButtons.Down:
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        int newVolume = player.Volume - 5;
+                        newVolume = Math.Max(0, Math.Min(newVolume, 100));
+                        player.Volume = newVolume;
+                    });
+                    break;
+                case SoftButtons.Left:
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        float pos = (player.Position * (float)Duration.TotalMilliseconds) - 30000;
+                        player.Position = Math.Max(pos / (float)Duration.TotalMilliseconds, 0);
+                    });
+                    break;
+                case SoftButtons.Right:
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        float pos = (player.Position * (float)Duration.TotalMilliseconds) + 30000;
+                        player.Position = Math.Min(pos / (float)Duration.TotalMilliseconds, 1);
+                    });
                     break;
             }
             FireSoftButtonNotifcation(softButton);
@@ -364,6 +459,10 @@ namespace FIPToolKit.Models
             {
                 case SoftButtons.Button1:
                 case SoftButtons.Button2:
+                case SoftButtons.Left:
+                case SoftButtons.Right:
+                case SoftButtons.Up:
+                case SoftButtons.Down:
                     return false;
             }
             return true;
@@ -436,7 +535,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        public void UpdateSettings(int index, string name, string filename, Font font, System.Drawing.Color fontColor, bool maintainAspectRatio, bool portraitMode, bool showControls)
+        public void UpdateSettings(int index, string name, string filename, Font font, System.Drawing.Color fontColor, bool maintainAspectRatio, bool portraitMode, bool showControls, bool resumePlayback)
         {
             IsDirty = true;
             Name = name;
@@ -444,8 +543,10 @@ namespace FIPToolKit.Models
             FontColor = fontColor;
             MaintainAspectRatio = maintainAspectRatio;
             ShowControls = showControls;
+            ResumePlayback = resumePlayback;
             if (!(Filename ?? string.Empty).Equals(filename ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             {
+                _position = 0;
                 _portraitMode = portraitMode;
                 Filename = filename;
             }

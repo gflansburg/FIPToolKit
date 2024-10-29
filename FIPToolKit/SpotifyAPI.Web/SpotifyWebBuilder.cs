@@ -448,9 +448,9 @@ namespace SpotifyAPI.Web
         /// </summary>
         /// <returns></returns>
         /// <remarks>AUTH NEEDED</remarks>
-        public string SaveTracks()
+        public string SaveTracks(List<string> ids)
         {
-            return APIBase + "/me/tracks/";
+            return APIBase + "/me/tracks?ids=" + string.Join(",", ids);
         }
 
         /// <summary>
@@ -477,9 +477,9 @@ namespace SpotifyAPI.Web
         /// </summary>
         /// <returns></returns>
         /// <remarks>AUTH NEEDED</remarks>
-        public string RemoveSavedTracks()
+        public string RemoveSavedTracks(List<string> ids)
         {
-            return APIBase + "/me/tracks/";
+            return APIBase + "/me/tracks?ids=" + string.Join(",", ids);
         }
 
         /// <summary>

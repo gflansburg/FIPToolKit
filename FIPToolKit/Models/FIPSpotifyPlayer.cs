@@ -18,6 +18,7 @@ using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
 using SpotifyAPI.Web.Enums;
 using SpotifyAPI.Web.Models;
+using static Unosquare.Swan.Terminal;
 
 namespace FIPToolKit.Models
 {
@@ -56,11 +57,27 @@ namespace FIPToolKit.Models
     public class FIPSpotifyPlayer : FIPPage
     {
         private static Token _token;
-        private static bool isAuthenticating = false;
+        public static bool IsAuthenticating { get; set; } = false;
         private static AuthorizationCodeAuth authorizationCodeAuth;
         private static bool _showArtistImages;
         private static bool _cacheArtwork;
         private System.Threading.Timer Timer;
+
+        public bool IsConfigured
+        {
+            get
+            {
+                return !string.IsNullOrEmpty(ClientId) && !string.IsNullOrEmpty(SecretId);
+            }
+        }
+
+        public static bool IsAuthorized
+        {
+            get
+            {
+                return Token != null && !string.IsNullOrEmpty(Token.AccessToken) && !Token.IsExpired();
+            }
+        }
 
         private FIPPlayList _playList;
         public FIPPlayList Playlist 
@@ -78,6 +95,10 @@ namespace FIPToolKit.Models
                 }
             }
         }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public Microsoft.Web.WebView2.WinForms.WebView2 Browser { get; set; }
 
         [XmlIgnore]
         [JsonIgnore]
@@ -303,6 +324,7 @@ namespace FIPToolKit.Models
             if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_secretId))
             {
                 authorizationCodeAuth = new AuthorizationCodeAuth(_clientId, _secretId, "http://localhost:51400", "http://localhost:51400", Scope.PlaylistReadPrivate | Scope.PlaylistReadCollaborative | Scope.UserReadCurrentlyPlaying | Scope.UserReadPlaybackState | Scope.UserModifyPlaybackState | Scope.UserLibraryRead | Scope.UserLibraryModify);
+                authorizationCodeAuth.Browser = Browser;
                 authorizationCodeAuth.AuthReceived += AuthOnAuthReceived;
                 authorizationCodeAuth.AuthReceived += LoadController;
             }
@@ -409,21 +431,39 @@ namespace FIPToolKit.Models
 
         static public void Authenticate()
         {
-            if ((Token == null || Token.IsExpired()) && !isAuthenticating && authorizationCodeAuth != null)
+            if ((Token == null || Token.IsExpired()) && !IsAuthenticating && authorizationCodeAuth != null)
             {
-                isAuthenticating = true;
+                IsAuthenticating = true;
                 authorizationCodeAuth.Start();
                 authorizationCodeAuth.OpenBrowser();
             }
         }
 
-        private static async void RefreshToken()
+        public static async void RefreshToken()
         {
             if (authorizationCodeAuth != null)
             {
-                if (Token != null && Token.IsExpired() && !String.IsNullOrEmpty(Token.RefreshToken))
+                if (Token != null && Token.IsExpired() && !string.IsNullOrEmpty(Token.RefreshToken) && !IsAuthenticating)
                 {
+                    IsAuthenticating = true;
                     Token = await authorizationCodeAuth.RefreshToken(Token.RefreshToken);
+                    if (Token != null)
+                    {
+                        if (SpotifyAPI == null)
+                        {
+                            SpotifyAPI = new SpotifyWebAPI
+                            {
+                                AccessToken = Token.AccessToken,
+                                TokenType = Token.TokenType
+                            };
+                        }
+                        else
+                        {
+                            SpotifyAPI.AccessToken = Token.AccessToken;
+                            SpotifyAPI.TokenType = Token.TokenType;
+                        }
+                    }
+                    IsAuthenticating = false;
                 }
                 else if (Token == null || Token.IsExpired())
                 {
@@ -436,7 +476,23 @@ namespace FIPToolKit.Models
         {
             authorizationCodeAuth.Stop();
             Token = await authorizationCodeAuth.ExchangeCode(payload.Code);
-            isAuthenticating = false;
+            if (Token != null)
+            {
+                if (SpotifyAPI == null)
+                {
+                    SpotifyAPI = new SpotifyWebAPI
+                    {
+                        AccessToken = Token.AccessToken,
+                        TokenType = Token.TokenType
+                    };
+                }
+                else
+                {
+                    SpotifyAPI.AccessToken = Token.AccessToken;
+                    SpotifyAPI.TokenType = Token.TokenType;
+                }
+            }
+            IsAuthenticating = false;
         }
 
         private void LoadController(object sender, AuthorizationCode payload)
@@ -521,94 +577,97 @@ namespace FIPToolKit.Models
 
         public override void ExecuteSoftButton(SoftButtons softButton)
         {
-            if (SpotifyController.SpotifyState == SpotifyStateType.Playing || SpotifyController.SpotifyState == SpotifyStateType.Paused)
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                if (CurrentPage == SpotifyPlayerPage.Playlist)
+                if (SpotifyController.SpotifyState == SpotifyStateType.Playing || SpotifyController.SpotifyState == SpotifyStateType.Paused)
                 {
-                    switch (softButton)
+                    if (CurrentPage == SpotifyPlayerPage.Playlist)
                     {
-                        case SoftButtons.Left:
-                        case SoftButtons.Down:
-                            PlayListIndex = Math.Max(0, PlayListIndex - 1);
-                            UpdatePlayList();
-                            break;
-                        case SoftButtons.Right:
-                        case SoftButtons.Up:
-                            PlayListIndex = Math.Min(PlayLists.Count - 1, PlayListIndex + 1);
-                            UpdatePlayList();
-                            break;
-                        case SoftButtons.Button1:
-                            LoadPlayList(PlayLists[PlayListIndex]);
-                            break;
-                        case SoftButtons.Button2:
-                            LoadPlayList(null);
-                            break;
+                        switch (softButton)
+                        {
+                            case SoftButtons.Left:
+                            case SoftButtons.Down:
+                                PlayListIndex = Math.Max(0, PlayListIndex - 1);
+                                UpdatePlayList();
+                                break;
+                            case SoftButtons.Right:
+                            case SoftButtons.Up:
+                                PlayListIndex = Math.Min(PlayLists.Count - 1, PlayListIndex + 1);
+                                UpdatePlayList();
+                                break;
+                            case SoftButtons.Button1:
+                                LoadPlayList(PlayLists[PlayListIndex]);
+                                break;
+                            case SoftButtons.Button2:
+                                LoadPlayList(null);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (softButton)
+                        {
+                            case SoftButtons.Button1:
+                                SpotifyController.Mute = !SpotifyController.Mute;
+                                UpdatePlayer();
+                                break;
+                            case SoftButtons.Button2:
+                                SpotifyController.PlayPause();
+                                break;
+                            case SoftButtons.Button3:
+                                SpotifyController.ShuffleState = !SpotifyController.ShuffleState;
+                                UpdatePlayer();
+                                break;
+                            case SoftButtons.Button4:
+                                switch (SpotifyController.RepeatState)
+                                {
+                                    case RepeatState.Track:
+                                        SpotifyController.RepeatState = RepeatState.Context;
+                                        break;
+                                    case RepeatState.Context:
+                                        SpotifyController.RepeatState = RepeatState.Off;
+                                        break;
+                                    case RepeatState.Off:
+                                        SpotifyController.RepeatState = RepeatState.Track;
+                                        break;
+                                }
+                                UpdatePlayer();
+                                break;
+                            case SoftButtons.Button5:
+                                if (SpotifyController.IsLiked(CurrentPlaybackContext.Item.Id))
+                                {
+                                    SpotifyController.UnLike(CurrentPlaybackContext.Item.Id);
+                                }
+                                else
+                                {
+                                    SpotifyController.Like(CurrentPlaybackContext.Item.Id);
+                                }
+                                UpdatePlayer();
+                                break;
+                            case SoftButtons.Button6:
+                                CurrentPage = SpotifyPlayerPage.Playlist;
+                                SetLEDs();
+                                LoadPlayLists();
+                                UpdatePlayList();
+                                FireStateChanged();
+                                break;
+                            case SoftButtons.Down:
+                                SpotifyController.VolumeDown();
+                                break;
+                            case SoftButtons.Up:
+                                SpotifyController.VolumeUp();
+                                break;
+                            case SoftButtons.Left:
+                                SpotifyController.PlayPrev();
+                                break;
+                            case SoftButtons.Right:
+                                SpotifyController.PlayNext();
+                                break;
+                        }
                     }
                 }
-                else
-                {
-                    switch (softButton)
-                    {
-                        case SoftButtons.Button1:
-                            SpotifyController.Mute = !SpotifyController.Mute;
-                            UpdatePlayer();
-                            break;
-                        case SoftButtons.Button2:
-                            SpotifyController.PlayPause();
-                            break;
-                        case SoftButtons.Button3:
-                            SpotifyController.ShuffleState = !SpotifyController.ShuffleState;
-                            UpdatePlayer();
-                            break;
-                        case SoftButtons.Button4:
-                            switch (SpotifyController.RepeatState)
-                            {
-                                case RepeatState.Track:
-                                    SpotifyController.RepeatState = RepeatState.Context;
-                                    break;
-                                case RepeatState.Context:
-                                    SpotifyController.RepeatState = RepeatState.Off;
-                                    break;
-                                case RepeatState.Off:
-                                    SpotifyController.RepeatState = RepeatState.Track;
-                                    break;
-                            }
-                            UpdatePlayer();
-                            break;
-                        case SoftButtons.Button5:
-                            if (SpotifyController.IsLiked(CurrentPlaybackContext.Item.Id))
-                            {
-                                SpotifyController.UnLike(CurrentPlaybackContext.Item.Id);
-                            }
-                            else
-                            {
-                                SpotifyController.Like(CurrentPlaybackContext.Item.Id);
-                            }
-                            UpdatePlayer();
-                            break;
-                        case SoftButtons.Button6:
-                            CurrentPage = SpotifyPlayerPage.Playlist;
-                            SetLEDs();
-                            LoadPlayLists();
-                            UpdatePlayList();
-                            FireStateChanged();
-                            break;
-                        case SoftButtons.Down:
-                            SpotifyController.VolumeDown();
-                            break;
-                        case SoftButtons.Up:
-                            SpotifyController.VolumeUp();
-                            break;
-                        case SoftButtons.Left:
-                            SpotifyController.PlayPrev();
-                            break;
-                        case SoftButtons.Right:
-                            SpotifyController.PlayNext();
-                            break;
-                    }
-                }
-            }
-            FireSoftButtonNotifcation(softButton);
+                FireSoftButtonNotifcation(softButton);
+            });
         }
 
         private void LoadPlayList(SpotifyPlaylist playList)

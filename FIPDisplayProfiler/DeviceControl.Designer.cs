@@ -76,6 +76,8 @@ namespace FIPDisplayProfiler
             this.pbS4ButtonOff = new System.Windows.Forms.PictureBox();
             this.pbS5ButtonOff = new System.Windows.Forms.PictureBox();
             this.pbS6ButtonOff = new System.Windows.Forms.PictureBox();
+            this.timerSpotify = new System.Windows.Forms.Timer(this.components);
+            this.webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             this.contextMenuBindType.SuspendLayout();
             this.contextMenuKnob.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOn)).BeginInit();
@@ -95,6 +97,7 @@ namespace FIPDisplayProfiler
             ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOff)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOff)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOff)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.webView21)).BeginInit();
             this.SuspendLayout();
             // 
             // btnNewPage
@@ -158,70 +161,70 @@ namespace FIPDisplayProfiler
             // volumeUpToolStripMenuItem
             // 
             this.volumeUpToolStripMenuItem.Name = "volumeUpToolStripMenuItem";
-            this.volumeUpToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.volumeUpToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.volumeUpToolStripMenuItem.Text = "Volume &Up";
             this.volumeUpToolStripMenuItem.Click += new System.EventHandler(this.volumeUpToolStripMenuItem_Click);
             // 
             // volumeDownToolStripMenuItem
             // 
             this.volumeDownToolStripMenuItem.Name = "volumeDownToolStripMenuItem";
-            this.volumeDownToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.volumeDownToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.volumeDownToolStripMenuItem.Text = "Volume &Down";
             this.volumeDownToolStripMenuItem.Click += new System.EventHandler(this.volumeDownToolStripMenuItem_Click);
             // 
             // muteToolStripMenuItem
             // 
             this.muteToolStripMenuItem.Name = "muteToolStripMenuItem";
-            this.muteToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.muteToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.muteToolStripMenuItem.Text = "&Mute";
             this.muteToolStripMenuItem.Click += new System.EventHandler(this.muteToolStripMenuItem_Click);
             // 
             // playPauseToolStripMenuItem
             // 
             this.playPauseToolStripMenuItem.Name = "playPauseToolStripMenuItem";
-            this.playPauseToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.playPauseToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.playPauseToolStripMenuItem.Text = "&Play/Pause";
             this.playPauseToolStripMenuItem.Click += new System.EventHandler(this.playPauseToolStripMenuItem_Click);
             // 
             // stopToolStripMenuItem
             // 
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
-            this.stopToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.stopToolStripMenuItem.Text = "&Stop";
             this.stopToolStripMenuItem.Click += new System.EventHandler(this.stopToolStripMenuItem_Click);
             // 
             // nextTrackToolStripMenuItem
             // 
             this.nextTrackToolStripMenuItem.Name = "nextTrackToolStripMenuItem";
-            this.nextTrackToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.nextTrackToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.nextTrackToolStripMenuItem.Text = "&Next Track";
             this.nextTrackToolStripMenuItem.Click += new System.EventHandler(this.nextTrackToolStripMenuItem_Click);
             // 
             // previousTrackToolStripMenuItem
             // 
             this.previousTrackToolStripMenuItem.Name = "previousTrackToolStripMenuItem";
-            this.previousTrackToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.previousTrackToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.previousTrackToolStripMenuItem.Text = "Pre&vious Track";
             this.previousTrackToolStripMenuItem.Click += new System.EventHandler(this.previousTrackToolStripMenuItem_Click);
             // 
             // homeToolStripMenuItem
             // 
             this.homeToolStripMenuItem.Name = "homeToolStripMenuItem";
-            this.homeToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.homeToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.homeToolStripMenuItem.Text = "&Home";
             this.homeToolStripMenuItem.Click += new System.EventHandler(this.homeToolStripMenuItem_Click);
             // 
             // emailToolStripMenuItem
             // 
             this.emailToolStripMenuItem.Name = "emailToolStripMenuItem";
-            this.emailToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.emailToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.emailToolStripMenuItem.Text = "&Email";
             this.emailToolStripMenuItem.Click += new System.EventHandler(this.emailToolStripMenuItem_Click);
             // 
             // calculatorToolStripMenuItem
             // 
             this.calculatorToolStripMenuItem.Name = "calculatorToolStripMenuItem";
-            this.calculatorToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
+            this.calculatorToolStripMenuItem.Size = new System.Drawing.Size(150, 22);
             this.calculatorToolStripMenuItem.Text = "&Calculator";
             this.calculatorToolStripMenuItem.Click += new System.EventHandler(this.calculatorToolStripMenuItem_Click);
             // 
@@ -519,6 +522,23 @@ namespace FIPDisplayProfiler
             this.pbS6ButtonOff.TabStop = false;
             this.pbS6ButtonOff.Click += new System.EventHandler(this.pbS6Button_Click);
             // 
+            // timerSpotify
+            // 
+            this.timerSpotify.Interval = 1000;
+            this.timerSpotify.Tick += new System.EventHandler(this.timerSpotify_Tick);
+            // 
+            // webView21
+            // 
+            this.webView21.AllowExternalDrop = true;
+            this.webView21.CreationProperties = null;
+            this.webView21.DefaultBackgroundColor = System.Drawing.Color.White;
+            this.webView21.Location = new System.Drawing.Point(0, 0);
+            this.webView21.Name = "webView21";
+            this.webView21.Size = new System.Drawing.Size(261, 244);
+            this.webView21.TabIndex = 24;
+            this.webView21.Visible = false;
+            this.webView21.ZoomFactor = 1D;
+            // 
             // DeviceControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -546,6 +566,7 @@ namespace FIPDisplayProfiler
             this.Controls.Add(this.btnNewPage);
             this.Controls.Add(this.fipImage);
             this.Controls.Add(this.devicePictureBox);
+            this.Controls.Add(this.webView21);
             this.Name = "DeviceControl";
             this.Size = new System.Drawing.Size(580, 244);
             this.Load += new System.EventHandler(this.DeviceControl_Load);
@@ -568,6 +589,7 @@ namespace FIPDisplayProfiler
             ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOff)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOff)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOff)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.webView21)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -619,5 +641,7 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.PictureBox pbS4ButtonOff;
         private System.Windows.Forms.PictureBox pbS5ButtonOff;
         private System.Windows.Forms.PictureBox pbS6ButtonOff;
+        private System.Windows.Forms.Timer timerSpotify;
+        private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
     }
 }

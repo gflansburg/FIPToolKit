@@ -45,6 +45,7 @@ namespace FIPDisplayProfiler
             this.chkMaintainAspectRadio = new System.Windows.Forms.CheckBox();
             this.chkPortraitMode = new System.Windows.Forms.CheckBox();
             this.chkShowControls = new System.Windows.Forms.CheckBox();
+            this.chkResumePlayback = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnCancel
@@ -179,12 +180,22 @@ namespace FIPDisplayProfiler
             // chkShowControls
             // 
             this.chkShowControls.AutoSize = true;
-            this.chkShowControls.Location = new System.Drawing.Point(228, 73);
+            this.chkShowControls.Location = new System.Drawing.Point(213, 106);
             this.chkShowControls.Name = "chkShowControls";
             this.chkShowControls.Size = new System.Drawing.Size(94, 17);
             this.chkShowControls.TabIndex = 53;
             this.chkShowControls.Text = "Show Controls";
             this.chkShowControls.UseVisualStyleBackColor = true;
+            // 
+            // chkResumePlayback
+            // 
+            this.chkResumePlayback.AutoSize = true;
+            this.chkResumePlayback.Location = new System.Drawing.Point(213, 72);
+            this.chkResumePlayback.Name = "chkResumePlayback";
+            this.chkResumePlayback.Size = new System.Drawing.Size(112, 17);
+            this.chkResumePlayback.TabIndex = 54;
+            this.chkResumePlayback.Text = "Resume Playback";
+            this.chkResumePlayback.UseVisualStyleBackColor = true;
             // 
             // VideoPlayerForm
             // 
@@ -193,6 +204,7 @@ namespace FIPDisplayProfiler
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(482, 135);
+            this.Controls.Add(this.chkResumePlayback);
             this.Controls.Add(this.chkShowControls);
             this.Controls.Add(this.chkPortraitMode);
             this.Controls.Add(this.chkMaintainAspectRadio);
@@ -236,5 +248,6 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.CheckBox chkMaintainAspectRadio;
         private System.Windows.Forms.CheckBox chkPortraitMode;
         private System.Windows.Forms.CheckBox chkShowControls;
+        private System.Windows.Forms.CheckBox chkResumePlayback;
     }
 }

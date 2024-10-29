@@ -931,8 +931,7 @@ namespace SpotifyAPI.Web
         /// <remarks>AUTH NEEDED</remarks>
         public ErrorResponse SaveTracks(List<string> ids)
         {
-            JArray array = new JArray(ids);
-            return UploadData<ErrorResponse>(_builder.SaveTracks(), array.ToString(Formatting.None), "PUT") ?? new ErrorResponse();
+            return UploadData<ErrorResponse>(_builder.SaveTracks(ids), "", "PUT") ?? new ErrorResponse();
         }
 
         /// <summary>
@@ -943,8 +942,7 @@ namespace SpotifyAPI.Web
         /// <remarks>AUTH NEEDED</remarks>
         public async Task<ErrorResponse> SaveTracksAsync(List<string> ids)
         {
-            JArray array = new JArray(ids);
-            return (await UploadDataAsync<ErrorResponse>(_builder.SaveTracks(), array.ToString(Formatting.None), "PUT").ConfigureAwait(false)) ?? new ErrorResponse();
+            return (await UploadDataAsync<ErrorResponse>(_builder.SaveTracks(ids), "", "PUT").ConfigureAwait(false)) ?? new ErrorResponse();
         }
 
         /// <summary>
@@ -1007,20 +1005,29 @@ namespace SpotifyAPI.Web
         /// <remarks>AUTH NEEDED</remarks>
         public ErrorResponse RemoveSavedTracks(List<string> ids)
         {
-            JArray array = new JArray(ids);
-            return UploadData<ErrorResponse>(_builder.RemoveSavedTracks(), array.ToString(Formatting.None), "DELETE") ?? new ErrorResponse();
+            return UploadData<ErrorResponse>(_builder.RemoveSavedTracks(ids), "", "DELETE") ?? new ErrorResponse();
         }
 
         /// <summary>
         ///     Remove one track from the current user’s “Your Music” library.
         /// </summary>
-        /// <param name="ids">A list of the Spotify IDs.</param>
+        /// <param name="id">A Spotify ID.</param>
         /// <returns></returns>
         /// <remarks>AUTH NEEDED</remarks>
         public ErrorResponse RemoveSavedTrack(string id)
         {
-            JArray array = new JArray(new List<string> { id });
-            return UploadData<ErrorResponse>(_builder.RemoveSavedTracks(), array.ToString(Formatting.None), "DELETE") ?? new ErrorResponse();
+            return RemoveSavedTracks(new List<string> { id });
+        }
+
+        /// <summary>
+        ///     Remove one track from the current user’s “Your Music” library asynchronously.
+        /// </summary>
+        /// <param name="id">A Spotify ID.</param>
+        /// <returns></returns>
+        /// <remarks>AUTH NEEDED</remarks>
+        public Task<ErrorResponse> RemoveSavedTrackAsync(string id)
+        {
+            return RemoveSavedTracksAsync(new List<string> { id });
         }
 
         /// <summary>
@@ -1031,8 +1038,7 @@ namespace SpotifyAPI.Web
         /// <remarks>AUTH NEEDED</remarks>
         public async Task<ErrorResponse> RemoveSavedTracksAsync(List<string> ids)
         {
-            JArray array = new JArray(ids);
-            return (await UploadDataAsync<ErrorResponse>(_builder.RemoveSavedTracks(), array.ToString(Formatting.None), "DELETE").ConfigureAwait(false)) ?? new ErrorResponse();
+            return (await UploadDataAsync<ErrorResponse>(_builder.RemoveSavedTracks(ids), "", "DELETE").ConfigureAwait(false)) ?? new ErrorResponse();
         }
 
         /// <summary>

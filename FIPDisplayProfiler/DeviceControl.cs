@@ -1,6 +1,8 @@
-﻿using FIPToolKit.FlightSim;
+﻿using FIPDisplayProfiler.Properties;
+using FIPToolKit.FlightSim;
 using FIPToolKit.Models;
 using FIPToolKit.Tools;
+using Microsoft.Web.WebView2.Core;
 using Saitek.DirectOutput;
 using System;
 using System.Drawing;
@@ -17,6 +19,8 @@ namespace FIPDisplayProfiler
         private global::FIPDisplayProfiler.ToolStripSubMenu rightToolStripMenuItem;
 
         public IntPtr MainWindowHandle { get; set; }
+
+        public event EventHandler OnShowWindow;
 
         private FIPDevice _device;
         public FIPPage SelectedPage { get; private set; }
@@ -126,6 +130,7 @@ namespace FIPDisplayProfiler
         public DeviceControl()
         {
             InitializeComponent();
+            InitializeWebView2Async();
             pbKnobLeft.Tag = SoftButtons.Left;
             pbKnobRight.Tag = SoftButtons.Up;
             pbS1ButtonOff.Tag = pbS1ButtonOn.Tag = SoftButtons.Button1;
@@ -195,6 +200,10 @@ namespace FIPDisplayProfiler
             int index = lbPages.Items.Add(page);
             lbPages.SelectedIndex = index;
             SelectedPage = lbPages.SelectedItem as FIPPage;
+            if (page.GetType() == typeof(FIPSpotifyPlayer))
+            {
+                ((FIPSpotifyPlayer)page).Browser = webView21;
+            }
             return index;
         }
 
@@ -336,10 +345,11 @@ namespace FIPDisplayProfiler
                                     return;
                                 }
                             }
-                            FIPPage page = new FIPSpotifyPlayer();
+                            FIPSpotifyPlayer page = new FIPSpotifyPlayer();
+                            page.Browser = webView21;
                             SpotifyControllerForm form = new SpotifyControllerForm()
                             {
-                                SpotifyController = page as FIPSpotifyPlayer
+                                SpotifyController = page
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
@@ -599,8 +609,8 @@ namespace FIPDisplayProfiler
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
-                            lbPages.Items.Remove(page);
-                            lbPages.Items.Insert(index, page);
+                            lbPages.DrawMode = DrawMode.OwnerDrawFixed;
+                            lbPages.DrawMode = DrawMode.Normal;
                             lbPages.SelectedIndex = index;
                         }
                     }
@@ -612,8 +622,8 @@ namespace FIPDisplayProfiler
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
-                            lbPages.Items.Remove(page);
-                            lbPages.Items.Insert(index, page);
+                            lbPages.DrawMode = DrawMode.OwnerDrawFixed;
+                            lbPages.DrawMode = DrawMode.Normal;
                             lbPages.SelectedIndex = index;
                         }
                     }
@@ -628,7 +638,7 @@ namespace FIPDisplayProfiler
                             ((FIPVideoPlayer)page).OnSettingsUpdated += Page_OnSettingsUpdated;
                             ThreadPool.QueueUserWorkItem(_ =>
                             {
-                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls);
+                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback);
                             });
                         }
                     }
@@ -638,7 +648,6 @@ namespace FIPDisplayProfiler
                         {
                             SpotifyController = page as FIPSpotifyPlayer
                         };
-                        // No "Name" field to change so no need to force a reload
                         dlg.ShowDialog(this);
                     }
                     else if(typeof(FIPScreenMirror).IsAssignableFrom(page.GetType()))
@@ -647,7 +656,6 @@ namespace FIPDisplayProfiler
                         {
                             Page = page as FIPScreenMirror
                         };
-                        // No "Name" field to change so no need to force a reload
                         int screenIndex = dlg.Page.ScreenIndex;
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
@@ -670,8 +678,8 @@ namespace FIPDisplayProfiler
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
-                            lbPages.Items.Remove(page);
-                            lbPages.Items.Insert(index, page);
+                            lbPages.DrawMode = DrawMode.OwnerDrawFixed;
+                            lbPages.DrawMode = DrawMode.Normal;
                             lbPages.SelectedIndex = index;
                         }
                     }
@@ -683,8 +691,8 @@ namespace FIPDisplayProfiler
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
-                            lbPages.Items.Remove(page);
-                            lbPages.Items.Insert(index, page);
+                            lbPages.DrawMode = DrawMode.OwnerDrawFixed;
+                            lbPages.DrawMode = DrawMode.Normal;
                             lbPages.SelectedIndex = index;
                         }
                     }
@@ -695,7 +703,6 @@ namespace FIPDisplayProfiler
                             AirspeedGauge = page,
                             AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
                         };
-                        // No "Name" field to change so no need to force a reload
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
                             ((FIPSimConnectAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
@@ -708,7 +715,6 @@ namespace FIPDisplayProfiler
                             AirspeedGauge = page,
                             AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
                         };
-                        // No "Name" field to change so no need to force a reload
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
                             ((FIPSimConnectAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
@@ -720,7 +726,6 @@ namespace FIPDisplayProfiler
                         {
                             AnalogGauge = page
                         };
-                        // No "Name" field to change so no need to force a reload
                         dlg.ShowDialog(this);
                     }
                     else if (typeof(FIPFSUIPCAirspeed).IsAssignableFrom(page.GetType()))
@@ -730,7 +735,6 @@ namespace FIPDisplayProfiler
                             AirspeedGauge = page,
                             AutoSelectAircraft = ((FIPFSUIPCAirspeed)page).AutoSelectAircraft
                         };
-                        // No "Name" field to change so no need to force a reload
                         if(dlg.ShowDialog(this) == DialogResult.OK)
                         {
                             ((FIPFSUIPCAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
@@ -742,7 +746,6 @@ namespace FIPDisplayProfiler
                         {
                             AnalogGauge = page
                         };
-                        // No "Name" field to change so no need to force a reload
                         dlg.ShowDialog(this);
                     }
                     else if (typeof(FIPSimConnectMap).IsAssignableFrom(page.GetType()))
@@ -751,7 +754,6 @@ namespace FIPDisplayProfiler
                         {
                             SimMap = page as FIPSimConnectMap
                         };
-                        // No "Name" field to change so no need to force a reload
                         dlg.ShowDialog(this);
                     }
                     else if (typeof(FIPFSUIPCMap).IsAssignableFrom(page.GetType()))
@@ -760,7 +762,6 @@ namespace FIPDisplayProfiler
                         {
                             FSUIPCMap = page as FIPFSUIPCMap
                         };
-                        // No "Name" field to change so no need to force a reload
                         dlg.ShowDialog(this);
                     }
                     // No settings for Flight Share
@@ -1732,6 +1733,55 @@ namespace FIPDisplayProfiler
             UpdateLeds();
         }
 
+        private DateTime? webViewShowTime = null;
+        private void timerSpotify_Tick(object sender, EventArgs e)
+        {
+            foreach (FIPPage page in Device.Pages)
+            {
+                if (page.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    FIPSpotifyPlayer player = page as FIPSpotifyPlayer;
+                    if (FIPSpotifyPlayer.IsAuthenticating && webViewShowTime == null)
+                    {
+                        webViewShowTime = DateTime.Now;
+                    }
+                    else if (!FIPSpotifyPlayer.IsAuthenticating)
+                    {
+                        webViewShowTime = null;
+                    }
+                    if (FIPSpotifyPlayer.IsAuthenticating && !webView21.Visible && (DateTime.Now - webViewShowTime.Value).TotalSeconds >= 5)
+                    {
+                        // Keep it hidden for token renewal, but if it doesn't renew within 5 seconds it may be because we need to log in and/or give permissions.
+                        //CloseAllDialogs();
+                        webView21.Visible = true;
+                        webView21.BringToFront();
+                        webView21.Focus();
+                        OnShowWindow?.Invoke(this, EventArgs.Empty);
+                    }
+                    else if (!FIPSpotifyPlayer.IsAuthenticating && webView21.Visible)
+                    {
+                        webView21.Visible = false;
+                        webView21.SendToBack();
+                    }
+                    else if (webView21.Visible && FIPSpotifyPlayer.IsAuthorized && player.IsConfigured && FIPSpotifyPlayer.Token != null && !FIPSpotifyPlayer.Token.IsExpired())
+                    {
+                        FIPSpotifyPlayer.IsAuthenticating = false;
+                        webView21.Visible = false;
+                        webView21.SendToBack();
+                    }
+                    if (FIPSpotifyPlayer.Token == null)
+                    {
+                        FIPSpotifyPlayer.Authenticate();
+                    }
+                    else if (FIPSpotifyPlayer.Token.IsExpired())
+                    {
+                        FIPSpotifyPlayer.RefreshToken();
+                    }
+                    break;
+                }
+            }
+        }
+
         /*protected override void WndProc(ref Message m)
         {
             if (m.Msg == NativeMethods.WM_MOUSEWHEEL)
@@ -1757,5 +1807,56 @@ namespace FIPDisplayProfiler
             }
             base.WndProc(ref m);
         }*/
+
+        private async void InitializeWebView2Async(string tempDir = "")
+        {
+            CoreWebView2Environment webView2Environment = null;
+
+            //set value
+            string tempDir2 = tempDir;
+
+            if (string.IsNullOrEmpty(tempDir2))
+            {
+                //get fully-qualified path to user's temp folder
+                tempDir2 = System.IO.Path.GetTempPath();
+            }//if
+
+            //add event handler for CoreWebView2Ready - before webView2Ctl is initialized
+            //it's important to not use webViewCtrl until CoreWebView2Ready event is thrown
+            webView21.CoreWebView2InitializationCompleted += WebView21_CoreWebView2InitializationCompleted;
+
+            CoreWebView2EnvironmentOptions options = null;
+            //options = new CoreWebView2EnvironmentOptions("--disk-cache-size=200");
+            //options = new CoreWebView2EnvironmentOptions("–incognito ");
+
+            //set webView2 temp folder. The temp folder is used to store webView2
+            //cached objects. If not specified, the folder where the executable
+            //was started will be used. If the user doesn't have write permissions
+            //on that folder, such as C:\Program Files\<your application folder>\,
+            //then webView2 will fail. 
+
+            //webView2Environment = await CoreWebView2Environment.CreateAsync(@"C:\Program Files (x86)\Microsoft\Edge Dev\Application\85.0.564.8", tempDir2, options);
+            webView2Environment = await CoreWebView2Environment.CreateAsync(null, tempDir2, options);
+
+            //webView2Ctl must be inialized before it can be used
+            //wait for coreWebView2 initialization
+            //when complete, CoreWebView2Ready event will be thrown
+            await webView21.EnsureCoreWebView2Async(webView2Environment);
+
+            webView21.Source = new System.Uri("https://www.spotify.com", System.UriKind.Absolute);
+
+            //add other event handlers - after webView2Ctrl is initialized
+            //webView2Ctl.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
+            //webView2Ctl.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+            //webView2Ctl.NavigationCompleted += WebView2Ctl_NavigationCompleted;
+            //webView2Ctl.NavigationStarting += WebView2Ctl_NavigationStarting;
+
+        }
+
+        private void WebView21_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
+        {
+            System.Diagnostics.Debug.Print("Info: WebView21_CoreWebView2InitializationCompleted");
+            timerSpotify.Enabled = true;
+        }
     }
 }

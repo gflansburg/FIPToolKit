@@ -157,6 +157,7 @@ namespace FIPDisplayProfiler
         private void AddTab(FIPDevice device, bool makeActive)
         {
             DeviceControl control = new DeviceControl();
+            control.OnShowWindow += Control_OnShowWindow;
             control.MainWindowHandle = this.Handle;
             control.Device = device;
             control.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
@@ -170,6 +171,17 @@ namespace FIPDisplayProfiler
                 tabDevices.SelectedTab = tab;
             }
             SortTabs();
+        }
+
+        private void Control_OnShowWindow(object sender, EventArgs e)
+        {
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                Invoke((Action)(() =>
+                {
+                    ShowWindow();
+                }));
+            });
         }
 
         private void RemoveTab(FIPDevice device)
@@ -535,7 +547,7 @@ namespace FIPDisplayProfiler
             Properties.Settings.Default.Save();
         }
 
-        private void ShowWindow()
+        public void ShowWindow()
         {
             WindowState = FormWindowState.Normal;
             ShowInTaskbar = true;

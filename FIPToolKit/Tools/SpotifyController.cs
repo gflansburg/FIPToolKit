@@ -383,7 +383,7 @@ namespace FIPToolKit.Tools
         {
             if (SpotifyWebAPI != null)
             {
-                SpotifyWebAPI.SaveTrack(id);
+                var error = SpotifyWebAPI.SaveTrack(id);
             }
         }
 

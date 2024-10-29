@@ -19,6 +19,7 @@ namespace SpotifyAPI.Web.Auth
         public string State { get; set; }
         public Scope Scope { get; set; }
         public bool ShowDialog { get; set; }
+        public Microsoft.Web.WebView2.WinForms.WebView2 Browser { get; set; }
 
         private readonly string _folder;
         private readonly string _type;
@@ -76,7 +77,17 @@ namespace SpotifyAPI.Web.Auth
         public void OpenBrowser()
         {
             string uri = GetUri();
-            AuthUtil.OpenBrowser(uri);
+            if (Browser != null)
+            {
+                if (Browser.CoreWebView2 != null)
+                {
+                    Browser.CoreWebView2.Navigate(uri);
+                }
+            }
+            else
+            {
+                AuthUtil.OpenBrowser(uri);
+            }
         }
 
         internal void TriggerAuth(T payload)

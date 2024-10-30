@@ -14,8 +14,7 @@ using SixLabors.ImageSharp.Processing;
 using System.Threading;
 using Saitek.DirectOutput;
 using System.Linq;
-using System.Windows;
-using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace FIPToolKit.Models
 {
@@ -91,22 +90,9 @@ namespace FIPToolKit.Models
             {
                 if (!(_filename ?? string.Empty).Equals(value ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                 {
-                    ThreadPool.QueueUserWorkItem(_ =>
-                    {
-                        if (player.IsPlaying)
-                        {
-                            player.Stop();
-                        }
-                        _filename = value;
-                        if (media != null)
-                        {
-                            media.Dispose();
-                            media = null;
-                            player.Media = null;
-                        }
-                        LoadVideo();
-                    });
+                    _filename = value;
                     IsDirty = true;
+                    LoadVideo();
                 }
             }
         }
@@ -141,13 +127,13 @@ namespace FIPToolKit.Models
                 {
                     _volume = value;
                     IsDirty = true;
-                    if (player != null)
+                    ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        ThreadPool.QueueUserWorkItem(_ =>
+                        if (player != null)
                         {
                             player.Volume = _volume;
-                        });
-                    }
+                        }
+                    });
                 }
             }
         }
@@ -265,61 +251,82 @@ namespace FIPToolKit.Models
             IsDirty = false;
             Core.Initialize();
             libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-playlist-autostart", "--quiet", "--no-sout-video", "--sout-transcode-scale=Auto", string.Format("--sout-transcode-width={0}", Width), string.Format("--sout-transcode-height={0}", Height), string.Format("--sout-transcode-maxwidth={0}", Width), string.Format("--sout-transcode-maxheight={0}", Height) });
-            player = new MediaPlayer(libVLC);
-            player.SetVideoCallbacks(Lock, null, Display);
-            player.EnableHardwareDecoding = true;
-            player.EncounteredError += (s, e) =>
+            CreatePlayer();
+        }
+
+        private void CreatePlayer()
+        {
+            if (player == null)
             {
-                if (media != null)
+                player = new MediaPlayer(libVLC);
+                player.SetVideoCallbacks(Lock, null, Display);
+                player.EnableHardwareDecoding = true;
+                player.EncounteredError += (s, e) =>
                 {
-                    media.Dispose();
-                    media = null;
-                }
-                player.Media = null;
-                using (Bitmap bmp = ImageHelper.GetErrorImage("An Error Has Occured."))
-                {
-                    SendImage(bmp);
-                }
-            };
-            player.VolumeChanged += (s, e) =>
-            {
-                Volume = player.Volume;
-            };
-            player.Opening += (s, e) =>
-            {
-                opening = true;
-                start = _position;
-                using (Bitmap bmp = ImageHelper.GetErrorImage(Name))
-                {
-                    SendImage(bmp);
-                }
-            };
-            player.Playing += (s, e) =>
-            {
-                if (opening)
-                {
-                    opening = false;
-                    if (_resumePlayback)
+                    ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        ThreadPool.QueueUserWorkItem(_ =>
+                        if (media != null)
                         {
-                            player.Position = start;
-                        });
-                    }
-                }
-            };
-            player.EndReached += (s, e) =>
-            {
-                ThreadPool.QueueUserWorkItem(_ =>
+                            media.Dispose();
+                            media = null;
+                        }
+                        player.Media = null;
+                        using (Bitmap bmp = ImageHelper.GetErrorImage("An Error Has Occured."))
+                        {
+                            SendImage(bmp);
+                        }
+                    });
+                };
+                player.VolumeChanged += (s, e) =>
                 {
-                    player.Stop();
-                    _position = 0;
-                    IsDirty = true;
-                    player.Position = CurrentFrame = 0;
-                    player.Play();
-                    OnVideoLoop?.Invoke(this, new FIPVideoPlayerEventArgs(this));
-                });
-            };
+                    if (player != null)
+                    {
+                        _volume = player.Volume;
+                        IsDirty = true;
+                    }
+                };
+                player.Opening += (s, e) =>
+                {
+                    opening = true;
+                    start = _position;
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        using (Bitmap bmp = ImageHelper.GetErrorImage(Name))
+                        {
+                            SendImage(bmp);
+                        }
+                    });
+                };
+                player.Playing += (s, e) =>
+                {
+                    if (opening)
+                    {
+                        opening = false;
+                        if (_resumePlayback)
+                        {
+                            ThreadPool.QueueUserWorkItem(_ =>
+                            {
+                                if (player != null)
+                                {
+                                    player.Position = start;
+                                }
+                            });
+                        }
+                    }
+                };
+                player.EndReached += (s, e) =>
+                {
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        player.Stop();
+                        _position = 0;
+                        IsDirty = true;
+                        player.Position = CurrentFrame = 0;
+                        player.Play();
+                        OnVideoLoop?.Invoke(this, new FIPVideoPlayerEventArgs(this));
+                    });
+                };
+            }
         }
 
         private uint Align(uint size)
@@ -363,58 +370,73 @@ namespace FIPToolKit.Models
 
         private void Display(IntPtr opaque, IntPtr picture)
         {
-            _position = player.Position;
-            IsDirty = true;
-            if (CurrentFrame % 2 == 0)
+            if (player != null)
             {
-                using (var image = new Image<SixLabors.ImageSharp.PixelFormats.Rgb24>((int)(Pitch / BytePerPixel), (int)Lines))
+                try
                 {
-                    using (var sourceStream = CurrentMappedFile.CreateViewStream())
+                    _position = player.Position;
+                    IsDirty = true;
+                    if (CurrentFrame % 2 == 0)
                     {
-                        var mg = image.GetPixelMemoryGroup();
-                        for (int i = 0; i < mg.Count; i++)
+                        using (var image = new Image<SixLabors.ImageSharp.PixelFormats.Rgb24>((int)(Pitch / BytePerPixel), (int)Lines))
                         {
-                            sourceStream.Read(MemoryMarshal.AsBytes(mg[i].Span));
-                        }
-                        image.Mutate(ctx => ctx.Crop((int)Width, (int)Height));
-                        using (Bitmap bmp = new Bitmap(320, 240, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
-                        {
-                            using (Graphics graphics = Graphics.FromImage(bmp))
+                            using (var sourceStream = CurrentMappedFile.CreateViewStream())
                             {
-                                graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
-                                graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                                graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
-                                using (var wrapMode = new System.Drawing.Imaging.ImageAttributes())
+                                var mg = image.GetPixelMemoryGroup();
+                                for (int i = 0; i < mg.Count; i++)
                                 {
-                                    wrapMode.SetWrapMode(System.Drawing.Drawing2D.WrapMode.TileFlipXY);
-                                    if (MaintainAspectRatio)
+                                    sourceStream.Read(MemoryMarshal.AsBytes(mg[i].Span));
+                                }
+                                image.Mutate(ctx => ctx.Crop((int)Width, (int)Height));
+                                using (Bitmap bmp = new Bitmap(320, 240, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
+                                {
+                                    using (Graphics graphics = Graphics.FromImage(bmp))
                                     {
-                                        graphics.DrawImage(image.ToArray().ToNetImage(), new System.Drawing.Rectangle((320 - (int)Width) / 2, (240 - (int)Height) / 2, (int)Width, (int)Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
-                                    }
-                                    else
-                                    {
-                                        graphics.DrawImage(image.ToArray().ToNetImage(), new System.Drawing.Rectangle(0, 0, 320, 240), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                                        graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+                                        graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                                        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                        graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                                        using (var wrapMode = new System.Drawing.Imaging.ImageAttributes())
+                                        {
+                                            wrapMode.SetWrapMode(System.Drawing.Drawing2D.WrapMode.TileFlipXY);
+                                            if (MaintainAspectRatio)
+                                            {
+                                                graphics.DrawImage(image.ToArray().ToNetImage(), new System.Drawing.Rectangle((320 - (int)Width) / 2, (240 - (int)Height) / 2, (int)Width, (int)Height), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                                            }
+                                            else
+                                            {
+                                                graphics.DrawImage(image.ToArray().ToNetImage(), new System.Drawing.Rectangle(0, 0, 320, 240), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                                            }
+                                        }
+                                        if (ShowControls)
+                                        {
+                                            graphics.AddButtonIcon(player.IsPlaying ? Properties.Resources.pause : Properties.Resources.play, System.Drawing.Color.White, false, SoftButtons.Button1);
+                                            graphics.AddButtonIcon(Properties.Resources.rotate, System.Drawing.Color.White, false, SoftButtons.Button2);
+                                        }
+                                        DrawButtons(graphics);
+                                        SendImage(bmp);
                                     }
                                 }
-                                if (ShowControls)
-                                {
-                                    graphics.AddButtonIcon(player.IsPlaying ? Properties.Resources.pause : Properties.Resources.play, System.Drawing.Color.White, false, SoftButtons.Button1);
-                                    graphics.AddButtonIcon(Properties.Resources.rotate, System.Drawing.Color.White, false, SoftButtons.Button2);
-                                }
-                                DrawButtons(graphics);
-                                SendImage(bmp);
                             }
                         }
                     }
                 }
+                catch(Exception)
+                {
+                }
             }
             CurrentFrame++;
-            CurrentMappedViewAccessor.Dispose();
-            CurrentMappedFile.Dispose();
-            CurrentMappedFile = null;
-            CurrentMappedViewAccessor = null;
+            if (CurrentMappedViewAccessor != null)
+            {
+                CurrentMappedViewAccessor.Dispose();
+                CurrentMappedViewAccessor = null;
+            }
+            if (CurrentMappedFile != null)
+            {
+                CurrentMappedFile.Dispose();
+                CurrentMappedFile = null;
+            }
         }
 
         public override void ExecuteSoftButton(SoftButtons softButton)
@@ -422,9 +444,9 @@ namespace FIPToolKit.Models
             switch (softButton)
             {
                 case SoftButtons.Button1:
-                    ThreadPool.QueueUserWorkItem(_ =>
+                    if (player != null && media != null)
                     {
-                        if (player != null && media != null)
+                        ThreadPool.QueueUserWorkItem(_ =>
                         {
                             if (player.IsPlaying)
                             {
@@ -434,12 +456,12 @@ namespace FIPToolKit.Models
                             {
                                 player.Play();
                             }
-                        }
-                        else if (player != null && media == null && !string.IsNullOrEmpty(Filename))
-                        {
-                            LoadVideo();
-                        }
-                    });
+                        });
+                    }
+                    else if (player != null && media == null && !string.IsNullOrEmpty(Filename))
+                    {
+                        LoadVideo();
+                    }
                     break;
                 case SoftButtons.Button2:
                     PortraitMode = !PortraitMode;
@@ -518,40 +540,51 @@ namespace FIPToolKit.Models
 
         private void LoadVideo()
         {
+            if (player != null)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    Play(Filename);
+                });
+            }
+        }
+
+        private void Play(string filename)
+        {
+            Stop();
+            if (media != null)
+            {
+                media.Dispose();
+                media = null;
+            }
             if (!string.IsNullOrEmpty(Filename) && File.Exists(Filename))
             {
-                if (media == null)
+                var inputFile = new MediaToolkit.Model.MediaFile
                 {
-                    var inputFile = new MediaToolkit.Model.MediaFile
-                    {
-                        Filename = Filename
-                    };
-                    using (var engine = new MediaToolkit.Engine())
-                    {
-                        engine.GetMetadata(inputFile);
-                        var size = inputFile.Metadata.VideoData.FrameSize.Split(new[] { 'x' }).Select(o => int.Parse(o)).ToArray();
-                        FrameSize = new System.Drawing.SizeF(size[PortraitMode ? 1 : 0], size[PortraitMode ? 0 : 1]);
-                        Duration = inputFile.Metadata.Duration;
-                        Fps = inputFile.Metadata.VideoData.Fps;
-                    }
-                    // Figure out the ratio
-                    double ratioX = 320 / FrameSize.Width;
-                    double ratioY = 240 / FrameSize.Height;
-                    // use whichever multiplier is smaller
-                    double ratio = ratioX < ratioY ? ratioX : ratioY;
-                    Height = Convert.ToUInt32(FrameSize.Height * ratio);
-                    Width = Convert.ToUInt32(FrameSize.Width * ratio);
-                    Pitch = Align(Width * BytePerPixel);
-                    Lines = Align(Height);
-                    player.SetVideoFormat(VideoFormat, Width, Height, Pitch);
-                    media = new Media(libVLC, Filename);
-                    player.Media = media;
-                    if (IsActive)
-                    {
-                        player.Play();
-                    }
+                    Filename = Filename
+                };
+                using (var engine = new MediaToolkit.Engine())
+                {
+                    engine.GetMetadata(inputFile);
+                    var size = inputFile.Metadata.VideoData.FrameSize.Split(new[] { 'x' }).Select(o => int.Parse(o)).ToArray();
+                    FrameSize = new System.Drawing.SizeF(size[PortraitMode ? 1 : 0], size[PortraitMode ? 0 : 1]);
+                    Duration = inputFile.Metadata.Duration;
+                    Fps = inputFile.Metadata.VideoData.Fps;
                 }
-                else if (!player.IsPlaying)
+                // Figure out the ratio
+                double ratioX = 320 / FrameSize.Width;
+                double ratioY = 240 / FrameSize.Height;
+                // use whichever multiplier is smaller
+                double ratio = ratioX < ratioY ? ratioX : ratioY;
+                Height = Convert.ToUInt32(FrameSize.Height * ratio);
+                Width = Convert.ToUInt32(FrameSize.Width * ratio);
+                Pitch = Align(Width * BytePerPixel);
+                Lines = Align(Height);
+                CreatePlayer();
+                player.SetVideoFormat(VideoFormat, Width, Height, Pitch);
+                media = new Media(libVLC, filename);
+                player.Media = media;
+                if (IsActive)
                 {
                     player.Play();
                 }
@@ -563,6 +596,21 @@ namespace FIPToolKit.Models
                     SendImage(bmp);
                 }
             }
+        }
+
+        private void Stop()
+        {
+            MediaPlayer oldPlayer = player;
+            player = null;
+            Task.Run(() =>
+            {
+                if (oldPlayer != null)
+                {
+                    oldPlayer.Stop();
+                    oldPlayer.Dispose();
+                    oldPlayer = null;
+                }
+            });
         }
 
         public void UpdateSettings(int index, string name, string filename, Font font, System.Drawing.Color fontColor, bool maintainAspectRatio, bool portraitMode, bool showControls, bool resumePlayback)

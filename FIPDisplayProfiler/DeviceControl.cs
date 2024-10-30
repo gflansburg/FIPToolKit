@@ -654,10 +654,15 @@ namespace FIPDisplayProfiler
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
                             ((FIPVideoPlayer)page).OnSettingsUpdated += Page_OnSettingsUpdated;
-                            ThreadPool.QueueUserWorkItem(_ =>
+                            this.Invoke((Action)(() =>
                             {
                                 ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback);
-                            });
+                            }));
+
+                            /*ThreadPool.QueueUserWorkItem(_ =>
+                            {
+                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback);
+                            });*/
                         }
                     }
                     else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))

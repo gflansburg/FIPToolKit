@@ -62,9 +62,11 @@ namespace FIPToolKit.Models
         public System.Drawing.SizeF FrameSize { get; private set; }
 
         /// <summary>
-        /// RGBA is used, so 4 byte per pixel, or 24 bits.
+        /// RGB is used, so 3 byte per pixel, or 24 bits.
         /// </summary>
         private const uint BytePerPixel = 3;
+
+        private const string VideoFormat = "RV24";
 
         /// <summary>
         /// the number of bytes per "line"
@@ -122,6 +124,30 @@ namespace FIPToolKit.Models
                 {
                     _showControls = value;
                     IsDirty = true;
+                }
+            }
+        }
+
+        private int _volume = 100;
+        public int Volume
+        {
+            get
+            {
+                return _volume;
+            }
+            set
+            {
+                if (_volume != value)
+                {
+                    _volume = value;
+                    IsDirty = true;
+                    if (player != null)
+                    {
+                        ThreadPool.QueueUserWorkItem(_ =>
+                        {
+                            player.Volume = _volume;
+                        });
+                    }
                 }
             }
         }
@@ -211,7 +237,7 @@ namespace FIPToolKit.Models
                             Width = Convert.ToUInt32(FrameSize.Width * ratio);
                             Pitch = Align(Width * BytePerPixel);
                             Lines = Align(Height);
-                            player.SetVideoFormat("RV24", Width, Height, Pitch);
+                            player.SetVideoFormat(VideoFormat, Width, Height, Pitch);
                             if (IsActive)
                             {
                                 player.Play();
@@ -240,6 +266,7 @@ namespace FIPToolKit.Models
             Core.Initialize();
             libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-playlist-autostart", "--quiet", "--no-sout-video", "--sout-transcode-scale=Auto", string.Format("--sout-transcode-width={0}", Width), string.Format("--sout-transcode-height={0}", Height), string.Format("--sout-transcode-maxwidth={0}", Width), string.Format("--sout-transcode-maxheight={0}", Height) });
             player = new MediaPlayer(libVLC);
+            player.Volume = Volume;
             player.SetVideoCallbacks(Lock, null, Display);
             player.EnableHardwareDecoding = true;
             player.EncounteredError += (s, e) =>
@@ -254,6 +281,10 @@ namespace FIPToolKit.Models
                 {
                     SendImage(bmp);
                 }
+            };
+            player.VolumeChanged += (s, e) =>
+            {
+                Volume = player.Volume;
             };
             player.Opening += (s, e) =>
             {
@@ -351,7 +382,7 @@ namespace FIPToolKit.Models
                         {
                             using (Graphics graphics = Graphics.FromImage(bmp))
                             {
-                                graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+                                graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
                                 graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                                 graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                                 graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
@@ -513,7 +544,7 @@ namespace FIPToolKit.Models
                     Width = Convert.ToUInt32(FrameSize.Width * ratio);
                     Pitch = Align(Width * BytePerPixel);
                     Lines = Align(Height);
-                    player.SetVideoFormat("RV24", Width, Height, Pitch);
+                    player.SetVideoFormat(VideoFormat, Width, Height, Pitch);
                     media = new Media(libVLC, Filename);
                     player.Media = media;
                     if (IsActive)

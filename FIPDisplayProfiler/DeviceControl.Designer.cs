@@ -524,7 +524,6 @@ namespace FIPDisplayProfiler
             // 
             // timerSpotify
             // 
-            this.timerSpotify.Interval = 1000;
             this.timerSpotify.Tick += new System.EventHandler(this.timerSpotify_Tick);
             // 
             // webView21

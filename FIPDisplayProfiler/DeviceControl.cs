@@ -7,6 +7,7 @@ using Saitek.DirectOutput;
 using System;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Telerik.Collections.Generic;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -89,6 +90,15 @@ namespace FIPDisplayProfiler
             lbPages.Items.Insert(InsertIndex(e.Page.Page), e.Page);
             e.Page.OnImageChange += Page_OnImageChange;
             e.Page.OnStateChange += Page_OnStateChange;
+            if (e.Page.GetType() == typeof(FIPSpotifyPlayer))
+            {
+                ((FIPSpotifyPlayer)e.Page).Browser = webView21;
+                ((FIPSpotifyPlayer)e.Page).CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
+                ((FIPSpotifyPlayer)e.Page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
+                ((FIPSpotifyPlayer)e.Page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
+                ((FIPSpotifyPlayer)e.Page).OnBeginAuthentication += DeviceControl_OnBeginAuthentication;
+                ((FIPSpotifyPlayer)e.Page).OnEndAuthentication += DeviceControl_OnEndAuthentication;
+            }
             if (e.IsActive)
             {
                 lbPages.SelectedItem = e.Page;
@@ -130,7 +140,6 @@ namespace FIPDisplayProfiler
         public DeviceControl()
         {
             InitializeComponent();
-            InitializeWebView2Async();
             pbKnobLeft.Tag = SoftButtons.Left;
             pbKnobRight.Tag = SoftButtons.Up;
             pbS1ButtonOff.Tag = pbS1ButtonOn.Tag = SoftButtons.Button1;
@@ -156,7 +165,6 @@ namespace FIPDisplayProfiler
                 leftToolStripMenuItem,
                 rightToolStripMenuItem
             });
-            FIPSpotifyPlayer.OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
             SimConnect.OnConnected += SimConnect_OnConnected;
             SimConnect.OnQuit += SimConnect_OnQuit;
             SimConnect.OnSim += SimConnect_OnSim;
@@ -203,6 +211,11 @@ namespace FIPDisplayProfiler
             if (page.GetType() == typeof(FIPSpotifyPlayer))
             {
                 ((FIPSpotifyPlayer)page).Browser = webView21;
+                ((FIPSpotifyPlayer)page).CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
+                ((FIPSpotifyPlayer)page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
+                ((FIPSpotifyPlayer)page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
+                ((FIPSpotifyPlayer)page).OnBeginAuthentication += DeviceControl_OnBeginAuthentication;
+                ((FIPSpotifyPlayer)page).OnEndAuthentication += DeviceControl_OnEndAuthentication;
             }
             return index;
         }
@@ -347,6 +360,11 @@ namespace FIPDisplayProfiler
                             }
                             FIPSpotifyPlayer page = new FIPSpotifyPlayer();
                             page.Browser = webView21;
+                            page.CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
+                            page.ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
+                            page.OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
+                            page.OnBeginAuthentication += DeviceControl_OnBeginAuthentication;
+                            page.OnEndAuthentication += DeviceControl_OnEndAuthentication;
                             SpotifyControllerForm form = new SpotifyControllerForm()
                             {
                                 SpotifyController = page
@@ -1728,8 +1746,9 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void DeviceControl_Load(object sender, EventArgs e)
+        private async void DeviceControl_Load(object sender, EventArgs e)
         {
+            await InitializeWebView2Async();
             UpdateLeds();
         }
 
@@ -1741,15 +1760,15 @@ namespace FIPDisplayProfiler
                 if (page.GetType() == typeof(FIPSpotifyPlayer))
                 {
                     FIPSpotifyPlayer player = page as FIPSpotifyPlayer;
-                    if (FIPSpotifyPlayer.IsAuthenticating && webViewShowTime == null)
+                    if (player.IsAuthenticating && webViewShowTime == null)
                     {
                         webViewShowTime = DateTime.Now;
                     }
-                    else if (!FIPSpotifyPlayer.IsAuthenticating)
+                    else if (!player.IsAuthenticating)
                     {
                         webViewShowTime = null;
                     }
-                    if (FIPSpotifyPlayer.IsAuthenticating && !webView21.Visible && (DateTime.Now - webViewShowTime.Value).TotalSeconds >= 5)
+                    if (player.IsAuthenticating && !webView21.Visible && (DateTime.Now - webViewShowTime.Value).TotalSeconds >= 5)
                     {
                         // Keep it hidden for token renewal, but if it doesn't renew within 5 seconds it may be because we need to log in and/or give permissions.
                         //CloseAllDialogs();
@@ -1758,24 +1777,24 @@ namespace FIPDisplayProfiler
                         webView21.Focus();
                         OnShowWindow?.Invoke(this, EventArgs.Empty);
                     }
-                    else if (!FIPSpotifyPlayer.IsAuthenticating && webView21.Visible)
+                    else if (!player.IsAuthenticating && webView21.Visible)
                     {
                         webView21.Visible = false;
                         webView21.SendToBack();
                     }
-                    else if (webView21.Visible && FIPSpotifyPlayer.IsAuthorized && player.IsConfigured && FIPSpotifyPlayer.Token != null && !FIPSpotifyPlayer.Token.IsExpired())
+                    else if (webView21.Visible && player.IsAuthorized && player.IsConfigured && player.Token != null && !player.Token.IsExpired())
                     {
-                        FIPSpotifyPlayer.IsAuthenticating = false;
+                        player.IsAuthenticating = false;
                         webView21.Visible = false;
                         webView21.SendToBack();
                     }
-                    if (FIPSpotifyPlayer.Token == null)
+                    if (player.Token == null)
                     {
-                        FIPSpotifyPlayer.Authenticate();
+                        player.Authenticate();
                     }
-                    else if (FIPSpotifyPlayer.Token.IsExpired())
+                    else if (player.Token.IsExpired())
                     {
-                        FIPSpotifyPlayer.RefreshToken();
+                        player.RefreshToken();
                     }
                     break;
                 }
@@ -1808,7 +1827,7 @@ namespace FIPDisplayProfiler
             base.WndProc(ref m);
         }*/
 
-        private async void InitializeWebView2Async(string tempDir = "")
+        private async Task InitializeWebView2Async(string tempDir = "")
         {
             CoreWebView2Environment webView2Environment = null;
 
@@ -1853,10 +1872,65 @@ namespace FIPDisplayProfiler
 
         }
 
+        private bool _isInitialized = false;
         private void WebView21_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
         {
-            System.Diagnostics.Debug.Print("Info: WebView21_CoreWebView2InitializationCompleted");
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    ((FIPSpotifyPlayer)fipPage).CancelAuthenticate();
+                    break;
+                }
+            }
+            _isInitialized = true;
             timerSpotify.Enabled = true;
+            System.Diagnostics.Debug.Print("Info: WebView21_CoreWebView2InitializationCompleted");
+        }
+
+        public void UpdateShowArtistImages()
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    ((FIPSpotifyPlayer)fipPage).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
+                    break;
+                }
+            }
+        }
+
+        public void UpdateCacheSpotifyArtwork()
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    ((FIPSpotifyPlayer)fipPage).CacheArtwork= Properties.Settings.Default.CacheSpotifyArtwork;
+                    break;
+                }
+            }
+        }
+
+        public void UpdateLoadLastSpotifyPlaylist()
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    ((FIPSpotifyPlayer)fipPage).AutoPlayLastPlaylist = Properties.Settings.Default.LoadLastPlaylist;
+                    break;
+                }
+            }
+        }
+
+        private void DeviceControl_OnBeginAuthentication(object sender, FIPPageEventArgs e)
+        {
+            timerSpotify.Enabled = _isInitialized;
+        }
+
+        private void DeviceControl_OnEndAuthentication(object sender, FIPPageEventArgs e)
+        {
         }
     }
 }

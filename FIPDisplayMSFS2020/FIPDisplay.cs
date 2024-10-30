@@ -318,25 +318,13 @@ namespace FIPDisplayMSFS2020
 
         private void LaunchPanels()
         {
-            if (!String.IsNullOrEmpty(Properties.Settings.Default.SpotifyAuthenticationToken))
-            {
-                try
-                {
-                    FIPSpotifyPlayer.Token = (SpotifyAPI.Web.Models.Token)FIPToolKit.Tools.SerializerHelper.FromJson(Properties.Settings.Default.SpotifyAuthenticationToken, typeof(SpotifyAPI.Web.Models.Token));
-                }
-                catch
-                {
-                }
-            }
             FIPSimConnectPage.MainWindowHandle = this.Handle;
-            FIPSpotifyPlayer.OnTokenChanged += SpotifyController_OnTokenChanged;
-            FIPSpotifyPlayer.CacheArtwork = true;
             FIPButton.KeyAPIMode = KeyAPIModes.FSUIPC;
             Engine = new FIPEngine();
             Engine.OnPageChanged += Engine_OnPageChanged;
             Engine.OnDeviceAdded += Engine_OnDeviceAdded;
             Engine.OnDeviceRemoved += Engine_OnDeviceRemoved;
-            if (String.IsNullOrEmpty(Options.Settings) || !File.Exists(Options.Settings))
+            if (string.IsNullOrEmpty(Options.Settings) || !File.Exists(Options.Settings))
             {
                 LoadActivePages(Engine);
             }

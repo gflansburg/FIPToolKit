@@ -196,6 +196,7 @@ namespace FIPToolKit.Drawing
         static public Bitmap ChangeToColor(this Image image, Color c)
         {
             Bitmap bmp = new Bitmap(image.Width, image.Height, image.PixelFormat);
+            bmp.MakeTransparent();
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 float tr = c.R / 255f;

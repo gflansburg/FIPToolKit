@@ -16,6 +16,7 @@ using System.IO;
 using System.Reflection;
 using FIPToolKit.Tools;
 using System.Diagnostics;
+using SpotifyAPI.Web.Models;
 
 namespace FIPDisplayProfiler
 {
@@ -49,7 +50,6 @@ namespace FIPDisplayProfiler
             Engine.OnPageChanged += Engine_OnPageChanged;
             Engine.Initialize();
             FIPSimConnectPage.MainWindowHandle = this.Handle;
-            FIPSpotifyPlayer.OnTokenChanged += FIPSpotifyController_OnTokenChanged;
         }
 
         private void Engine_OnPageChanged(object sender, DeviceActivePage page)
@@ -261,23 +261,29 @@ namespace FIPDisplayProfiler
 
         private bool SaveActivePages(string filename)
         {
-            string xmlData = File.ReadAllText(filename);
-            if (!string.IsNullOrEmpty(xmlData))
+            try
             {
-                try
+                string xmlData = File.ReadAllText(filename);
+                if (!string.IsNullOrEmpty(xmlData))
                 {
-                    using (FIPEngine deviceConfigs = (FIPEngine)SerializerHelper.FromXml(xmlData, typeof(FIPEngine)))
+                    try
                     {
-                        deviceConfigs.ActivePages = Engine.ActivePages;
-                        xmlData = SerializerHelper.ToXml(deviceConfigs);
-                        File.WriteAllText(filename, xmlData);
-                        Engine.ActivePages.IsDirty = false;
-                        return true;
+                        using (FIPEngine deviceConfigs = (FIPEngine)SerializerHelper.FromXml(xmlData, typeof(FIPEngine)))
+                        {
+                            deviceConfigs.ActivePages = Engine.ActivePages;
+                            xmlData = SerializerHelper.ToXml(deviceConfigs);
+                            File.WriteAllText(filename, xmlData);
+                            Engine.ActivePages.IsDirty = false;
+                            return true;
+                        }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
-                catch (Exception)
-                {
-                }
+            }
+            catch(Exception)
+            {
             }
             return false;
         }
@@ -543,8 +549,9 @@ namespace FIPDisplayProfiler
 
         private void loadLastPlaylistToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPSpotifyPlayer.AutoPlayLastPlaylist = Properties.Settings.Default.LoadLastPlaylist = loadLastPlaylistToolStripMenuItem.Checked;
+            Properties.Settings.Default.LoadLastPlaylist = loadLastPlaylistToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
+            UpdateLoadLastPlaylist();
         }
 
         public void ShowWindow()
@@ -639,16 +646,12 @@ namespace FIPDisplayProfiler
             sendInputToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.SendInput;
             fSUIPCToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.FSUIPC;
             FIPVideoPlayer.PreviewVideo = previewVideoToolStripMenuItem.Checked = Properties.Settings.Default.PreviewVideo;
-            FIPSpotifyPlayer.AutoPlayLastPlaylist = loadLastPlaylistToolStripMenuItem.Checked = Properties.Settings.Default.LoadLastPlaylist;
-            FIPSpotifyPlayer.ShowArtistImages = showArtistImagesToolStripMenuItem.Checked = Properties.Settings.Default.ShowArtistImages;
-            FIPSpotifyPlayer.CacheArtwork = cacheSpotifyArtworkToolStripMenuItem.Checked = Properties.Settings.Default.CacheSpotifyArtwork;
+            loadLastPlaylistToolStripMenuItem.Checked = Properties.Settings.Default.LoadLastPlaylist;
+            showArtistImagesToolStripMenuItem.Checked = Properties.Settings.Default.ShowArtistImages;
+            cacheSpotifyArtworkToolStripMenuItem.Checked = Properties.Settings.Default.CacheSpotifyArtwork;
             closeFlightShareOnExitToolStripMenuItem.Checked = Properties.Settings.Default.CloseFlightShareOnExit;
             _waitForMSFS = checkMSFSTimer.Enabled = exitWhenMSFSQuitsToolStripMenuItem.Checked = Properties.Settings.Default.CloseWithMSFS;
             autoSaveSettingsToolStripMenuItem.Checked = Properties.Settings.Default.AutoSave;
-            if (!String.IsNullOrEmpty(Properties.Settings.Default.SpotifyAuthenticationToken))
-            {
-                FIPSpotifyPlayer.Token = (SpotifyAPI.Web.Models.Token)FIPToolKit.Tools.SerializerHelper.FromJson(Properties.Settings.Default.SpotifyAuthenticationToken, typeof(SpotifyAPI.Web.Models.Token));
-            }
             for (int i = 0; i < tabDevices.TabPages.Count; i++)
             {
                 TabPage tab = tabDevices.TabPages[i];
@@ -668,26 +671,21 @@ namespace FIPDisplayProfiler
 
         private void showArtistImagesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPSpotifyPlayer.ShowArtistImages = Properties.Settings.Default.ShowArtistImages = showArtistImagesToolStripMenuItem.Checked;
+            Properties.Settings.Default.ShowArtistImages = showArtistImagesToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
+            UpdateShowArtistImages();
         }
 
         private void cacheSpotifyArtworkToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPSpotifyPlayer.CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork = cacheSpotifyArtworkToolStripMenuItem.Checked;
+            Properties.Settings.Default.CacheSpotifyArtwork = cacheSpotifyArtworkToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
+            UpdateCacheSpotifyArtwork();
         }
 
         private void closeFlightShareOnExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Properties.Settings.Default.CloseFlightShareOnExit = closeFlightShareOnExitToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
-        }
-
-        private void FIPSpotifyController_OnTokenChanged(SpotifyAPI.Web.Models.Token token)
-        {
-            string json = FIPToolKit.Tools.SerializerHelper.ToJson(token);
-            Properties.Settings.Default.SpotifyAuthenticationToken = json;
             Properties.Settings.Default.Save();
         }
 
@@ -731,5 +729,41 @@ namespace FIPDisplayProfiler
                 base.DefWndProc(ref m);
             }
         }*/
+
+        private void UpdateShowArtistImages()
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.UpdateShowArtistImages();
+                }
+            }
+        }
+
+        private void UpdateCacheSpotifyArtwork()
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.UpdateCacheSpotifyArtwork();
+                }
+            }
+        }
+
+        private void UpdateLoadLastPlaylist()
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.UpdateLoadLastSpotifyPlaylist();
+                }
+            }
+        }
     }
 }

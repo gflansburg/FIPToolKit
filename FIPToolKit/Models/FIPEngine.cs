@@ -307,7 +307,7 @@ namespace FIPToolKit.Models
                 activePage.IsDirty = true;
                 OnPageChanged?.Invoke(this, activePage);
             }
-            foreach (FIPPage page in device.Pages)
+            /*foreach (FIPPage page in device.Pages)
             {
                 if (e.Page == page)
                 {
@@ -317,7 +317,7 @@ namespace FIPToolKit.Models
                 { 
                     page.Inactive();
                 }
-            }
+            }*/
         }
 
         [XmlIgnore]

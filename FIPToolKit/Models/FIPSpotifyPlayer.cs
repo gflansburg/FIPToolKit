@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,13 +57,15 @@ namespace FIPToolKit.Models
     [Serializable]
     public class FIPSpotifyPlayer : FIPPage
     {
-        private static Token _token;
-        public static bool IsAuthenticating { get; set; } = false;
-        private static AuthorizationCodeAuth authorizationCodeAuth;
-        private static bool _showArtistImages;
-        private static bool _cacheArtwork;
+        private Token _token;
+        public bool IsAuthenticating { get; set; } = false;
+        private AuthorizationCodeAuth authorizationCodeAuth;
+        private bool _showArtistImages;
+        private bool _cacheArtwork;
         private System.Threading.Timer Timer;
 
+        [XmlIgnore]
+        [JsonIgnore]
         public bool IsConfigured
         {
             get
@@ -71,7 +74,9 @@ namespace FIPToolKit.Models
             }
         }
 
-        public static bool IsAuthorized
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool IsAuthorized
         {
             get
             {
@@ -96,21 +101,37 @@ namespace FIPToolKit.Models
             }
         }
 
+        private Microsoft.Web.WebView2.WinForms.WebView2 _browser;
         [XmlIgnore]
         [JsonIgnore]
-        public Microsoft.Web.WebView2.WinForms.WebView2 Browser { get; set; }
+        public Microsoft.Web.WebView2.WinForms.WebView2 Browser 
+        { 
+            get
+            {
+                return _browser;
+            }
+            set
+            {
+                if(_browser != value)
+                {
+                    _browser = value;
+                    if (authorizationCodeAuth != null)
+                    {
+                        authorizationCodeAuth.Browser = _browser;
+                    }
+                }
+            }
+        }
 
         [XmlIgnore]
         [JsonIgnore]
-        public static SpotifyWebAPI SpotifyAPI { get; private set; }
+        public SpotifyWebAPI SpotifyAPI { get; private set; }
 
         [XmlIgnore]
         [JsonIgnore]
-        public static bool AutoPlayLastPlaylist { get; set; }
+        public bool AutoPlayLastPlaylist { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static Token Token
+        public Token Token
         {
             get
             {
@@ -119,6 +140,7 @@ namespace FIPToolKit.Models
             set
             {
                 _token = value;
+                IsDirty = true;
                 if (_token != null)
                 {
                     if (_token.IsExpired())
@@ -165,7 +187,7 @@ namespace FIPToolKit.Models
 
         [XmlIgnore]
         [JsonIgnore]
-        public static bool ShowArtistImages
+        public bool ShowArtistImages
         { 
             get
             {
@@ -187,7 +209,7 @@ namespace FIPToolKit.Models
 
         [XmlIgnore]
         [JsonIgnore]
-        public static bool CacheArtwork
+        public bool CacheArtwork
         {
             get
             {
@@ -208,7 +230,7 @@ namespace FIPToolKit.Models
 
         [XmlIgnore]
         [JsonIgnore]
-        public static List<SpotifyPlaylist> PlayLists { get; private set; }
+        public List<SpotifyPlaylist> PlayLists { get; private set; }
 
         private AbortableBackgroundWorker LazyLoader { get; set; }
         private bool Stop { get; set; }
@@ -223,9 +245,9 @@ namespace FIPToolKit.Models
 
         [XmlIgnore]
         [JsonIgnore]
-        public static PlaybackContext CurrentPlaybackContext { get; set; }
+        public PlaybackContext CurrentPlaybackContext { get; set; }
 
-        private static SpotifyController SpotifyController { get; set; }
+        private SpotifyController SpotifyController { get; set; }
 
         private string ErrorMessage { get; set; }
 
@@ -244,7 +266,6 @@ namespace FIPToolKit.Models
                 {
                     _clientId = value;
                     IsDirty = true;
-                    InitAuthServer();
                 }
             }
         }
@@ -262,7 +283,6 @@ namespace FIPToolKit.Models
                 {
                     _secretId = value;
                     IsDirty = true;
-                    InitAuthServer();
                 }
             }
         }
@@ -284,12 +304,14 @@ namespace FIPToolKit.Models
             }
         }
 
-        public static event TrackStateChangedEventHandler OnTrackStateChanged;
+        public event TrackStateChangedEventHandler OnTrackStateChanged;
         public delegate void TrackStateChangedEventHandler(PlaybackContext playback, SpotifyStateType state);
-        public static event TokenChangedEventHandler OnTokenChanged;
+        public event TokenChangedEventHandler OnTokenChanged;
         public delegate void TokenChangedEventHandler(Token token);
+        public event FIPPageEventHandler OnBeginAuthentication;
+        public event FIPPageEventHandler OnEndAuthentication;
 
-        private static event ShowArtistImagesChangedEventHandler ShowArtistImagesChanged;
+        private event ShowArtistImagesChangedEventHandler ShowArtistImagesChanged;
         private delegate void ShowArtistImagesChangedEventHandler();
 
         public FIPSpotifyPlayer() : base()
@@ -316,7 +338,6 @@ namespace FIPToolKit.Models
             _playList = new FIPPlayList();
             IsDirty = false;
             UpdatePage();
-            InitAuthServer();
         }
 
         private void InitAuthServer()
@@ -408,7 +429,7 @@ namespace FIPToolKit.Models
             SetLEDs();
         }
 
-        private static void ImageTimer(object state)
+        private void ImageTimer(object state)
         {
             FIPSpotifyPlayer spotifyController = state as FIPSpotifyPlayer;
             if (spotifyController != null && SpotifyController != null)
@@ -429,17 +450,27 @@ namespace FIPToolKit.Models
             }
         }
 
-        static public void Authenticate()
+        public void CancelAuthenticate()
         {
-            if ((Token == null || Token.IsExpired()) && !IsAuthenticating && authorizationCodeAuth != null)
+            if(IsAuthenticating && authorizationCodeAuth != null)
             {
+                authorizationCodeAuth.Stop();
+                IsAuthenticating = false;
+            }
+        }
+
+        public void Authenticate()
+        {
+            if (IsActive && (Token == null || Token.IsExpired()) && !IsAuthenticating && authorizationCodeAuth != null)
+            {
+                OnBeginAuthentication?.Invoke(this, new FIPPageEventArgs(this));
                 IsAuthenticating = true;
                 authorizationCodeAuth.Start();
                 authorizationCodeAuth.OpenBrowser();
             }
         }
 
-        public static async void RefreshToken()
+        public async void RefreshToken()
         {
             if (authorizationCodeAuth != null)
             {
@@ -472,7 +503,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static async void AuthOnAuthReceived(object sender, AuthorizationCode payload)
+        private async void AuthOnAuthReceived(object sender, AuthorizationCode payload)
         {
             authorizationCodeAuth.Stop();
             Token = await authorizationCodeAuth.ExchangeCode(payload.Code);
@@ -493,6 +524,7 @@ namespace FIPToolKit.Models
                 }
             }
             IsAuthenticating = false;
+            OnEndAuthentication?.Invoke(this, new FIPPageEventArgs(this));
         }
 
         private void LoadController(object sender, AuthorizationCode payload)
@@ -502,6 +534,7 @@ namespace FIPToolKit.Models
 
         public override void StartTimer()
         {
+            InitAuthServer();
             if (!IsRunning)
             {
                 IsRunning = true;
@@ -772,7 +805,7 @@ namespace FIPToolKit.Models
                             {
                                 format.Alignment = StringAlignment.Center;
                                 format.LineAlignment = StringAlignment.Center;
-                                if (SpotifyController.SpotifyState == SpotifyStateType.Error || SpotifyController.RetryAfter > 0)
+                                if (SpotifyController != null && (SpotifyController.SpotifyState == SpotifyStateType.Error || SpotifyController.RetryAfter > 0))
                                 {
                                     string errorMessage = SpotifyController.Error;
                                     if (SpotifyController.RetryAfter > 0)
@@ -783,11 +816,11 @@ namespace FIPToolKit.Models
                                     }
                                     graphics.DrawString(errorMessage, Font, brush, new RectangleF(0, 0, 320, 240), format);
                                 }
-                                else if (CurrentPlaybackContext == null || SpotifyController.SpotifyState == SpotifyStateType.Closed)
+                                else if (SpotifyController != null && (CurrentPlaybackContext == null || SpotifyController.SpotifyState == SpotifyStateType.Closed))
                                 {
                                     graphics.DrawString("Start Spotify on your Mobile Device or PC", Font, brush, new RectangleF(0, 0, 320, 240), format);
                                 }
-                                else
+                                else if (SpotifyController != null)
                                 {
                                     if (SpotifyController.AlbumArtwork.Count > 0)
                                     {
@@ -812,8 +845,12 @@ namespace FIPToolKit.Models
                                         graphics.DrawString(text, Font, brush, new RectangleF(32, 0, 288, 240), format);
                                     }
                                 }
+                                else
+                                {
+                                    graphics.DrawString("Initializing", Font, brush, new RectangleF(0, 0, 320, 240), format);
+                                }
                             }
-                            if (SpotifyController.SpotifyState == SpotifyStateType.Playing || SpotifyController.SpotifyState == SpotifyStateType.Paused)
+                            if (SpotifyController != null && (SpotifyController.SpotifyState == SpotifyStateType.Playing || SpotifyController.SpotifyState == SpotifyStateType.Paused))
                             {
                                 graphics.AddButtonIcon(SpotifyController.Mute ? Properties.Resources.media_mute : Properties.Resources.media_volumeup, SpotifyController.Mute ? Color.Red : Color.Green, true, SoftButtons.Button1);
                                 graphics.AddButtonIcon(SpotifyController.SpotifyState == SpotifyStateType.Playing ? Properties.Resources.pause : Properties.Resources.play, SpotifyController.SpotifyState == SpotifyStateType.Playing ? Color.Yellow : Color.Blue, true, SoftButtons.Button2);

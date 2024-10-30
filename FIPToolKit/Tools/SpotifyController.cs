@@ -31,26 +31,26 @@ namespace FIPToolKit.Tools
     [Serializable]
     public class SpotifyController : IDisposable
     {
-        private static AbortableBackgroundWorker timer;
-        private static AbortableBackgroundWorker lazyLoader;
-        private static bool stop = false;
-        private static bool stopLazyLoader = false;
-        private static int _volumePercent = 0;
-        private static DateTime? lastFullRequestTime = null;
-        private static List<Bitmap> _albumArtwork = new List<Bitmap>();
-        private static PlaybackContext _playbackContext;
-        private static SpotifyStateType _spotifyState = SpotifyStateType.Closed;
-        public static event TrackStateChangedEventHandler TrackStateChanged;
-        public static event ImageStateChangedEventHandler ImageStateChanged;
-        public static event ErrorEventHandler OnError;
+        private AbortableBackgroundWorker timer;
+        private AbortableBackgroundWorker lazyLoader;
+        private bool stop = false;
+        private bool stopLazyLoader = false;
+        private int _volumePercent = 0;
+        private DateTime? lastFullRequestTime = null;
+        private List<Bitmap> _albumArtwork = new List<Bitmap>();
+        private PlaybackContext _playbackContext;
+        private SpotifyStateType _spotifyState = SpotifyStateType.Closed;
+        public event TrackStateChangedEventHandler TrackStateChanged;
+        public event ImageStateChangedEventHandler ImageStateChanged;
+        public event ErrorEventHandler OnError;
         public delegate void TrackStateChangedEventHandler(PlaybackContext playback, SpotifyStateType state);
         public delegate void ImageStateChangedEventHandler(List<Bitmap> image);
         public delegate void ErrorEventHandler(string message);
 
         private const int REFRESH_RATE = 2000;
-        private static bool _addArtistImages { get; set; }
+        private bool _addArtistImages { get; set; }
 
-        public static bool AddArtistImages
+        public bool AddArtistImages
         { 
             get
             {
@@ -66,12 +66,12 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static bool CacheArtwork { get; set; }
-        public static SpotifyWebAPI SpotifyWebAPI { get; set; }
+        public bool CacheArtwork { get; set; }
+        public SpotifyWebAPI SpotifyWebAPI { get; set; }
 
         [XmlIgnore]
         [JsonIgnore]
-        public static int RetryAfter
+        public int RetryAfter
         {
             get
             {
@@ -85,7 +85,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static SpotifyStateType SpotifyState
+        public SpotifyStateType SpotifyState
         {
             get
             {
@@ -104,7 +104,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static string Error
+        public string Error
         {
             get
             {
@@ -118,7 +118,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static string TrackTitle
+        public string TrackTitle
         {
             get
             {
@@ -132,7 +132,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static List<Bitmap> AlbumArtwork
+        public List<Bitmap> AlbumArtwork
         {
             get
             {
@@ -142,7 +142,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static string TrackArtist
+        public string TrackArtist
         {
             get
             {
@@ -161,7 +161,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static string TrackAlbum
+        public string TrackAlbum
         {
             get
             {
@@ -186,7 +186,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static bool IsPlaying
+        public bool IsPlaying
         {
             get
             {
@@ -198,7 +198,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static bool Mute
+        public bool Mute
         {
             get
             {
@@ -224,7 +224,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void Stop()
+        public void Stop()
         {
             if (SpotifyWebAPI != null)
             {
@@ -232,7 +232,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void PlayPause()
+        public void PlayPause()
         {
             if (SpotifyWebAPI != null)
             {
@@ -251,7 +251,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void PlayPrev()
+        public void PlayPrev()
         {
             if (SpotifyWebAPI != null)
             {
@@ -259,7 +259,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void PlayNext()
+        public void PlayNext()
         {
             if (SpotifyWebAPI != null)
             {
@@ -267,7 +267,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void VolumeUp()
+        public void VolumeUp()
         {
             if(SpotifyWebAPI != null && _playbackContext != null && _playbackContext.Device != null)
             {
@@ -281,7 +281,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void VolumeDown()
+        public void VolumeDown()
         {
             if (SpotifyWebAPI != null && _playbackContext != null && _playbackContext.Device != null)
             {
@@ -295,7 +295,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static bool ShuffleState
+        public bool ShuffleState
         {
             get
             {
@@ -315,7 +315,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static RepeatState RepeatState
+        public RepeatState RepeatState
         {
             get
             {
@@ -337,7 +337,7 @@ namespace FIPToolKit.Tools
 
         [XmlIgnore]
         [JsonIgnore]
-        public static Device ActiveDevice
+        public Device ActiveDevice
         {
             get
             {
@@ -366,7 +366,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static bool IsLiked(string id)
+        public bool IsLiked(string id)
         {
             if (SpotifyWebAPI != null)
             {
@@ -379,7 +379,7 @@ namespace FIPToolKit.Tools
             return false;
         }
 
-        public static void Like(string id)
+        public void Like(string id)
         {
             if (SpotifyWebAPI != null)
             {
@@ -387,7 +387,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void UnLike(string id)
+        public void UnLike(string id)
         {
             if (SpotifyWebAPI != null)
             {
@@ -395,7 +395,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        public static void PlayUserPlaylist(string user, string playList)
+        public void PlayUserPlaylist(string user, string playList)
         {
             string uri = string.Format("spotify:user:{0}:playlist:{1}", user, playList);
             if(SpotifyWebAPI != null)
@@ -404,7 +404,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        private static void RefreshController(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private void RefreshController(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             DateTime retryStartTime = DateTime.Now;
             DateTime refreshTime = DateTime.Now;
@@ -442,7 +442,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        private static PlaybackContext GetNowPlaying(bool forced)
+        private PlaybackContext GetNowPlaying(bool forced)
         {
             bool isChanged = false;
             if (SpotifyWebAPI != null)
@@ -535,7 +535,7 @@ namespace FIPToolKit.Tools
             return _playbackContext;
         }
 
-        private static void StartLazyLoader(FullTrack track)
+        private void StartLazyLoader(FullTrack track)
         {
             if (lazyLoader == null)
             {
@@ -554,13 +554,13 @@ namespace FIPToolKit.Tools
             }
         }
 
-        private static void LazyLoader_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+        private void LazyLoader_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
             ImageStateChanged?.Invoke(_albumArtwork);
             StopLazyLoader();
         }
 
-        private static void LazyLoader_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private void LazyLoader_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             stopLazyLoader = false;
             FullTrack track = e.Argument as FullTrack;
@@ -717,7 +717,7 @@ namespace FIPToolKit.Tools
             }
         }
 
-        private static void StopLazyLoader(int timeOut = 1000)
+        private void StopLazyLoader(int timeOut = 1000)
         {
             if (lazyLoader != null)
             {

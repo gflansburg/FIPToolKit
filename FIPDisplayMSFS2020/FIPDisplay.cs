@@ -11,6 +11,10 @@ using System.Media;
 using System.Text;
 using System.Windows.Forms;
 using FIPToolKit.FlightSim;
+using Microsoft.Web.WebView2.Core;
+using SpotifyAPI.Web.Models;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace FIPDisplayMSFS2020
 {
@@ -29,7 +33,7 @@ namespace FIPDisplayMSFS2020
             set
             {
                 label1.Text = value;
-                if(!String.IsNullOrEmpty(label1.Text))
+                if(!string.IsNullOrEmpty(label1.Text))
                 {
                     Visible = true;
                     ShowInTaskbar = true;
@@ -62,7 +66,7 @@ namespace FIPDisplayMSFS2020
                             }
                         }
                     }
-                    if(!String.IsNullOrEmpty(options.Settings))
+                    if(!string.IsNullOrEmpty(options.Settings))
                     {
                         Message = string.Format("Loading settings: {0}", options.Settings);
                     }
@@ -101,7 +105,7 @@ namespace FIPDisplayMSFS2020
                     stringBuilder.AppendLine(string.Format("MSFS 2020 status: {0}", flightSimRunning ? "Running" : "Not running"));
                     using (RegistryKey regDirectOutput = Registry.LocalMachine.OpenSubKey("Software\\Saitek\\DirectOutput", false))
                     {
-                        stringBuilder.AppendLine(string.Format("\nDirectOutput DLL location: {0}", regDirectOutput.GetValue("DirectOutput", String.Empty)));
+                        stringBuilder.AppendLine(string.Format("\nDirectOutput DLL location: {0}", regDirectOutput.GetValue("DirectOutput", string.Empty)));
                         regDirectOutput.Close();
                     }
                     stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Plugin");
@@ -316,8 +320,9 @@ namespace FIPDisplayMSFS2020
             return text.Replace("©: ", "© ").Replace("\n: ", "\n");
         }
 
-        private void LaunchPanels()
+        private async void LaunchPanels()
         {
+            await InitializeWebView2Async();
             FIPSimConnectPage.MainWindowHandle = this.Handle;
             FIPButton.KeyAPIMode = KeyAPIModes.FSUIPC;
             Engine = new FIPEngine();
@@ -335,7 +340,7 @@ namespace FIPDisplayMSFS2020
         private void Engine_OnDeviceRemoved(object sender, FIPEngineEventArgs e)
         {
             /*FIPEngine engine = sender as FIPEngine;
-            if (!String.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
+            if (!string.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
             {
                 SaveSettings(Options.Settings);
             }
@@ -349,7 +354,7 @@ namespace FIPDisplayMSFS2020
         private void Engine_OnDeviceAdded(object sender, FIPEngineEventArgs e)
         {
             e.Device.OnPageAdded += Device_OnPageAdded;
-            if (!String.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
+            if (!string.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
             {
                 LoadSettings(Options.Settings, e.Device.SerialNumber);
             }
@@ -372,10 +377,13 @@ namespace FIPDisplayMSFS2020
                 {
                     Id = Guid.Parse("449e9059-e992-4161-a041-1dd0776ffb7e")
                 }, activePage != null && activePage.Page == 4);
-                e.Device.AddPage(new FIPSpotifyPlayer()
+                FIPSpotifyPlayer spotifyPlayer = new FIPSpotifyPlayer()
                 {
-                    Id = Guid.Parse("e37308a6-eed3-4357-ad1b-f885458e6827")
-                }, activePage != null && activePage.Page == 5);
+                    Id = Guid.Parse("e37308a6-eed3-4357-ad1b-f885458e6827"),
+                    Browser = webView21
+                };
+                spotifyPlayer.OnBeginAuthentication += SpotifyPlayer_OnBeginAuthentication;
+                e.Device.AddPage(spotifyPlayer, activePage != null && activePage.Page == 5);
                 e.Device.AddPage(new FIPFlightShare()
                 {
                     Id = Guid.Parse("7f8a9e1f-7b94-4b20-8a47-b7079e355a83")
@@ -396,6 +404,11 @@ namespace FIPDisplayMSFS2020
             }
         }
 
+        private void SpotifyPlayer_OnBeginAuthentication(object sender, FIPPageEventArgs e)
+        {
+            timerSpotify.Enabled = _isInitialized;
+        }
+
         private void Device_OnPageAdded(object sender, FIPDeviceEventArgs e)
         {
             e.Page.OnSettingsChange += Page_OnSettingsChange;
@@ -403,7 +416,7 @@ namespace FIPDisplayMSFS2020
 
         private void Page_OnSettingsChange(object sender, FIPPageEventArgs e)
         {
-            if (!String.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
+            if (!string.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
             {
                 SaveSettings(Options.Settings);
             }
@@ -417,7 +430,7 @@ namespace FIPDisplayMSFS2020
 
         private void Engine_OnPageChanged(object sender, DeviceActivePage page)
         {
-            if (!String.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
+            if (!string.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
             {
                 SaveActivePages(Options.Settings);
             }
@@ -429,7 +442,7 @@ namespace FIPDisplayMSFS2020
 
         private DeviceActivePage FindActivePage(string serialNumber)
         {
-            if (!String.IsNullOrEmpty(Properties.Settings.Default.DeviceActivePages))
+            if (!string.IsNullOrEmpty(Properties.Settings.Default.DeviceActivePages))
             {
                 try
                 {
@@ -451,7 +464,7 @@ namespace FIPDisplayMSFS2020
 
         private void LoadActivePages(FIPEngine engine)
         {
-            if (!String.IsNullOrEmpty(Properties.Settings.Default.DeviceActivePages))
+            if (!string.IsNullOrEmpty(Properties.Settings.Default.DeviceActivePages))
             {
                 try
                 {
@@ -502,7 +515,7 @@ namespace FIPDisplayMSFS2020
 
         private void LoadSettings(FIPDevice fipDevice)
         {
-            if (!String.IsNullOrEmpty(Properties.Settings.Default.DeviceSettings))
+            if (!string.IsNullOrEmpty(Properties.Settings.Default.DeviceSettings))
             {
                 try
                 {
@@ -571,6 +584,14 @@ namespace FIPDisplayMSFS2020
                                     }
                                 }
                             }
+                            foreach (FIPDevice device in deviceConfigs._devices)
+                            {
+                                FIPDevice fipDevice = Engine.Devices.FirstOrDefault(x => x.SerialNumber.Equals(device.SerialNumber));
+                                if (fipDevice != null)
+                                {
+                                    device.SetFIPEngine(Engine, fipDevice.DeviceClient, fipDevice.DeviceId);
+                                }
+                            }
                             foreach (FIPDevice device in deviceConfigs.Devices)
                             {
                                 if (serialNumber == null || device.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
@@ -592,6 +613,11 @@ namespace FIPDisplayMSFS2020
                                         foreach (FIPPage page in device.Pages)
                                         {
 
+                                            if (page.GetType() == typeof(FIPSpotifyPlayer))
+                                            {
+                                                ((FIPSpotifyPlayer)page).Browser = webView21;
+                                                ((FIPSpotifyPlayer)page).OnBeginAuthentication += FIPDisplay_OnBeginAuthentication;
+                                            }
                                             fipDevice.AddPage(page, activePage.Page == page.Page);
                                             //Re-add the buttons
                                             List<FIPButton> tempButtons = new List<FIPButton>();
@@ -628,6 +654,11 @@ namespace FIPDisplayMSFS2020
                     }
                 }
             }
+        }
+
+        private void FIPDisplay_OnBeginAuthentication(object sender, FIPPageEventArgs e)
+        {
+            timerSpotify.Enabled = _isInitialized;
         }
 
         private void SaveSettings(FIPEngine engine)
@@ -667,23 +698,11 @@ namespace FIPDisplayMSFS2020
             }
         }
 
-        private void SpotifyController_OnTokenChanged(SpotifyAPI.Web.Models.Token token)
-        {
-            try
-            {
-                Properties.Settings.Default.SpotifyAuthenticationToken = FIPToolKit.Tools.SerializerHelper.ToJson(token);
-                Properties.Settings.Default.Save();
-            }
-            catch
-            {
-            }
-        }
-
         private void FIPDisplay_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (Engine != null && Engine.IsDirty)
             {
-                if (!String.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
+                if (!string.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
                 {
                     SaveSettings(Options.Settings);
                 }
@@ -720,7 +739,7 @@ namespace FIPDisplayMSFS2020
             }
             timer1.Start();
             //Stpid glitch with it not pumping the message queue if it loads hidden
-            if ((String.IsNullOrEmpty(Message) || !String.IsNullOrEmpty(Options.Settings)) && this.Visible == true)
+            if ((string.IsNullOrEmpty(Message) || !string.IsNullOrEmpty(Options.Settings)) && this.Visible == true && !webView21.Visible)
             {
                 Visible = false;
             }
@@ -728,7 +747,7 @@ namespace FIPDisplayMSFS2020
 
         protected override void OnLoad(EventArgs e)
         {
-            if (Options != null && Options.Quit && String.IsNullOrEmpty(Message))
+            if (Options != null && Options.Quit && string.IsNullOrEmpty(Message))
             {
                 Close();
             }
@@ -746,7 +765,7 @@ namespace FIPDisplayMSFS2020
             {
                 if (Engine != null && Engine.IsDirty)
                 {
-                    if (!String.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
+                    if (!string.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
                     {
                         SaveSettings(Options.Settings);
                     }
@@ -761,6 +780,137 @@ namespace FIPDisplayMSFS2020
                 }
             }
             base.WndProc(ref m);
+        }
+
+        private async Task InitializeWebView2Async(string tempDir = "")
+        {
+            CoreWebView2Environment webView2Environment = null;
+
+            //set value
+            string tempDir2 = tempDir;
+
+            if (string.IsNullOrEmpty(tempDir2))
+            {
+                //get fully-qualified path to user's temp folder
+                tempDir2 = System.IO.Path.GetTempPath();
+            }//if
+
+            //add event handler for CoreWebView2Ready - before webView2Ctl is initialized
+            //it's important to not use webViewCtrl until CoreWebView2Ready event is thrown
+            webView21.CoreWebView2InitializationCompleted += WebView21_CoreWebView2InitializationCompleted;
+
+            CoreWebView2EnvironmentOptions options = null;
+            //options = new CoreWebView2EnvironmentOptions("--disk-cache-size=200");
+            //options = new CoreWebView2EnvironmentOptions("–incognito ");
+
+            //set webView2 temp folder. The temp folder is used to store webView2
+            //cached objects. If not specified, the folder where the executable
+            //was started will be used. If the user doesn't have write permissions
+            //on that folder, such as C:\Program Files\<your application folder>\,
+            //then webView2 will fail. 
+
+            //webView2Environment = await CoreWebView2Environment.CreateAsync(@"C:\Program Files (x86)\Microsoft\Edge Dev\Application\85.0.564.8", tempDir2, options);
+            webView2Environment = await CoreWebView2Environment.CreateAsync(null, tempDir2, options);
+
+            //webView2Ctl must be inialized before it can be used
+            //wait for coreWebView2 initialization
+            //when complete, CoreWebView2Ready event will be thrown
+            await webView21.EnsureCoreWebView2Async(webView2Environment);
+
+            webView21.Source = new System.Uri("https://www.spotify.com", System.UriKind.Absolute);
+
+            //add other event handlers - after webView2Ctrl is initialized
+            //webView2Ctl.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
+            //webView2Ctl.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+            //webView2Ctl.NavigationCompleted += WebView2Ctl_NavigationCompleted;
+            //webView2Ctl.NavigationStarting += WebView2Ctl_NavigationStarting;
+
+        }
+
+        private bool _isInitialized = false;
+        private void WebView21_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
+        {
+            if (Engine != null)
+            {
+                foreach (FIPDevice device in Engine.Devices)
+                {
+                    foreach (FIPPage page in device.Pages)
+                    {
+                        if (page.GetType() == typeof(FIPSpotifyPlayer))
+                        {
+                            if (((FIPSpotifyPlayer)page).IsAuthenticating)
+                            {
+                                ((FIPSpotifyPlayer)page).CancelAuthenticate();
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            _isInitialized = true;
+            timerSpotify.Enabled = true;
+            System.Diagnostics.Debug.Print("Info: WebView21_CoreWebView2InitializationCompleted");
+        }
+
+        private Dictionary<string, DateTime?> WebViewShowTimes = new Dictionary<string, DateTime?>();
+        private void timerSpotify_Tick(object sender, EventArgs e)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPPage page in device.Pages)
+                {
+                    if (page.GetType() == typeof(FIPSpotifyPlayer))
+                    {
+                        if (!WebViewShowTimes.ContainsKey(device.SerialNumber))
+                        {
+                            WebViewShowTimes.Add(device.SerialNumber, null);
+                        }
+                        FIPSpotifyPlayer player = page as FIPSpotifyPlayer;
+                        if (player.IsAuthenticating && WebViewShowTimes[device.SerialNumber] == null)
+                        {
+                            WebViewShowTimes[device.SerialNumber] = DateTime.Now;
+                        }
+                        else if (!player.IsAuthenticating)
+                        {
+                            WebViewShowTimes[device.SerialNumber] = null;
+                        }
+                        if (player.IsAuthenticating && !webView21.Visible && (DateTime.Now - WebViewShowTimes[device.SerialNumber].Value).TotalSeconds >= 5)
+                        {
+                            // Keep it hidden for token renewal, but if it doesn't renew within 5 seconds it may be because we need to log in and/or give permissions.
+                            //CloseAllDialogs();
+                            if (!Visible)
+                            {
+                                webView21.Visible = true;
+                                webView21.BringToFront();
+                                webView21.Focus();
+                                Visible = true;
+                            }
+                        }
+                        else if (!player.IsAuthenticating && webView21.Visible)
+                        {
+                            webView21.Visible = false;
+                            webView21.SendToBack();
+                            Visible = false;
+                        }
+                        else if (webView21.Visible && player.IsAuthorized && player.IsConfigured && player.Token != null && !player.Token.IsExpired())
+                        {
+                            player.IsAuthenticating = false;
+                            webView21.Visible = false;
+                            webView21.SendToBack();
+                            Visible = false;
+                        }
+                        if (player.Token == null)
+                        {
+                            player.Authenticate();
+                        }
+                        else if (player.Token.IsExpired())
+                        {
+                            player.RefreshToken();
+                        }
+                        break;
+                    }
+                }
+            }
         }
     }
 }

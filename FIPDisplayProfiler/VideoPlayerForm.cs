@@ -121,7 +121,7 @@ namespace FIPDisplayProfiler
             if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 tbFilename.Text = openFileDialog1.FileName;
-                btnOK.Enabled = !String.IsNullOrEmpty(tbFilename.Text);
+                btnOK.Enabled = !string.IsNullOrEmpty(tbFilename.Text);
             }
         }
 
@@ -136,7 +136,7 @@ namespace FIPDisplayProfiler
             chkPortraitMode.Checked = VideoPlayer.PortraitMode;
             chkShowControls.Checked = VideoPlayer.ShowControls;
             chkResumePlayback.Checked = VideoPlayer.ResumePlayback;
-            btnOK.Enabled = !String.IsNullOrEmpty(tbFilename.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbFilename.Text);
         }
     }
 }

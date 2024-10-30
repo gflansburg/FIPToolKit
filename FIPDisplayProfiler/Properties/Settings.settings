@@ -32,9 +32,6 @@
     <Setting Name="ShowArtistImages" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="SpotifyAuthenticationToken" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="CacheSpotifyArtwork" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>

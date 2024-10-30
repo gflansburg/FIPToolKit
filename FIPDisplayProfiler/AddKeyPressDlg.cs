@@ -73,7 +73,7 @@ namespace FIPDisplayProfiler
             tbKeyStroke.Tag = Button.VirtualKeyCodes;
             cbKeyPressLength.SelectedIndex = IndexOfKeyPressLength(cbKeyPressLength, Button.KeyPressLength);
             cbKeyPressBreak.SelectedIndex = IndexOfKeyPressLength(cbKeyPressBreak, Button.KeyPressBreak);
-            btnOK.Enabled = !String.IsNullOrEmpty(tbKeyStroke.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbKeyStroke.Text);
         }
 
         private void tbKeyStroke_Enter(object sender, EventArgs e)
@@ -113,7 +113,7 @@ namespace FIPDisplayProfiler
                 }
             }
             cbKeyPressLength.SelectedIndex = IndexOfKeyPressLength(cbKeyPressLength, keyPressLength);
-            btnOK.Enabled = !String.IsNullOrEmpty(tbKeyStroke.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbKeyStroke.Text);
         }
 
         private void tbKeyStroke_MouseDoubleClick(object sender, MouseEventArgs e)

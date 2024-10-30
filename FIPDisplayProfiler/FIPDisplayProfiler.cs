@@ -17,6 +17,8 @@ using System.Reflection;
 using FIPToolKit.Tools;
 using System.Diagnostics;
 using SpotifyAPI.Web.Models;
+using Microsoft.Web.WebView2.Core;
+using ProtoBuf.Meta;
 
 namespace FIPDisplayProfiler
 {
@@ -89,7 +91,7 @@ namespace FIPDisplayProfiler
                     SortTabs();
                     if (e.IsNew)
                     {
-                        if (!String.IsNullOrEmpty(ProfileName))
+                        if (!string.IsNullOrEmpty(ProfileName))
                         {
                             LoadSettings(ProfileName, e.Device.SerialNumber);
                         }
@@ -103,7 +105,7 @@ namespace FIPDisplayProfiler
                 SortTabs();
                 if (e.IsNew)
                 {
-                    if (!String.IsNullOrEmpty(ProfileName))
+                    if (!string.IsNullOrEmpty(ProfileName))
                     {
                         LoadSettings(ProfileName, e.Device.SerialNumber);
                     }
@@ -120,7 +122,7 @@ namespace FIPDisplayProfiler
         {
             if(Properties.Settings.Default.AutoSave && !_loading)
             {
-                if (!String.IsNullOrEmpty(ProfileName))
+                if (!string.IsNullOrEmpty(ProfileName))
                 {
                     SaveSettings(ProfileName);
                 }
@@ -156,8 +158,7 @@ namespace FIPDisplayProfiler
 
         private void AddTab(FIPDevice device, bool makeActive)
         {
-            DeviceControl control = new DeviceControl();
-            control.OnShowWindow += Control_OnShowWindow;
+            DeviceControl control = new DeviceControl(webView21);
             control.MainWindowHandle = this.Handle;
             control.Device = device;
             control.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
@@ -173,17 +174,6 @@ namespace FIPDisplayProfiler
             SortTabs();
         }
 
-        private void Control_OnShowWindow(object sender, EventArgs e)
-        {
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                Invoke((Action)(() =>
-                {
-                    ShowWindow();
-                }));
-            });
-        }
-
         private void RemoveTab(FIPDevice device)
         {
             foreach(TabPage tab in tabDevices.TabPages)
@@ -194,7 +184,7 @@ namespace FIPDisplayProfiler
                     {
                         if (MessageBox.Show(this, "A device has been removed with pending changes. Do you wish to save these changes?", "Save Changes", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         {
-                            if (!String.IsNullOrEmpty(ProfileName))
+                            if (!string.IsNullOrEmpty(ProfileName))
                             {
                                 SaveSettings(ProfileName);
                             }
@@ -220,7 +210,7 @@ namespace FIPDisplayProfiler
             bool saveActivePages = Engine.IsActivePagesDirty;
             if(Engine.IsDirty)
             {
-                if (!Properties.Settings.Default.AutoSave || String.IsNullOrEmpty(ProfileName))
+                if (!Properties.Settings.Default.AutoSave || string.IsNullOrEmpty(ProfileName))
                 {
                     _saveChangesDialogShowing = true;
                     DialogResult result = MessageBox.Show(this, "Do you want to save changes?", "FIP Display Profiler", MessageBoxButtons.YesNoCancel);
@@ -245,7 +235,7 @@ namespace FIPDisplayProfiler
             if (saveActivePages)
             {
                 //Save the active page of each device.
-                if (!String.IsNullOrEmpty(ProfileName) && File.Exists(ProfileName))
+                if (!string.IsNullOrEmpty(ProfileName) && File.Exists(ProfileName))
                 {
                     SaveActivePages(ProfileName);
                 }
@@ -312,7 +302,15 @@ namespace FIPDisplayProfiler
                                     }
                                 }
                             }
-                            foreach (FIPDevice device in deviceConfigs._devices)
+                            foreach(FIPDevice device in deviceConfigs._devices)
+                            {
+                                FIPDevice d = Engine.Devices.FirstOrDefault(x => x.SerialNumber.Equals(device.SerialNumber));
+                                if (d != null)
+                                {
+                                    device.SetFIPEngine(d.FIPEngine, d.DeviceClient, d.DeviceId);
+                                }
+                            }
+                            foreach (FIPDevice device in deviceConfigs.Devices)
                             {
                                 if (serialNumber == null || device.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
                                 {
@@ -444,7 +442,7 @@ namespace FIPDisplayProfiler
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(!String.IsNullOrEmpty(ProfileName))
+            if(!string.IsNullOrEmpty(ProfileName))
             {
                 SaveSettings(ProfileName);
             }
@@ -467,8 +465,16 @@ namespace FIPDisplayProfiler
 
         private void previewVideoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPVideoPlayer.PreviewVideo = Properties.Settings.Default.PreviewVideo = previewVideoToolStripMenuItem.Checked;
+            Properties.Settings.Default.PreviewVideo = previewVideoToolStripMenuItem.Checked;
             Properties.Settings.Default.Save();
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.UpdatePreviewVideo();
+                }
+            }
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -620,32 +626,17 @@ namespace FIPDisplayProfiler
             Properties.Settings.Default.Save();
         }
 
-        protected override void OnLoad(EventArgs e)
-        {
-            if (Properties.Settings.Default.StartMinimized)
-            {
-                if (Properties.Settings.Default.MinimizeToSystemTray)
-                {
-                    Visible = false;
-                    ShowInTaskbar = false;
-                }
-                else
-                {
-                    WindowState = FormWindowState.Minimized;
-                }
-            }
-            base.OnLoad(e);
-        }
-        private void FIPDisplay_Load(object sender, EventArgs e)
+        private async void FIPDisplay_Load(object sender, EventArgs e)
         {
             _loading = true;
+            await InitializeWebView2Async();
             startMinimizedToolStripMenuItem.Checked = Properties.Settings.Default.StartMinimized;
             autoLoadLastProfileToolStripMenuItem.Checked = Properties.Settings.Default.AutoLoadLastProfile;
             minimizeToSystemTrayToolStripMenuItem.Checked = Properties.Settings.Default.MinimizeToSystemTray;
             keybdeventToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.keybd_event;
             sendInputToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.SendInput;
             fSUIPCToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.FSUIPC;
-            FIPVideoPlayer.PreviewVideo = previewVideoToolStripMenuItem.Checked = Properties.Settings.Default.PreviewVideo;
+            previewVideoToolStripMenuItem.Checked = Properties.Settings.Default.PreviewVideo;
             loadLastPlaylistToolStripMenuItem.Checked = Properties.Settings.Default.LoadLastPlaylist;
             showArtistImagesToolStripMenuItem.Checked = Properties.Settings.Default.ShowArtistImages;
             cacheSpotifyArtworkToolStripMenuItem.Checked = Properties.Settings.Default.CacheSpotifyArtwork;
@@ -667,6 +658,22 @@ namespace FIPDisplayProfiler
                 LoadSettings(ProfileName);
             }
             _loading = false;
+        }
+
+        public void HideWindow()
+        {
+            if (Properties.Settings.Default.StartMinimized)
+            {
+                if (Properties.Settings.Default.MinimizeToSystemTray)
+                {
+                    Visible = false;
+                    ShowInTaskbar = false;
+                }
+                else
+                {
+                    WindowState = FormWindowState.Minimized;
+                }
+            }
         }
 
         private void showArtistImagesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -762,6 +769,128 @@ namespace FIPDisplayProfiler
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.UpdateLoadLastSpotifyPlaylist();
+                }
+            }
+        }
+
+        private async Task InitializeWebView2Async(string tempDir = "")
+        {
+            CoreWebView2Environment webView2Environment = null;
+
+            //set value
+            string tempDir2 = tempDir;
+
+            if (string.IsNullOrEmpty(tempDir2))
+            {
+                //get fully-qualified path to user's temp folder
+                tempDir2 = System.IO.Path.GetTempPath();
+            }//if
+
+            //add event handler for CoreWebView2Ready - before webView2Ctl is initialized
+            //it's important to not use webViewCtrl until CoreWebView2Ready event is thrown
+            webView21.CoreWebView2InitializationCompleted += WebView21_CoreWebView2InitializationCompleted;
+
+            CoreWebView2EnvironmentOptions options = null;
+            //options = new CoreWebView2EnvironmentOptions("--disk-cache-size=200");
+            //options = new CoreWebView2EnvironmentOptions("–incognito ");
+
+            //set webView2 temp folder. The temp folder is used to store webView2
+            //cached objects. If not specified, the folder where the executable
+            //was started will be used. If the user doesn't have write permissions
+            //on that folder, such as C:\Program Files\<your application folder>\,
+            //then webView2 will fail. 
+
+            //webView2Environment = await CoreWebView2Environment.CreateAsync(@"C:\Program Files (x86)\Microsoft\Edge Dev\Application\85.0.564.8", tempDir2, options);
+            webView2Environment = await CoreWebView2Environment.CreateAsync(null, tempDir2, options);
+
+            //webView2Ctl must be inialized before it can be used
+            //wait for coreWebView2 initialization
+            //when complete, CoreWebView2Ready event will be thrown
+            await webView21.EnsureCoreWebView2Async(webView2Environment);
+
+            webView21.Source = new System.Uri("https://www.spotify.com", System.UriKind.Absolute);
+
+            //add other event handlers - after webView2Ctrl is initialized
+            //webView2Ctl.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
+            //webView2Ctl.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+            //webView2Ctl.NavigationCompleted += WebView2Ctl_NavigationCompleted;
+            //webView2Ctl.NavigationStarting += WebView2Ctl_NavigationStarting;
+
+        }
+
+        public static bool IsInitialized = false;
+        private void WebView21_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.CancelSpotifyAuthenticate();
+                }
+            }
+            IsInitialized = true;
+            timerSpotify.Enabled = true;
+            HideWindow();
+            System.Diagnostics.Debug.Print("Info: WebView21_CoreWebView2InitializationCompleted");
+        }
+
+        private Dictionary<string, DateTime?> WebViewShowTimes = new Dictionary<string, DateTime?>();
+        private void timerSpotify_Tick(object sender, EventArgs e)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    foreach (FIPPage page in deviceControl.Device.Pages)
+                    {
+                        if (page.GetType() == typeof(FIPSpotifyPlayer))
+                        {
+                            if (!WebViewShowTimes.ContainsKey(deviceControl.Device.SerialNumber))
+                            {
+                                WebViewShowTimes.Add(deviceControl.Device.SerialNumber, null);
+                            }
+                            FIPSpotifyPlayer player = page as FIPSpotifyPlayer;
+                            if (player.IsAuthenticating && WebViewShowTimes[deviceControl.Device.SerialNumber] == null)
+                            {
+                                WebViewShowTimes[deviceControl.Device.SerialNumber] = DateTime.Now;
+                            }
+                            else if (!player.IsAuthenticating)
+                            {
+                                WebViewShowTimes[deviceControl.Device.SerialNumber] = null;
+                            }
+                            if (player.IsAuthenticating && !webView21.Visible && (DateTime.Now - WebViewShowTimes[deviceControl.Device.SerialNumber].Value).TotalSeconds >= 5)
+                            {
+                                // Keep it hidden for token renewal, but if it doesn't renew within 5 seconds it may be because we need to log in and/or give permissions.
+                                //CloseAllDialogs();
+                                webView21.Visible = true;
+                                webView21.BringToFront();
+                                webView21.Focus();
+                                ShowWindow();
+                            }
+                            else if (!player.IsAuthenticating && webView21.Visible)
+                            {
+                                webView21.Visible = false;
+                                webView21.SendToBack();
+                            }
+                            else if (webView21.Visible && player.IsAuthorized && player.IsConfigured && player.Token != null && !player.Token.IsExpired())
+                            {
+                                player.IsAuthenticating = false;
+                                webView21.Visible = false;
+                                webView21.SendToBack();
+                            }
+                            if (player.Token == null)
+                            {
+                                player.Authenticate();
+                            }
+                            else if (player.Token.IsExpired())
+                            {
+                                player.RefreshToken();
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         }

@@ -256,7 +256,7 @@ namespace FIPDisplayProfiler
                 btnFontColor.BackColor = colorDialog1.Color;
                 Properties.Settings.Default.CustomColors = colorDialog1.CustomColors;
                 Properties.Settings.Default.Save();
-                if (!String.IsNullOrEmpty(_iconFilename))
+                if (!string.IsNullOrEmpty(_iconFilename))
                 {
                     pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
                 }
@@ -300,7 +300,7 @@ namespace FIPDisplayProfiler
                     break;
             }
             tbValue.Enabled = (Button.Action == FIPFSUIPCButtonAction.Set);
-            btnOK.Enabled = IsCommandEnabled && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = IsCommandEnabled && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void btnRemoveIcon_Click(object sender, EventArgs e)
@@ -323,7 +323,7 @@ namespace FIPDisplayProfiler
 
         private void cbReColor_CheckedChanged(object sender, EventArgs e)
         {
-            if(!String.IsNullOrEmpty(_iconFilename))
+            if(!string.IsNullOrEmpty(_iconFilename))
             {
                 pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
             }
@@ -383,31 +383,31 @@ namespace FIPDisplayProfiler
 
         private void tbName_TextChanged(object sender, EventArgs e)
         {
-            btnOK.Enabled = IsCommandEnabled && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = IsCommandEnabled && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void cbFsControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             tbName.Text = cbFsControl.SelectedIndex > 0 ? (cbFsControl.SelectedItem as FSUIPCCommandDlgFsControl).Name : string.Empty;
-            btnOK.Enabled = IsCommandEnabled && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = IsCommandEnabled && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void cbFSUIPCControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             tbName.Text = cbFSUIPCControl.SelectedIndex > 0 ? (cbFSUIPCControl.SelectedItem as FSUIPCCommandDlgFSUIPCControl).Name : string.Empty;
-            btnOK.Enabled = IsCommandEnabled && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = IsCommandEnabled && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void cbFSUIPCAutoPilotControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             tbName.Text = cbFSUIPCAutoPilotControl.SelectedIndex > 0 ? (cbFSUIPCAutoPilotControl.SelectedItem as FSUIPCCommandDlgFSUIPCAutoPilotControl).Name : string.Empty;
-            btnOK.Enabled = IsCommandEnabled && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = IsCommandEnabled && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void cbFSUIPCAxisControl_SelectedIndexChanged(object sender, EventArgs e)
         {
             tbName.Text = cbFSUIPCAxisControl.SelectedIndex > 0 ? (cbFSUIPCAxisControl.SelectedItem as FSUIPCCommandDlgFSUIPCAxisControl).Name : string.Empty;
-            btnOK.Enabled = IsCommandEnabled && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = IsCommandEnabled && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void cbAction_SelectedIndexChanged(object sender, EventArgs e)

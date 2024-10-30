@@ -38,18 +38,6 @@ namespace FIPDisplayMSFS2020.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SpotifyAuthenticationToken {
-            get {
-                return ((string)(this["SpotifyAuthenticationToken"]));
-            }
-            set {
-                this["SpotifyAuthenticationToken"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string DeviceSettings {
             get {
                 return ((string)(this["DeviceSettings"]));

@@ -36,7 +36,10 @@ namespace FIPDisplayMSFS2020
             this.label2 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
+            this.timerSpotify = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.webView21)).BeginInit();
             this.SuspendLayout();
             // 
             // btnOK
@@ -90,6 +93,25 @@ namespace FIPDisplayMSFS2020
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // webView21
+            // 
+            this.webView21.AllowExternalDrop = true;
+            this.webView21.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.webView21.CreationProperties = null;
+            this.webView21.DefaultBackgroundColor = System.Drawing.Color.White;
+            this.webView21.Location = new System.Drawing.Point(0, 0);
+            this.webView21.Name = "webView21";
+            this.webView21.Size = new System.Drawing.Size(404, 344);
+            this.webView21.TabIndex = 4;
+            this.webView21.Visible = false;
+            this.webView21.ZoomFactor = 1D;
+            // 
+            // timerSpotify
+            // 
+            this.timerSpotify.Tick += new System.EventHandler(this.timerSpotify_Tick);
+            // 
             // FIPDisplay
             // 
             this.AcceptButton = this.btnOK;
@@ -101,6 +123,7 @@ namespace FIPDisplayMSFS2020
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.label2);
+            this.Controls.Add(this.webView21);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -108,6 +131,7 @@ namespace FIPDisplayMSFS2020
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FIPDisplayMSFS2020";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.webView21)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -118,6 +142,8 @@ namespace FIPDisplayMSFS2020
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Timer timer1;
+        private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
+        private System.Windows.Forms.Timer timerSpotify;
     }
 }
 

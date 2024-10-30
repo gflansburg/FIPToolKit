@@ -1,4 +1,5 @@
 ﻿using FIPToolKit.Tools;
+using MediaToolkit;
 using Newtonsoft.Json;
 using Saitek.DirectOutput;
 using SpotifyAPI.Web.Models;
@@ -216,6 +217,13 @@ namespace FIPToolKit.Models
         public FIPDevice(FIPEngine engine, DeviceClient deviceClient, IntPtr deviceId)
         {
             _pages = new List<FIPPage>();
+            FIPEngine = engine;
+            DeviceId = deviceId;
+            DeviceClient = deviceClient;
+        }
+
+        public void SetFIPEngine(FIPEngine engine, DeviceClient deviceClient, IntPtr deviceId)
+        {
             FIPEngine = engine;
             DeviceId = deviceId;
             DeviceClient = deviceClient;

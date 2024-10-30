@@ -63,7 +63,7 @@ namespace FIPDisplayProfiler
                 btnFontColor.BackColor = colorDialog1.Color;
                 Properties.Settings.Default.CustomColors = colorDialog1.CustomColors;
                 Properties.Settings.Default.Save();
-                if (!String.IsNullOrEmpty(_iconFilename))
+                if (!string.IsNullOrEmpty(_iconFilename))
                 {
                     pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
                 }
@@ -94,7 +94,7 @@ namespace FIPDisplayProfiler
             {
                 lvKeys.Items[0].Selected = true;
             }
-            btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
+            btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
         }
 
         private void btnRemoveIcon_Click(object sender, EventArgs e)
@@ -117,7 +117,7 @@ namespace FIPDisplayProfiler
 
         private void cbReColor_CheckedChanged(object sender, EventArgs e)
         {
-            if(!String.IsNullOrEmpty(_iconFilename))
+            if(!string.IsNullOrEmpty(_iconFilename))
             {
                 pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
             }
@@ -160,7 +160,7 @@ namespace FIPDisplayProfiler
                     btnDelete.Enabled = GetSelectedIndex != -1;
                     btnMoveUp.Enabled = GetSelectedIndex > 0;
                     btnMoveDown.Enabled = GetSelectedIndex < (lvKeys.Items.Count - 1);
-                    btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
+                    btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
                 }
             }
         }
@@ -223,7 +223,7 @@ namespace FIPDisplayProfiler
                 btnDelete.Enabled = GetSelectedIndex != -1;
                 btnMoveUp.Enabled = GetSelectedIndex > 0;
                 btnMoveDown.Enabled = GetSelectedIndex < (lvKeys.Items.Count - 1);
-                btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
+                btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
             }
         }
 
@@ -257,7 +257,7 @@ namespace FIPDisplayProfiler
 
         private void tbName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
+            btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && lvKeys.Items.Count > 0);
         }
 
         private void lvKeys_ColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)

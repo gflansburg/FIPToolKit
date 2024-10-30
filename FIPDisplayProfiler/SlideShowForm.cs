@@ -29,7 +29,7 @@ namespace FIPDisplayProfiler
             {
                 int index = lbImages.Items.Add(openFileDialog1.FileName);
                 lbImages.SelectedIndex = index;
-                btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
+                btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
             }
         }
 
@@ -75,7 +75,7 @@ namespace FIPDisplayProfiler
                     btnDelete.Enabled = lbImages.SelectedIndex != -1;
                     btnMoveUp.Enabled = lbImages.SelectedIndex > 0;
                     btnMoveDown.Enabled = lbImages.SelectedIndex < (lbImages.Items.Count - 1);
-                    btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
+                    btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
                 }
             }
         }
@@ -127,7 +127,7 @@ namespace FIPDisplayProfiler
             btnDelete.Enabled = lbImages.SelectedIndex != -1;
             btnMoveUp.Enabled = lbImages.SelectedIndex > 0;
             btnMoveDown.Enabled = lbImages.SelectedIndex < (lbImages.Items.Count - 1);
-            btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
+            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
         }
 
         private void btnFont_Click(object sender, EventArgs e)
@@ -155,7 +155,7 @@ namespace FIPDisplayProfiler
 
         private void tbName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
+            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text) && lbImages.Items.Count > 0;
         }
     }
 }

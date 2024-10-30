@@ -5,10 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 using FIPToolKit.Drawing;
 using FIPToolKit.Threading;
@@ -19,7 +16,6 @@ using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
 using SpotifyAPI.Web.Enums;
 using SpotifyAPI.Web.Models;
-using static Unosquare.Swan.Terminal;
 
 namespace FIPToolKit.Models
 {
@@ -58,7 +54,11 @@ namespace FIPToolKit.Models
     public class FIPSpotifyPlayer : FIPPage
     {
         private Token _token;
+
+        [XmlIgnore]
+        [JsonIgnore]
         public bool IsAuthenticating { get; set; } = false;
+        
         private AuthorizationCodeAuth authorizationCodeAuth;
         private bool _showArtistImages;
         private bool _cacheArtwork;

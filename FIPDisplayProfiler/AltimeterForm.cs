@@ -84,7 +84,7 @@ namespace FIPDisplayProfiler
                 cbFaceGradientMode.SelectedIndex = IndexOfLinearGradientMode(((FIPFSUIPCAltimeter)Altimeter).FaceGradientMode);
                 pbGaugeImage.Image = (((FIPFSUIPCAltimeter)Altimeter).GaugeImage != null ? new Bitmap(((FIPFSUIPCAltimeter)Altimeter).GaugeImage) : null);
                 _gaugeImageFileName = ((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename;
-                if (((FIPFSUIPCAltimeter)Altimeter).GaugeImage == null && !String.IsNullOrEmpty(((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename))
+                if (((FIPFSUIPCAltimeter)Altimeter).GaugeImage == null && !string.IsNullOrEmpty(((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename))
                 {
                     pbGaugeImage.Image = new Bitmap(FIPToolKit.Drawing.ImageHelper.GetBitmapResource(((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename));
                 }
@@ -113,7 +113,7 @@ namespace FIPDisplayProfiler
                 cbFaceGradientMode.SelectedIndex = IndexOfLinearGradientMode(((FIPSimConnectAltimeter)Altimeter).FaceGradientMode);
                 pbGaugeImage.Image = (((FIPSimConnectAltimeter)Altimeter).GaugeImage != null ? new Bitmap(((FIPSimConnectAltimeter)Altimeter).GaugeImage) : null);
                 _gaugeImageFileName = ((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename;
-                if (((FIPSimConnectAltimeter)Altimeter).GaugeImage == null && !String.IsNullOrEmpty(((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename))
+                if (((FIPSimConnectAltimeter)Altimeter).GaugeImage == null && !string.IsNullOrEmpty(((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename))
                 {
                     pbGaugeImage.Image = new Bitmap(FIPToolKit.Drawing.ImageHelper.GetBitmapResource(((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename));
                 }
@@ -129,7 +129,7 @@ namespace FIPDisplayProfiler
             btnNeedleColor.Enabled = cbDrawTenThousandsHand.Checked || cbDrawThousandsHand.Checked || cbDrawHundredsHand.Checked;
             numHundredsHandLengthOffset.Enabled = cbDrawHundredsHand.Checked;
             btnNeedleColor.Enabled = cbDrawTenThousandsHand.Checked || cbDrawThousandsHand.Checked || cbDrawHundredsHand.Checked;
-            btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -323,7 +323,7 @@ namespace FIPDisplayProfiler
 
         private void tbName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void pbGaugeImage_Click(object sender, EventArgs e)

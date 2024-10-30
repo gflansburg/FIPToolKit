@@ -5,9 +5,6 @@
     <Setting Name="DeviceActivePages" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="SpotifyAuthenticationToken" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="DeviceSettings" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>

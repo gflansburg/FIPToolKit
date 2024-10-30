@@ -91,7 +91,7 @@ namespace FIPDisplayProfiler
                 btnFontColor.BackColor = colorDialog1.Color;
                 Properties.Settings.Default.CustomColors = colorDialog1.CustomColors;
                 Properties.Settings.Default.Save();
-                if (!String.IsNullOrEmpty(_iconFilename))
+                if (!string.IsNullOrEmpty(_iconFilename))
                 {
                     pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
                 }
@@ -111,7 +111,7 @@ namespace FIPDisplayProfiler
             pbIcon.Image = Button.Icon;
             cbReColor.Checked = Button.ReColor;
             cbKeyPressLength.SelectedIndex = IndexOfKeyPressLength(Button.KeyPressLength);
-            btnOK.Enabled = !String.IsNullOrEmpty(tbKeyStroke.Text) && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbKeyStroke.Text) && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void btnRemoveIcon_Click(object sender, EventArgs e)
@@ -134,7 +134,7 @@ namespace FIPDisplayProfiler
 
         private void cbReColor_CheckedChanged(object sender, EventArgs e)
         {
-            if(!String.IsNullOrEmpty(_iconFilename))
+            if(!string.IsNullOrEmpty(_iconFilename))
             {
                 pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
             }
@@ -182,7 +182,7 @@ namespace FIPDisplayProfiler
                 }
             }
             cbKeyPressLength.SelectedIndex = IndexOfKeyPressLength(keyPressLength);
-            btnOK.Enabled = !String.IsNullOrEmpty(tbKeyStroke.Text) && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbKeyStroke.Text) && !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void tbKeyStroke_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -193,7 +193,7 @@ namespace FIPDisplayProfiler
 
         private void tbName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            btnOK.Enabled = !String.IsNullOrEmpty(tbKeyStroke.Text) && !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbKeyStroke.Text) && !string.IsNullOrEmpty(tbName.Text);
         }
     }
 }

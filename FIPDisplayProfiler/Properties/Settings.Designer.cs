@@ -144,18 +144,6 @@ namespace FIPDisplayProfiler.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SpotifyAuthenticationToken {
-            get {
-                return ((string)(this["SpotifyAuthenticationToken"]));
-            }
-            set {
-                this["SpotifyAuthenticationToken"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool CacheSpotifyArtwork {
             get {

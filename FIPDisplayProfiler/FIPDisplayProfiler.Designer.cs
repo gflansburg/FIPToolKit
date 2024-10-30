@@ -46,6 +46,7 @@ namespace FIPDisplayProfiler
             this.previewVideoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.autoLoadLastProfileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadLastPlaylistToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autoSaveSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cacheSpotifyArtworkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showArtistImagesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeFlightShareOnExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,9 +64,11 @@ namespace FIPDisplayProfiler
             this.openToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkMSFSTimer = new System.Windows.Forms.Timer(this.components);
-            this.autoSaveSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
+            this.timerSpotify = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.webView21)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -215,6 +218,16 @@ namespace FIPDisplayProfiler
             this.loadLastPlaylistToolStripMenuItem.Text = "Auto &Play Last Playlist";
             this.loadLastPlaylistToolStripMenuItem.Click += new System.EventHandler(this.loadLastPlaylistToolStripMenuItem_Click);
             // 
+            // autoSaveSettingsToolStripMenuItem
+            // 
+            this.autoSaveSettingsToolStripMenuItem.Checked = true;
+            this.autoSaveSettingsToolStripMenuItem.CheckOnClick = true;
+            this.autoSaveSettingsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.autoSaveSettingsToolStripMenuItem.Name = "autoSaveSettingsToolStripMenuItem";
+            this.autoSaveSettingsToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.autoSaveSettingsToolStripMenuItem.Text = "Auto Sa&ve Settings";
+            this.autoSaveSettingsToolStripMenuItem.Click += new System.EventHandler(this.autoSaveSettingsToolStripMenuItem_Click);
+            // 
             // cacheSpotifyArtworkToolStripMenuItem
             // 
             this.cacheSpotifyArtworkToolStripMenuItem.Checked = true;
@@ -344,15 +357,24 @@ namespace FIPDisplayProfiler
             // 
             this.checkMSFSTimer.Tick += new System.EventHandler(this.checkMSFSTimer_Tick);
             // 
-            // autoSaveSettingsToolStripMenuItem
+            // webView21
             // 
-            this.autoSaveSettingsToolStripMenuItem.Checked = true;
-            this.autoSaveSettingsToolStripMenuItem.CheckOnClick = true;
-            this.autoSaveSettingsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.autoSaveSettingsToolStripMenuItem.Name = "autoSaveSettingsToolStripMenuItem";
-            this.autoSaveSettingsToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
-            this.autoSaveSettingsToolStripMenuItem.Text = "Auto Sa&ve Settings";
-            this.autoSaveSettingsToolStripMenuItem.Click += new System.EventHandler(this.autoSaveSettingsToolStripMenuItem_Click);
+            this.webView21.AllowExternalDrop = true;
+            this.webView21.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.webView21.CreationProperties = null;
+            this.webView21.DefaultBackgroundColor = System.Drawing.Color.White;
+            this.webView21.Location = new System.Drawing.Point(12, 45);
+            this.webView21.Name = "webView21";
+            this.webView21.Size = new System.Drawing.Size(732, 466);
+            this.webView21.TabIndex = 4;
+            this.webView21.Visible = false;
+            this.webView21.ZoomFactor = 1D;
+            // 
+            // timerSpotify
+            // 
+            this.timerSpotify.Tick += new System.EventHandler(this.timerSpotify_Tick);
             // 
             // FIPDisplayProfiler
             // 
@@ -363,6 +385,7 @@ namespace FIPDisplayProfiler
             this.Controls.Add(this.lblFipDisplays);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.webView21);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "FIPDisplayProfiler";
@@ -373,6 +396,7 @@ namespace FIPDisplayProfiler
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.webView21)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -413,6 +437,8 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.ToolStripMenuItem exitWhenMSFSQuitsToolStripMenuItem;
         private System.Windows.Forms.Timer checkMSFSTimer;
         private System.Windows.Forms.ToolStripMenuItem autoSaveSettingsToolStripMenuItem;
+        private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
+        private System.Windows.Forms.Timer timerSpotify;
     }
 }
 

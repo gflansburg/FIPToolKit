@@ -57,7 +57,7 @@ namespace FIPDisplayProfiler
                 btnFontColor.BackColor = colorDialog1.Color;
                 Properties.Settings.Default.CustomColors = colorDialog1.CustomColors;
                 Properties.Settings.Default.Save();
-                if (!String.IsNullOrEmpty(_iconFilename))
+                if (!string.IsNullOrEmpty(_iconFilename))
                 {
                     pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
                 }
@@ -72,7 +72,7 @@ namespace FIPDisplayProfiler
             if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 tbFilename.Text = openFileDialog1.FileName;
-                btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && !String.IsNullOrEmpty(tbFilename.Text));
+                btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && !string.IsNullOrEmpty(tbFilename.Text));
             }
         }
 
@@ -88,7 +88,7 @@ namespace FIPDisplayProfiler
             _iconFilename = Button.IconFilename;
             pbIcon.Image = Button.Icon;
             cbReColor.Checked = Button.ReColor;
-            btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && !String.IsNullOrEmpty(tbFilename.Text));
+            btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && !string.IsNullOrEmpty(tbFilename.Text));
         }
 
         private void btnRemoveIcon_Click(object sender, EventArgs e)
@@ -111,7 +111,7 @@ namespace FIPDisplayProfiler
 
         private void cbReColor_CheckedChanged(object sender, EventArgs e)
         {
-            if(!String.IsNullOrEmpty(_iconFilename))
+            if(!string.IsNullOrEmpty(_iconFilename))
             {
                 pbIcon.Image = cbReColor.Checked ? FIPToolKit.Drawing.ImageHelper.ChangeToColor(Image.FromFile(_iconFilename), btnFontColor.BackColor) : Image.FromFile(_iconFilename);
             }
@@ -124,12 +124,12 @@ namespace FIPDisplayProfiler
 
         private void tbName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && !String.IsNullOrEmpty(tbFilename.Text));
+            btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && !string.IsNullOrEmpty(tbFilename.Text));
         }
 
         private void tbFilename_KeyPress(object sender, KeyPressEventArgs e)
         {
-            btnOK.Enabled = (!String.IsNullOrEmpty(tbName.Text) && !String.IsNullOrEmpty(tbFilename.Text));
+            btnOK.Enabled = (!string.IsNullOrEmpty(tbName.Text) && !string.IsNullOrEmpty(tbFilename.Text));
         }
     }
 }

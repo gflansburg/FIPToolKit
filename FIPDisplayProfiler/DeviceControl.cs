@@ -20,13 +20,10 @@ namespace FIPDisplayProfiler
         private global::FIPDisplayProfiler.ToolStripSubMenu rightToolStripMenuItem;
 
         public IntPtr MainWindowHandle { get; set; }
-
-        public event EventHandler OnShowWindow;
-
         private FIPDevice _device;
         public FIPPage SelectedPage { get; private set; }
-        public FIPDevice Device 
-        { 
+        public FIPDevice Device
+        {
             get
             {
                 return _device;
@@ -34,7 +31,7 @@ namespace FIPDisplayProfiler
             set
             {
                 _device = value;
-                if(_device != null)
+                if (_device != null)
                 {
                     SetFIPImage(_device.GetDefaultPageImage);
                     Device.OnPageChanged += Device_OnPageChanged;
@@ -61,10 +58,10 @@ namespace FIPDisplayProfiler
 
         private int InsertIndex(uint page)
         {
-            for(int i = 0; i < lbPages.Items.Count; i++)
+            for (int i = 0; i < lbPages.Items.Count; i++)
             {
                 FIPPage fipPage = lbPages.Items[i] as FIPPage;
-                if(fipPage.Page > page)
+                if (fipPage.Page > page)
                 {
                     return i;
                 }
@@ -92,7 +89,7 @@ namespace FIPDisplayProfiler
             e.Page.OnStateChange += Page_OnStateChange;
             if (e.Page.GetType() == typeof(FIPSpotifyPlayer))
             {
-                ((FIPSpotifyPlayer)e.Page).Browser = webView21;
+                ((FIPSpotifyPlayer)e.Page).Browser = WebView21;
                 ((FIPSpotifyPlayer)e.Page).CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
                 ((FIPSpotifyPlayer)e.Page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
                 ((FIPSpotifyPlayer)e.Page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
@@ -137,9 +134,12 @@ namespace FIPDisplayProfiler
             }));
         }
 
-        public DeviceControl()
+        public Microsoft.Web.WebView2.WinForms.WebView2 WebView21 {get; private set; }
+
+        public DeviceControl(Microsoft.Web.WebView2.WinForms.WebView2 webView21)
         {
             InitializeComponent();
+            WebView21 = webView21;
             pbKnobLeft.Tag = SoftButtons.Left;
             pbKnobRight.Tag = SoftButtons.Up;
             pbS1ButtonOff.Tag = pbS1ButtonOn.Tag = SoftButtons.Button1;
@@ -210,7 +210,7 @@ namespace FIPDisplayProfiler
             SelectedPage = lbPages.SelectedItem as FIPPage;
             if (page.GetType() == typeof(FIPSpotifyPlayer))
             {
-                ((FIPSpotifyPlayer)page).Browser = webView21;
+                ((FIPSpotifyPlayer)page).Browser = WebView21;
                 ((FIPSpotifyPlayer)page).CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
                 ((FIPSpotifyPlayer)page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
                 ((FIPSpotifyPlayer)page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
@@ -359,7 +359,7 @@ namespace FIPDisplayProfiler
                                 }
                             }
                             FIPSpotifyPlayer page = new FIPSpotifyPlayer();
-                            page.Browser = webView21;
+                            page.Browser = WebView21;
                             page.CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
                             page.ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
                             page.OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
@@ -556,7 +556,10 @@ namespace FIPDisplayProfiler
                     {
                         if (lbPages.Items.Contains(e.Page) && e.Page == SelectedPage)
                         {
-                            SetFIPImage(e.Image);
+                            if (e.Page.GetType() != typeof(FIPVideoPlayer) || (e.Page.GetType() == typeof(FIPVideoPlayer) && Properties.Settings.Default.PreviewVideo))
+                            {
+                                SetFIPImage(e.Image);
+                            }
                         }
                     }
                     else
@@ -1753,57 +1756,7 @@ namespace FIPDisplayProfiler
 
         private async void DeviceControl_Load(object sender, EventArgs e)
         {
-            await InitializeWebView2Async();
             UpdateLeds();
-        }
-
-        private DateTime? webViewShowTime = null;
-        private void timerSpotify_Tick(object sender, EventArgs e)
-        {
-            foreach (FIPPage page in Device.Pages)
-            {
-                if (page.GetType() == typeof(FIPSpotifyPlayer))
-                {
-                    FIPSpotifyPlayer player = page as FIPSpotifyPlayer;
-                    if (player.IsAuthenticating && webViewShowTime == null)
-                    {
-                        webViewShowTime = DateTime.Now;
-                    }
-                    else if (!player.IsAuthenticating)
-                    {
-                        webViewShowTime = null;
-                    }
-                    if (player.IsAuthenticating && !webView21.Visible && (DateTime.Now - webViewShowTime.Value).TotalSeconds >= 5)
-                    {
-                        // Keep it hidden for token renewal, but if it doesn't renew within 5 seconds it may be because we need to log in and/or give permissions.
-                        //CloseAllDialogs();
-                        webView21.Visible = true;
-                        webView21.BringToFront();
-                        webView21.Focus();
-                        OnShowWindow?.Invoke(this, EventArgs.Empty);
-                    }
-                    else if (!player.IsAuthenticating && webView21.Visible)
-                    {
-                        webView21.Visible = false;
-                        webView21.SendToBack();
-                    }
-                    else if (webView21.Visible && player.IsAuthorized && player.IsConfigured && player.Token != null && !player.Token.IsExpired())
-                    {
-                        player.IsAuthenticating = false;
-                        webView21.Visible = false;
-                        webView21.SendToBack();
-                    }
-                    if (player.Token == null)
-                    {
-                        player.Authenticate();
-                    }
-                    else if (player.Token.IsExpired())
-                    {
-                        player.RefreshToken();
-                    }
-                    break;
-                }
-            }
         }
 
         /*protected override void WndProc(ref Message m)
@@ -1831,67 +1784,6 @@ namespace FIPDisplayProfiler
             }
             base.WndProc(ref m);
         }*/
-
-        private async Task InitializeWebView2Async(string tempDir = "")
-        {
-            CoreWebView2Environment webView2Environment = null;
-
-            //set value
-            string tempDir2 = tempDir;
-
-            if (string.IsNullOrEmpty(tempDir2))
-            {
-                //get fully-qualified path to user's temp folder
-                tempDir2 = System.IO.Path.GetTempPath();
-            }//if
-
-            //add event handler for CoreWebView2Ready - before webView2Ctl is initialized
-            //it's important to not use webViewCtrl until CoreWebView2Ready event is thrown
-            webView21.CoreWebView2InitializationCompleted += WebView21_CoreWebView2InitializationCompleted;
-
-            CoreWebView2EnvironmentOptions options = null;
-            //options = new CoreWebView2EnvironmentOptions("--disk-cache-size=200");
-            //options = new CoreWebView2EnvironmentOptions("–incognito ");
-
-            //set webView2 temp folder. The temp folder is used to store webView2
-            //cached objects. If not specified, the folder where the executable
-            //was started will be used. If the user doesn't have write permissions
-            //on that folder, such as C:\Program Files\<your application folder>\,
-            //then webView2 will fail. 
-
-            //webView2Environment = await CoreWebView2Environment.CreateAsync(@"C:\Program Files (x86)\Microsoft\Edge Dev\Application\85.0.564.8", tempDir2, options);
-            webView2Environment = await CoreWebView2Environment.CreateAsync(null, tempDir2, options);
-
-            //webView2Ctl must be inialized before it can be used
-            //wait for coreWebView2 initialization
-            //when complete, CoreWebView2Ready event will be thrown
-            await webView21.EnsureCoreWebView2Async(webView2Environment);
-
-            webView21.Source = new System.Uri("https://www.spotify.com", System.UriKind.Absolute);
-
-            //add other event handlers - after webView2Ctrl is initialized
-            //webView2Ctl.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
-            //webView2Ctl.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-            //webView2Ctl.NavigationCompleted += WebView2Ctl_NavigationCompleted;
-            //webView2Ctl.NavigationStarting += WebView2Ctl_NavigationStarting;
-
-        }
-
-        private bool _isInitialized = false;
-        private void WebView21_CoreWebView2InitializationCompleted(object sender, CoreWebView2InitializationCompletedEventArgs e)
-        {
-            foreach (FIPPage fipPage in Device.Pages)
-            {
-                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
-                {
-                    ((FIPSpotifyPlayer)fipPage).CancelAuthenticate();
-                    break;
-                }
-            }
-            _isInitialized = true;
-            timerSpotify.Enabled = true;
-            System.Diagnostics.Debug.Print("Info: WebView21_CoreWebView2InitializationCompleted");
-        }
 
         public void UpdateShowArtistImages()
         {
@@ -1931,11 +1823,37 @@ namespace FIPDisplayProfiler
 
         private void DeviceControl_OnBeginAuthentication(object sender, FIPPageEventArgs e)
         {
-            timerSpotify.Enabled = _isInitialized;
         }
 
         private void DeviceControl_OnEndAuthentication(object sender, FIPPageEventArgs e)
         {
+        }
+
+        public void UpdatePreviewVideo()
+        {
+            if (SelectedPage.GetType() == typeof(FIPVideoPlayer))
+            {
+                if (!Properties.Settings.Default.PreviewVideo)
+                {
+                    SetFIPImage(Device.GetDefaultPageImage);
+                }
+                else
+                {
+                    SetFIPImage(SelectedPage.Image);
+                }
+            }
+        }
+
+        public void CancelSpotifyAuthenticate()
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    ((FIPSpotifyPlayer)fipPage).CancelAuthenticate();
+                    break;
+                }
+            }
         }
     }
 }

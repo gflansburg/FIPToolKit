@@ -83,7 +83,7 @@ namespace FIPDisplayProfiler
             });
             foreach (CultureInfo cultureInfo in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
-                if (!String.IsNullOrEmpty(cultureInfo.Name))
+                if (!string.IsNullOrEmpty(cultureInfo.Name))
                 {
                     cbNumeralType.Items.Add(new ClockNumeralType()
                     {
@@ -320,7 +320,7 @@ namespace FIPDisplayProfiler
         private void AnalogClockForm_Load(object sender, EventArgs e)
         {
             LoadAnalogClock(AnalogClock);
-            btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void cbDrawCaption_CheckedChanged(object sender, EventArgs e)
@@ -598,7 +598,7 @@ namespace FIPDisplayProfiler
             btnNumeralColor.BackColor = analogClock.FontColor;
             pbFaceImage.Image = (analogClock.FaceImage != null ? new Bitmap(analogClock.FaceImage) : null);
             _faceImageFileName = analogClock.FaceImageFilename;
-            if (analogClock.FaceImage == null && !String.IsNullOrEmpty(analogClock.FaceImageFilename))
+            if (analogClock.FaceImage == null && !string.IsNullOrEmpty(analogClock.FaceImageFilename))
             {
                 pbFaceImage.Image = new Bitmap(FIPToolKit.Drawing.ImageHelper.GetBitmapResource(analogClock.FaceImageFilename));
             }
@@ -735,7 +735,7 @@ namespace FIPDisplayProfiler
 
         private void tbName_KeyPress(object sender, KeyPressEventArgs e)
         {
-            btnOK.Enabled = !String.IsNullOrEmpty(tbName.Text);
+            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text);
         }
     }
 }

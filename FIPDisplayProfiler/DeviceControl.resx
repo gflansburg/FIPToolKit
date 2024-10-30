@@ -130,7 +130,7 @@
   <data name="fipImage.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAUAAAADwCAIAAAD+Tyo8AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
-        EAAACxABrSO9dQAA/7JJREFUeF7s/QV8XUeW7g0HbCcxx8wgmWTLIqNkkkmybMu2mJmZmZklC4wyM1Mc
+        DgAACw4BQL7hQQAA/7JJREFUeF7s/QV8XUeW7g0HbCcxx8wgmWTLIqNkkkmybMu2mJmZmZklC4wyM1Mc
         hk7S4XQa00maB7tn7jvT9w7feae78/1XraPjEyVp7vveb2b0W96uXbt2Ve2q9dSzVu3adR7aHdm4LaB6
         s1+lh2/pur1ly7dkum7PW+dT4uZduGxT5sptOat9Ch23ZtuvS1/snmm/PmWOW+Islzi7takL12Y8uSRi
         0tLIaStipy6PmbgkZpJD1CSHmMfmBY61D5vqGE/gyWXh01bET3GInrA4ZJZLvOPW3KUbMxw2Z5Htii15
@@ -1988,7 +1988,4 @@
         AElFTkSuQmCC
 </value>
   </data>
-  <metadata name="timerSpotify.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>464, 17</value>
-  </metadata>
 </root>

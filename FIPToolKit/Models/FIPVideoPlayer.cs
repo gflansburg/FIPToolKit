@@ -266,7 +266,6 @@ namespace FIPToolKit.Models
             Core.Initialize();
             libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-playlist-autostart", "--quiet", "--no-sout-video", "--sout-transcode-scale=Auto", string.Format("--sout-transcode-width={0}", Width), string.Format("--sout-transcode-height={0}", Height), string.Format("--sout-transcode-maxwidth={0}", Width), string.Format("--sout-transcode-maxheight={0}", Height) });
             player = new MediaPlayer(libVLC);
-            player.Volume = Volume;
             player.SetVideoCallbacks(Lock, null, Display);
             player.EnableHardwareDecoding = true;
             player.EncounteredError += (s, e) =>

@@ -125,19 +125,19 @@ namespace FIPToolKit.Drawing
                         y = 0;
                         break;
                     case SoftButtons.Button2:
-                        y = 42;
+                        y = 40;
                         break;
                     case SoftButtons.Button3:
-                        y = 86;
+                        y = 80;
                         break;
                     case SoftButtons.Button4:
-                        y = 128;
+                        y = 120;
                         break;
                     case SoftButtons.Button5:
-                        y = 170;
+                        y = 160;
                         break;
                     case SoftButtons.Button6:
-                        y = 208;
+                        y = 200;
                         break;
                     case SoftButtons.Left:
                     case SoftButtons.Right:
@@ -152,7 +152,7 @@ namespace FIPToolKit.Drawing
                     default:
                         return;
                 }
-                y = Math.Max(0, y + ((32 - newHeight) / 2));
+                y = Math.Max(0, (y + ((40 - newHeight) / 2)));
                 Rectangle destRect = new Rectangle(x, y, newWidth, newHeight);
                 Rectangle srcRect = new Rectangle(0, 0, icon.Width, icon.Height);
                 if (reColor)

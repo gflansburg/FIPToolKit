@@ -172,6 +172,23 @@ namespace FIPToolKit.Drawing
             return bmpBytes;
         }
 
+        public static byte[] ImageToByteArray(this System.Drawing.Image imageIn)
+        {
+            using (var ms = new MemoryStream())
+            {
+                imageIn.Save(ms, ImageFormat.Png);
+                return ms.ToArray();
+            }
+        }
+
+        public static Image ByteArrayToImage(this byte[] data)
+        {
+            using (var ms = new MemoryStream(data))
+            {
+                return Image.FromStream(ms);
+            }
+        }
+
         public static SizeF MeasureString(string s, Font font)
         {
             SizeF result;

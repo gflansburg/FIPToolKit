@@ -125,5 +125,23 @@ namespace FIPToolKit.Tools
         {
             return input.Substring(Math.Min(start, input.Length), Math.Min(count, Math.Max(input.Length - start, 0)));
         }
+
+        public static bool IsNumber(this string input)
+        {
+            try
+            {
+                double result;
+                return double.TryParse(input, out result);
+            }
+            catch(Exception)
+            {
+                return false;
+            }
+        }
+
+        public static TimeSpan Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, TimeSpan> selector)
+        {
+            return source.Select(selector).Aggregate(TimeSpan.Zero, (t1, t2) => t1 + t2);
+        }
     }
 }

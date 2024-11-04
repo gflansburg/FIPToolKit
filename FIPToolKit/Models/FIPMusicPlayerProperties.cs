@@ -12,6 +12,14 @@ using System.Threading.Tasks;
 
 namespace FIPToolKit.Models
 {
+    public enum MusicPlaylistType
+    {
+        Library,
+        Artist,
+        Album,
+        Song
+    }
+
     [Serializable]
     public class FIPMusicPlayerProperties : FIPPageProperties
     {
@@ -77,6 +85,23 @@ namespace FIPToolKit.Models
                 {
                     SetVolume(value);
                     OnVolumeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        private MusicPlaylistType _playlistType = MusicPlaylistType.Library;
+        public MusicPlaylistType PlaylistType
+        {
+            get
+            {
+                return _playlistType;
+            }
+            set
+            {
+                if (_playlistType != value)
+                {
+                    _playlistType = value;
+                    IsDirty = true;
                 }
             }
         }

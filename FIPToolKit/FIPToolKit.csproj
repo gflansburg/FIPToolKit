@@ -92,6 +92,9 @@
     <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\packages\SixLabors.ImageSharp.2.1.9\lib\net472\SixLabors.ImageSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Sprache, Version=2.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sprache.2.3.1\lib\net45\Sprache.dll</HintPath>
+    </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
@@ -178,6 +181,12 @@
     <Compile Include="FlightSim\TemperatureUnit.cs" />
     <Compile Include="FlightSim\VorToFromFlag.cs" />
     <Compile Include="FlightSim\VSpeed.cs" />
+    <Compile Include="M3UParser\M3U.cs" />
+    <Compile Include="M3UParser\Model\Attributes.cs" />
+    <Compile Include="M3UParser\Model\Extm3u.cs" />
+    <Compile Include="M3UParser\Model\Media.cs" />
+    <Compile Include="M3UParser\Model\Title.cs" />
+    <Compile Include="M3UParser\ParseSpecification.cs" />
     <Compile Include="Models\FIPAnalogClockProperties.cs" />
     <Compile Include="Models\FIPPageProperties.cs" />
     <Compile Include="Models\FIPSaveType.cs" />
@@ -223,11 +232,6 @@
     <Compile Include="Models\FIPVideoPlayer.cs" />
     <Compile Include="Models\FIPSimConnectPage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="FlightSim\Aircraft.cs" />
     <Compile Include="FlightSim\AircraftData.cs" />
     <Compile Include="FlightSim\Airport.cs" />
@@ -244,6 +248,15 @@
     <Compile Include="FlightSim\SimConnect.cs" />
     <Compile Include="FlightSim\Tools.cs" />
     <Compile Include="FlightSim\Weather.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SimpleM3U8Parser\Exceptions\ParserException.cs" />
+    <Compile Include="SimpleM3U8Parser\M3U8Parser.cs" />
+    <Compile Include="SimpleM3U8Parser\Media\M3u8Media.cs" />
+    <Compile Include="SimpleM3U8Parser\Media\M3u8MediaContainer.cs" />
     <Compile Include="SpotifyAPI.Web.Auth\AuthorizationCodeAuth.cs" />
     <Compile Include="SpotifyAPI.Web.Auth\AuthUtil.cs" />
     <Compile Include="SpotifyAPI.Web.Auth\CredentialsAuth.cs" />
@@ -302,6 +315,7 @@
     <Compile Include="SpotifyAPI.Web\Models\Token.cs" />
     <Compile Include="SpotifyAPI.Web\Models\TuneableTrack.cs" />
     <Compile Include="Tools\ByteExtensions.cs" />
+    <Compile Include="Tools\Null.cs" />
     <Compile Include="Tools\TimeSpanEx.cs" />
     <Compile Include="Tools\KeyModifiers.cs" />
     <Compile Include="Tools\KeyPress.cs" />
@@ -435,6 +449,15 @@
     <None Include="Resources\heading_arrow.png" />
     <None Include="Resources\heading_bug.png" />
     <None Include="Resources\rotate.png" />
+    <None Include="Resources\albums.png" />
+    <None Include="Resources\heart_outline.png" />
+    <None Include="Resources\set_station.png" />
+    <None Include="Resources\set_track.png" />
+    <None Include="Resources\set_volume.png" />
+    <None Include="Resources\songs.png" />
+    <None Include="Resources\upfolderlevel.png" />
+    <None Include="Resources\radio.png" />
+    <None Include="Resources\music.png" />
     <Content Include="SimConnect.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -445,17 +468,17 @@
     <Content Include="SpotifyAPI.Web.Auth\Resources\ImplicitGrantAuth\index.html" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\DirectOutputNet\DirectOutputNet.vcxproj">
       <Project>{85d24812-9c8d-4ca4-a56d-15539faca9b2}</Project>
       <Name>DirectOutputNet</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

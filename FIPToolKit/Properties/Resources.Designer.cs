@@ -1038,5 +1038,85 @@ namespace FIPToolKit.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+		
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap UpFolderLevel {
+            get {
+                object obj = ResourceManager.GetObject("upfolderlevel", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+		
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Songs {
+            get {
+                object obj = ResourceManager.GetObject("songs", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+	
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Albums {
+            get {
+                object obj = ResourceManager.GetObject("albums", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap set_station {
+            get {
+                object obj = ResourceManager.GetObject("set_station", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap set_track {
+            get {
+                object obj = ResourceManager.GetObject("set_track", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap set_volume {
+            get {
+                object obj = ResourceManager.GetObject("set_volume", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Radio {
+            get {
+                object obj = ResourceManager.GetObject("radio", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Music {
+            get {
+                object obj = ResourceManager.GetObject("music", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

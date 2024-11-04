@@ -338,9 +338,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ffmpeg.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="Resources\Cessna.Clock1.png" />
     <None Include="Resources\Cessna.Clock2.png" />
     <None Include="Resources\Cessna.Altimeter.png" />

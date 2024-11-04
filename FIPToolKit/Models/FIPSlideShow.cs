@@ -25,7 +25,6 @@ namespace FIPToolKit.Models
 		}
 	}
 	
-	[Serializable]
     public class FIPSlideShow : FIPPage
     {
 		[XmlIgnore]
@@ -33,54 +32,38 @@ namespace FIPToolKit.Models
 		public AbortableBackgroundWorker Timer { get; set; }
 		private AbortableBackgroundWorker AnimationBackgroundWorker { get; set; }
 
-		private List<string> _images;
-		public List<string> Images
-		{ 
-			get
-            {
-				return _images;
-            }
-			set
-            {
-				StopTimer();
-				_images = value;
-				StartTimer();
-				IsDirty = true;
-            }
-		}
-
-		private int _delay;
-		public int Delay 
-		{ 
-			get
-            {
-				return _delay;
-            }
-			set
-            {
-				if(_delay != value)
-                {
-					_delay = value;
-					IsDirty = true;
-                }
-            }
-		}
-		
 		private bool StopAnimation { get; set; } //For stopping animated GIFs.
 		private bool Stop { get; set; }
 
 		public delegate void FIPSlideShowEventHandler(object sender, FIPSlideShowEventArgs e);
 		public event FIPSlideShowEventHandler OnSlideShowLoop;
 
-		public FIPSlideShow() : base()
+		public FIPSlideShow(FIPSlideShowProperties properties) : base(properties)
         {
-            Name = "Slide Show";
-			_delay = 5000;
-			_images = new List<string>();
-			IsDirty = false;
+            Properties.ControlType = GetType().FullName;
+            properties.OnImagesChangedStart += Properties_OnImagesChangedStart;
+            properties.OnImagesChangedEnd += Properties_OnImagesChangedEnd;
         }
 
-		public override void StopTimer(int timeOut = 100)
+        private void Properties_OnImagesChangedEnd(object sender, EventArgs e)
+        {
+            StartTimer();
+        }
+
+        private void Properties_OnImagesChangedStart(object sender, EventArgs e)
+        {
+            StopTimer();
+        }
+
+        private FIPSlideShowProperties SlideShowProperties
+		{
+			get
+			{
+				return Properties as FIPSlideShowProperties;
+            }
+		}
+
+        public override void StopTimer(int timeOut = 100)
 		{
 			if (Timer != null)
 			{
@@ -110,7 +93,7 @@ namespace FIPToolKit.Models
 
 		public override void StartTimer()
 		{
-			if (Images.Count > 0)
+			if (SlideShowProperties.Images.Count > 0)
 			{
 				Stop = false;
 				StopAnimation = false;
@@ -143,23 +126,23 @@ namespace FIPToolKit.Models
 					{
 						StopAnimating();
 						isAnimating = false;
-						if (Images.Count > 0)
+						if (SlideShowProperties.Images.Count > 0)
 						{
 							if (!Reload)
 							{
 								frameStart = DateTime.Now;
 							}
 							Reload = false;
-							if (index >= Images.Count)
+							if (index >= SlideShowProperties.Images.Count)
 							{
 								index = 0;
 								OnSlideShowLoop?.Invoke(this, new FIPSlideShowEventArgs(this));
 							}
-							if (System.IO.Path.GetExtension(Images[index]).Equals(".gif", StringComparison.OrdinalIgnoreCase))
+							if (System.IO.Path.GetExtension(SlideShowProperties.Images[index]).Equals(".gif", StringComparison.OrdinalIgnoreCase))
 							{
 								try
 								{
-									GifInfo gifInfo = new GifInfo(Images[index]);
+									GifInfo gifInfo = new GifInfo(SlideShowProperties.Images[index]);
 									if (gifInfo.Animated && gifInfo.Frames.Count > 1)
 									{
 										AnimationBackgroundWorker = new AbortableBackgroundWorker();
@@ -178,7 +161,7 @@ namespace FIPToolKit.Models
 								Bitmap bmp = new Bitmap(320, 240, PixelFormat.Format32bppArgb);
 								using (Graphics graphics = Graphics.FromImage(bmp))
 								{
-									using (Bitmap image = new Bitmap(Images[index]))
+									using (Bitmap image = new Bitmap(SlideShowProperties.Images[index]))
 									{
 										graphics.FillRectangle(Brushes.Black, 0, 0, 320, 240);
 										double ratioX = (double)bmp.Width / image.Width;
@@ -202,11 +185,11 @@ namespace FIPToolKit.Models
 								SendImage(bmp);
 								bmp.Dispose();
 							}
-							int delay = Math.Max(0, Delay - (int)(DateTime.Now - frameStart).TotalMilliseconds);
+							int delay = Math.Max(0, SlideShowProperties.Delay - (int)(DateTime.Now - frameStart).TotalMilliseconds);
 							while (delay > 0)
 							{
 								Thread.Sleep(10);
-								delay = Math.Max(0, Delay - (int)(DateTime.Now - frameStart).TotalMilliseconds);
+								delay = Math.Max(0, SlideShowProperties.Delay - (int)(DateTime.Now - frameStart).TotalMilliseconds);
 								if(Reload || Stop)
                                 {
 									break;

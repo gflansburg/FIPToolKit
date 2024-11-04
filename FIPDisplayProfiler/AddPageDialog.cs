@@ -15,6 +15,7 @@ namespace FIPDisplayProfiler
         AnalogClock,
         Slideshow,
         VideoPlayer,
+        MusicPlayer,
         SpotifyPlayer,
         ScreenMirror,
         FlightShare,
@@ -133,6 +134,13 @@ namespace FIPDisplayProfiler
         private void rbScreenMirror_CheckedChanged(object sender, EventArgs e)
         {
             PageType = PageType.ScreenMirror;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbMusicPlayer_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.MusicPlayer;
             btnOK.Enabled = true;
             cbSettable.Enabled = false;
         }

@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class VideoPlayerForm : Form
     {
-        public FIPVideoPlayer VideoPlayer { get; set; }
+        public FIPVideoPlayerProperties VideoPlayer { get; set; }
 
         private Font _fontHolder;
 
@@ -86,8 +86,23 @@ namespace FIPDisplayProfiler
             }
         }
 
+        public bool PauseOtherMedia
+        {
+            get
+            {
+                return cbPauseOtherMedia.Checked;
+            }
+        }
+
         private void btnOK_Click(object sender, EventArgs e)
         {
+            VideoPlayer.Name = VideoName;
+            VideoPlayer.Filename = Filename;
+            VideoPlayer.Font = PlayerFont;
+            VideoPlayer.FontColor = FontColor;
+            VideoPlayer.MaintainAspectRatio = MaintainAspectRatio;
+            VideoPlayer.PauseOtherMedia = PauseOtherMedia;
+            VideoPlayer.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -136,6 +151,7 @@ namespace FIPDisplayProfiler
             chkPortraitMode.Checked = VideoPlayer.PortraitMode;
             chkShowControls.Checked = VideoPlayer.ShowControls;
             chkResumePlayback.Checked = VideoPlayer.ResumePlayback;
+            cbPauseOtherMedia.Checked = VideoPlayer.PauseOtherMedia;
             btnOK.Enabled = !string.IsNullOrEmpty(tbFilename.Text);
         }
     }

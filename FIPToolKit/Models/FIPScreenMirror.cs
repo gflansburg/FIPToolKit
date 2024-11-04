@@ -18,62 +18,25 @@ using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-    [Serializable]
     public class FIPScreenMirror : FIPPage
     {
 		[XmlIgnore]
 		[JsonIgnore]
 		public AbortableBackgroundWorker Timer { get; set; }
 
-		public enum ScreenFit
+		private bool Stop { get; set; }
+
+		public FIPScreenMirror(FIPScreenMirrorProperties properties) : base(properties)
         {
-			Fit,
-			Fill,
-			Stretch
+            Properties.ControlType = GetType().FullName;
         }
 
-		private ScreenFit _screenFit = ScreenFit.Fit;
-		
-		public ScreenFit Fit
-        {
-			get
-            {
-				return _screenFit;
-            }
-			set
-            {
-				if(_screenFit != value)
-                {
-					_screenFit = value;
-					IsDirty = true;
-                }
-            }
-        }
-
-		private int _screenIndex = 0;
-		
-		public int ScreenIndex 
+        private FIPScreenMirrorProperties ScreenMirrorProperties
 		{
 			get
 			{
-				return _screenIndex;
+				return Properties as FIPScreenMirrorProperties;
 			}
-			set
-            {
-				if(_screenIndex != value)
-                {
-					_screenIndex = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool Stop { get; set; }
-
-		public FIPScreenMirror() : base()
-        {
-            Name = "Screen Mirror";
-			IsDirty = false;
 		}
 
         public override void Dispose()
@@ -106,7 +69,7 @@ namespace FIPToolKit.Models
 				case SoftButtons.Down:
 					return true;
 			}
-			return false;
+			return base.IsLEDOn(softButton);
 		}
 
 		public override void ExecuteSoftButton(SoftButtons softButton)
@@ -115,35 +78,35 @@ namespace FIPToolKit.Models
             {
 				case SoftButtons.Button6:
                     {
-						int index = _screenIndex;
+						int index = ScreenMirrorProperties.ScreenIndex;
 						index++;
 						if(index >= System.Windows.Forms.Screen.AllScreens.Length)
                         {
 							index = 0;
                         }
-						ScreenIndex = index;
+                        ScreenMirrorProperties.ScreenIndex = index;
                     }
 					break;
 				case SoftButtons.Right:
                     {
-						int index = (int)_screenFit;
+						int index = (int)ScreenMirrorProperties.Fit;
 						index++;
 						if(index > 2)
                         {
 							index = 0;
                         }
-						Fit = (ScreenFit)index;
+                        ScreenMirrorProperties.Fit = (ScreenFit)index;
                     }
 					break;
 				case SoftButtons.Left:
 					{
-						int index = (int)_screenFit;
+						int index = (int)ScreenMirrorProperties.Fit;
 						index--;
 						if (index < 0)
 						{
 							index = 2;
 						}
-						Fit = (ScreenFit)index;
+                        ScreenMirrorProperties.Fit = (ScreenFit)index;
 					}
 					break;
 				case SoftButtons.Up:
@@ -151,6 +114,9 @@ namespace FIPToolKit.Models
 					break;
 				case SoftButtons.Down:
 					KeyPress.KeyBdEvent(KeyPressLengths.Zero, new VirtualKeyCode[] { VirtualKeyCode.VOLUME_DOWN }, KeyPressLengths.ThirtyTwoMilliseconds);
+					break;
+				default:
+					base.ExecuteSoftButton(softButton);
 					break;
             }
 			FireSoftButtonNotifcation(softButton);
@@ -206,7 +172,7 @@ namespace FIPToolKit.Models
 						Bitmap bmp = new Bitmap(320, 240, PixelFormat.Format32bppArgb);
 						using (Graphics graphics = Graphics.FromImage(bmp))
 						{
-							using (Bitmap screen = ImageHelper.CaptureScreen(ScreenIndex))
+							using (Bitmap screen = ImageHelper.CaptureScreen(ScreenMirrorProperties.ScreenIndex))
 							{
 								if (screen != null)
 								{
@@ -218,11 +184,11 @@ namespace FIPToolKit.Models
 									int newHeight = (int)(screen.Height * ratio);
 									Rectangle destRect = new Rectangle((320 - newWidth) / 2, (240 - newHeight) / 2, newWidth, newHeight);
 									Rectangle srcRect = new Rectangle(0, 0, screen.Width, screen.Height);
-									if (Fit == ScreenFit.Stretch)
+									if (ScreenMirrorProperties.Fit == ScreenFit.Stretch)
 									{
 										destRect = new Rectangle(0, 0, 320, 240);
 									}
-									if (Fit == ScreenFit.Fill)
+									if (ScreenMirrorProperties.Fit == ScreenFit.Fill)
 									{
 										using (Image img = screen.Crop())
 										{

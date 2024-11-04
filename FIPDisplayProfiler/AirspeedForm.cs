@@ -13,18 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class AirspeedForm : Form
     {
-        public FIPPage AirspeedGauge { get; set; }
-        public bool AutoSelectAircraft 
-        { 
-            get
-            {
-                return chkAutoSelectAircraft.Checked;
-            }
-            set
-            {
-                chkAutoSelectAircraft.Checked = value;
-            }
-        }
+        public FIPAirspeedProperties AirspeedGauge { get; set; }
 
         private Font _fontHolder;
 
@@ -38,6 +27,7 @@ namespace FIPDisplayProfiler
             AirspeedGauge.Font = _fontHolder;
             AirspeedGauge.FontColor = btnFontColor.BackColor;
             AirspeedGauge.IsDirty = true;
+            AirspeedGauge.AutoSelectAircraft = chkAutoSelectAircraft.Checked;
             DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -71,6 +61,7 @@ namespace FIPDisplayProfiler
             tbFont.Font = new Font(AirspeedGauge.Font.FontFamily, tbFont.Font.Size, AirspeedGauge.Font.Style, AirspeedGauge.Font.Unit, AirspeedGauge.Font.GdiCharSet);
             tbFont.Text = AirspeedGauge.Font.FontFamily.Name;
             btnFontColor.BackColor = AirspeedGauge.FontColor;
+            chkAutoSelectAircraft.Checked = AirspeedGauge.AutoSelectAircraft;
         }
     }
 }

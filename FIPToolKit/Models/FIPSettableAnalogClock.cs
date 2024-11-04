@@ -1,6 +1,7 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.Models;
 using FIPToolKit.Threading;
+using FIPToolKit.Tools;
 using Saitek.DirectOutput;
 using System;
 using System.Collections.Generic;
@@ -11,10 +12,10 @@ using System.Media;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-    [Serializable]
     public class FIPSettableAnalogClock : FIPAnalogClock
     {
         public enum Modes
@@ -27,78 +28,47 @@ namespace FIPToolKit.Models
 
         private Modes Mode { get; set; }
 
-        private TimeSpanEx _timeOffset;
-        /// <summary>
-        /// Gets or sets the offset from the current time.
-        /// </summary>
-        public TimeSpanEx TimeOffset
-        {
-            get
-            {
-                return _timeOffset;
-            }
-            set
-            {
-                if (_timeOffset.Hours != value.Hours || _timeOffset.Minutes != value.Minutes || _timeOffset.Seconds != value.Seconds)
-                {
-                    _timeOffset = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private TimeSpanEx _alarm;
-        public TimeSpanEx Alarm 
-        {
-            get
-            {
-                return _alarm;
-            }
-            set
-            {
-                if(_alarm.TotalMinutes != value.TotalMinutes)
-                {
-                    _alarm = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private bool _alarmOn = false;
-        public bool AlarmOn
-        {
-            get
-            {
-                return _alarmOn;
-            }
-            set
-            {
-                if(_alarmOn != value)
-                {
-                    _alarmOn = value;
-                    IsDirty = true;
-                    if(!_alarmOn)
-                    {
-                        alarmTriggered = false;
-                    }
-                }
-            }
-        }
-
         private bool alarmTriggered = false;
         private AbortableBackgroundWorker _alarmTimer;
 
-        public FIPSettableAnalogClock() : base()
+        public FIPSettableAnalogClock(FIPSettableAnalogClockProperties properties) : base(properties)
         {
+            Properties.ControlType = GetType().FullName;
+            Properties.OnSettingsChange += Properties_OnSettingsChange;
             Mode = Modes.Normal;
-            IsDirty = false;
             _alarmTimer = new AbortableBackgroundWorker();
             _alarmTimer.DoWork += AlarmTimer;
         }
 
+        public FIPSettableAnalogClock(FIPSettableAnalogClock template) : base(template.SettableAnalogClockProperties)
+        {
+            PropertyCopier<FIPSettableAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(template.Properties as FIPSettableAnalogClockProperties, SettableAnalogClockProperties);
+            Properties.ControlType = GetType().FullName;
+            Properties.OnSettingsChange += Properties_OnSettingsChange;
+            Mode = Modes.Normal;
+            _alarmTimer = new AbortableBackgroundWorker();
+            _alarmTimer.DoWork += AlarmTimer;
+        }
+
+        private FIPSettableAnalogClockProperties SettableAnalogClockProperties
+        {
+            get
+            {
+                return Properties as FIPSettableAnalogClockProperties;
+            }
+        }
+
+        private void Properties_OnSettingsChange(object sender, EventArgs e)
+        {
+            if (!SettableAnalogClockProperties.AlarmOn)
+            {
+                alarmTriggered = false;
+            }
+        }
+
         private void AlarmTimer(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
-            using (SoundPlayer snd = new SoundPlayer(Properties.Resources.alarm_beep))
+            using (SoundPlayer snd = new SoundPlayer(FIPToolKit.Properties.Resources.alarm_beep))
             {
                 while (alarmTriggered && !Stop)
                 {
@@ -111,7 +81,7 @@ namespace FIPToolKit.Models
         public override void StopTimer(int timeOut = 100)
         {
             //We need the timer running in the background to trigger the alarm
-            if (!AlarmOn)
+            if (!SettableAnalogClockProperties.AlarmOn)
             {
                 base.StopTimer(timeOut);
             }
@@ -120,8 +90,6 @@ namespace FIPToolKit.Models
         public FIPSettableAnalogClock(FIPAnalogClock template) : base(template)
         {
             Mode = Modes.Normal;
-            _alarm = new TimeSpan(0);
-            _timeOffset = new TimeSpan(0);
         }
 
         protected override void RenderClock(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -131,7 +99,7 @@ namespace FIPToolKit.Models
                 try
                 {
                     UpdateClock();
-                    if(AlarmOn && CurrentTime.Hour == Alarm.Hours && CurrentTime.Minute == Alarm.Minutes && CurrentTime.Second == Alarm.Seconds && Mode != Modes.SetAlarm && !alarmTriggered)
+                    if(SettableAnalogClockProperties.AlarmOn && CurrentTime.Hour == SettableAnalogClockProperties.Alarm.Hours && CurrentTime.Minute == SettableAnalogClockProperties.Alarm.Minutes && CurrentTime.Second == SettableAnalogClockProperties.Alarm.Seconds && Mode != Modes.SetAlarm && !alarmTriggered)
                     {
                         alarmTriggered = true;
                         _alarmTimer.RunWorkerAsync();
@@ -181,10 +149,10 @@ namespace FIPToolKit.Models
 
         protected override float MaxLabelWidth(Graphics grfx)
         {
-            double ratioX = (double)32 / Properties.Resources.map_set.Width;
-            double ratioY = (double)32 / Properties.Resources.map_set.Height;
+            double ratioX = (double)32 / FIPToolKit.Properties.Resources.map_set.Width;
+            double ratioY = (double)32 / FIPToolKit.Properties.Resources.map_set.Height;
             double ratio = Math.Min(ratioX, ratioY);
-            int newWidth = (int)(Properties.Resources.map_set.Width * ratio);
+            int newWidth = (int)(FIPToolKit.Properties.Resources.map_set.Width * ratio);
             return Math.Max(newWidth, base.MaxLabelWidth(grfx));
         }
 
@@ -194,11 +162,11 @@ namespace FIPToolKit.Models
             {
                 if (Mode == Modes.SetAlarm)
                 {
-                    return new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0) + Alarm;
+                    return new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0) + SettableAnalogClockProperties.Alarm;
                 }
                 else
                 {
-                    return base.CurrentTime + TimeOffset;
+                    return base.CurrentTime + SettableAnalogClockProperties.TimeOffset;
                 }
             }
         }
@@ -239,7 +207,7 @@ namespace FIPToolKit.Models
                         switch (softButton)
                         {
                             case SoftButtons.Button5:
-                                AlarmOn = !AlarmOn;
+                                SettableAnalogClockProperties.AlarmOn = !SettableAnalogClockProperties.AlarmOn;
                                 UpdatePage();
                                 break;
                             case SoftButtons.Button6:
@@ -284,8 +252,8 @@ namespace FIPToolKit.Models
                                 break;
                             case SoftButtons.Down:
                                 {
-                                    int minutes = Alarm.Minutes;
-                                    int hours = Alarm.Hours;
+                                    int minutes = SettableAnalogClockProperties.Alarm.Minutes;
+                                    int hours = SettableAnalogClockProperties.Alarm.Hours;
                                     minutes--;
                                     if (minutes < 0)
                                     {
@@ -293,51 +261,51 @@ namespace FIPToolKit.Models
                                         minutes = 59;
                                         if (hours < 0)
                                         {
-                                            hours = (TwentyFourHour ? 23 : 11);
+                                            hours = (SettableAnalogClockProperties.TwentyFourHour ? 23 : 11);
                                         }
                                     }
-                                    Alarm = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.Alarm = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             case SoftButtons.Up:
                                 {
-                                    int minutes = Alarm.Minutes;
-                                    int hours = Alarm.Hours;
+                                    int minutes = SettableAnalogClockProperties.Alarm.Minutes;
+                                    int hours = SettableAnalogClockProperties.Alarm.Hours;
                                     minutes++;
                                     if (minutes > 59)
                                     {
                                         minutes = 0;
                                         hours++;
-                                        if (hours > (TwentyFourHour ? 24 : 12))
+                                        if (hours > (SettableAnalogClockProperties.TwentyFourHour ? 24 : 12))
                                         {
                                             hours = 0;
                                         }
                                     }
-                                    Alarm = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.Alarm = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             case SoftButtons.Right:
                                 {
-                                    int minutes = Alarm.Minutes;
-                                    int hours = Alarm.Hours;
+                                    int minutes = SettableAnalogClockProperties.Alarm.Minutes;
+                                    int hours = SettableAnalogClockProperties.Alarm.Hours;
                                     hours++;
-                                    if (hours > (TwentyFourHour ? 24 : 12))
+                                    if (hours > (SettableAnalogClockProperties.TwentyFourHour ? 24 : 12))
                                     {
                                         hours = 0;
                                     }
-                                    Alarm = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.Alarm = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             case SoftButtons.Left:
                                 {
-                                    int minutes = Alarm.Minutes;
-                                    int hours = Alarm.Hours;
+                                    int minutes = SettableAnalogClockProperties.Alarm.Minutes;
+                                    int hours = SettableAnalogClockProperties.Alarm.Hours;
                                     hours--;
                                     if (hours < 0)
                                     {
-                                        hours = (TwentyFourHour ? 23 : 11);
+                                        hours = (SettableAnalogClockProperties.TwentyFourHour ? 23 : 11);
                                     }
-                                    Alarm = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.Alarm = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             default:
@@ -356,8 +324,8 @@ namespace FIPToolKit.Models
                                 break;
                             case SoftButtons.Down:
                                 {
-                                    int minutes = TimeOffset.Minutes;
-                                    int hours = TimeOffset.Hours;
+                                    int minutes = SettableAnalogClockProperties.TimeOffset.Minutes;
+                                    int hours = SettableAnalogClockProperties.TimeOffset.Hours;
                                     minutes--;
                                     if(minutes < 0)
                                     {
@@ -365,51 +333,51 @@ namespace FIPToolKit.Models
                                         minutes = 59;
                                         if (hours < 0)
                                         {
-                                            hours = (TwentyFourHour ? 23 : 11);
+                                            hours = (SettableAnalogClockProperties.TwentyFourHour ? 23 : 11);
                                         }
                                     }
-                                    TimeOffset = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.TimeOffset = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             case SoftButtons.Up:
                                 {
-                                    int minutes = TimeOffset.Minutes;
-                                    int hours = TimeOffset.Hours;
+                                    int minutes = SettableAnalogClockProperties.TimeOffset.Minutes;
+                                    int hours = SettableAnalogClockProperties.TimeOffset.Hours;
                                     minutes++;
                                     if (minutes > 59)
                                     {
                                         minutes = 0;
                                         hours++;
-                                        if (hours > (TwentyFourHour ? 24 : 12))
+                                        if (hours > (SettableAnalogClockProperties.TwentyFourHour ? 24 : 12))
                                         {
                                             hours = 0;
                                         }
                                     }
-                                    TimeOffset = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.TimeOffset = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             case SoftButtons.Right:
                                 {
-                                    int minutes = TimeOffset.Minutes;
-                                    int hours = TimeOffset.Hours;
+                                    int minutes = SettableAnalogClockProperties.TimeOffset.Minutes;
+                                    int hours = SettableAnalogClockProperties.TimeOffset.Hours;
                                     hours++;
-                                    if (hours > (TwentyFourHour ? 24 : 12))
+                                    if (hours > (SettableAnalogClockProperties.TwentyFourHour ? 24 : 12))
                                     {
                                         hours = 0;
                                     }
-                                    TimeOffset = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.TimeOffset = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             case SoftButtons.Left:
                                 {
-                                    int minutes = TimeOffset.Minutes;
-                                    int hours = TimeOffset.Hours;
+                                    int minutes = SettableAnalogClockProperties.TimeOffset.Minutes;
+                                    int hours = SettableAnalogClockProperties.TimeOffset.Hours;
                                     hours--;
                                     if (hours < 0)
                                     {
-                                        hours = (TwentyFourHour ? 23 : 11);
+                                        hours = (SettableAnalogClockProperties.TwentyFourHour ? 23 : 11);
                                     }
-                                    TimeOffset = new TimeSpan(hours, minutes, 0);
+                                    SettableAnalogClockProperties.TimeOffset = new TimeSpan(hours, minutes, 0);
                                 }
                                 break;
                             default:
@@ -428,34 +396,231 @@ namespace FIPToolKit.Models
             {
                 if (Mode == Modes.SetAlarm || Mode == Modes.SetTime)
                 {
-                    grfx.AddButtonIcon(Properties.Resources.clock_set_hour, CaptionColor, true, SoftButtons.Left);
-                    grfx.AddButtonIcon(Properties.Resources.clock_set_minute, CaptionColor, true, SoftButtons.Down);
-                    grfx.AddButtonIcon(Properties.Resources.map_return, CaptionColor, false, SoftButtons.Button6);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.clock_set_hour, SettableAnalogClockProperties.CaptionColor, true, SoftButtons.Left);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.clock_set_minute, SettableAnalogClockProperties.CaptionColor, true, SoftButtons.Down);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button6);
                 }
                 else if (Mode == Modes.ChooseSet)
                 {
                     grfx.FillRectangle(brush, new Rectangle(0, 0, (Mode != Modes.Normal ? 68 : 34), 240));
                     
-                    grfx.AddButtonIcon(Properties.Resources.alarm_toggle.SetOpacity(.5f), CaptionColor, false, SoftButtons.Button5);
-                    grfx.AddButtonIcon(Properties.Resources.map_set.SetOpacity(.5f), CaptionColor, false, SoftButtons.Button6);
-                    if (AlarmOn)
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.alarm_toggle.SetOpacity(.5f), SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button5);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.map_set.SetOpacity(.5f), SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button6);
+                    if (SettableAnalogClockProperties.AlarmOn)
                     {
-                        grfx.AddButtonIcon(Properties.Resources.map_buttonon.SetOpacity(.5f), CaptionColor, false, SoftButtons.Button5);
+                        grfx.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button5);
                     }
 
-                    grfx.AddButtonIcon(Properties.Resources.alarm, CaptionColor, false, SoftButtons.Button4, 1);
-                    grfx.AddButtonIcon(Properties.Resources.time, CaptionColor, false, SoftButtons.Button5, 1);
-                    grfx.AddButtonIcon(Properties.Resources.map_return, CaptionColor, false, SoftButtons.Button6, 1);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.alarm, SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button4, 1);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.time, SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button5, 1);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button6, 1);
                 }
                 else
                 {
-                    grfx.AddButtonIcon(Properties.Resources.alarm_toggle, CaptionColor, false, SoftButtons.Button5);
-                    grfx.AddButtonIcon(Properties.Resources.map_set, CaptionColor, false, SoftButtons.Button6);
-                    if (AlarmOn)
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.alarm_toggle, SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button5);
+                    grfx.AddButtonIcon(FIPToolKit.Properties.Resources.map_set, SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button6);
+                    if (SettableAnalogClockProperties.AlarmOn)
                     {
-                        grfx.AddButtonIcon(Properties.Resources.map_buttonon, CaptionColor, false, SoftButtons.Button5);
+                        grfx.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, SettableAnalogClockProperties.CaptionColor, false, SoftButtons.Button5);
                     }
                 }
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockParis
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockParis, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockSydney
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockSydney, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockDenver
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockDenver, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockMoscow
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockMoscow, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockLondon
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockLondon, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockTokyo
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockTokyo, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockShanghai
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockShanghai, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new public static FIPSettableAnalogClockProperties FIPAnalogClockChicago
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockChicago, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new public static FIPSettableAnalogClockProperties FIPAnalogClockKarachi
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockKarachi, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new public static FIPSettableAnalogClockProperties FIPAnalogClockHonolulu
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockHonolulu, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new public static FIPSettableAnalogClockProperties FIPAnalogClockHongKong
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockHongKong, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new public static FIPSettableAnalogClockProperties FIPAnalogClockNewYork
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockNewYork, properties);
+                return properties;
+            }
+        }
+
+        new public static FIPSettableAnalogClockProperties FIPAnalogClockBerlin
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockBerlin, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new public static FIPSettableAnalogClockProperties FIPAnalogClockLosAngeles
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockLosAngeles, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockCessnaClock1
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockCessnaClock1, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockCessnaClock2
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockCessnaClock2, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockCessnaAirspeed
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockCessnaAirspeed, properties);
+                return properties;
+            }
+        }
+
+        [XmlIgnore]
+        new static public FIPSettableAnalogClockProperties FIPAnalogClockCessnaAltimeter
+        {
+            get
+            {
+                FIPSettableAnalogClockProperties properties = new FIPSettableAnalogClockProperties();
+                PropertyCopier<FIPAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(FIPAnalogClock.FIPAnalogClockCessnaAltimeter, properties);
+                return properties;
             }
         }
     }

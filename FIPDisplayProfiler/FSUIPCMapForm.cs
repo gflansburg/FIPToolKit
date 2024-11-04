@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class FSUIPCMapForm : Form
     {
-        public FIPFSUIPCMap FSUIPCMap { get; set; }
+        public FIPMapProperties FSUIPCMap { get; set; }
 
         private Font _fontHolder;
 

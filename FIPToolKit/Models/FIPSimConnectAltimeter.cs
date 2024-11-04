@@ -19,299 +19,32 @@ using System.Resources;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-	[Serializable]
 	public class FIPSimConnectAltimeter : FIPSimConnectAnalogGauge
 	{
-		#region Properties
-		private string _gaugeImageFilename;
-		public string GaugeImageFilename
+		public FIPSimConnectAltimeter(FIPAltimeterProperties properties) : base(properties)
+		{
+            Properties.ControlType = GetType().FullName;
+            AltimeterProperties.Name = "SimConnect Altimeter";
+			AltimeterProperties.IsDirty = false;
+        }
+
+        private FIPAltimeterProperties AltimeterProperties
 		{
 			get
 			{
-				return (_gaugeImageFilename ?? string.Empty);
+				return Properties as FIPAltimeterProperties;
 			}
-			set
-			{
-				if (!(_gaugeImageFilename ?? string.Empty).Equals(value ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-				{
-					_gaugeImageFilename = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _showKollsmanWindow;
-		public bool ShowKollsmanWindow
-		{
-			get
-			{
-				return _showKollsmanWindow;
-			}
-			set
-			{
-				if (_showKollsmanWindow != value)
-				{
-					_showKollsmanWindow = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _showAltitudeStripes;
-		public bool ShowAltitiudeStripes
-		{
-			get
-			{
-				return _showAltitudeStripes;
-			}
-			set
-			{
-				if (_showAltitudeStripes != value)
-				{
-					_showAltitudeStripes = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _drawTenThousandsHand;
-		public bool DrawTenThousandsHand
-		{
-			get
-			{
-				return _drawTenThousandsHand;
-			}
-			set
-			{
-				if (_drawTenThousandsHand != value)
-				{
-					_drawTenThousandsHand = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _drawThousandsHand;
-		public bool DrawThousandsHand
-		{
-			get
-			{
-				return _drawThousandsHand;
-			}
-			set
-			{
-				if (_drawThousandsHand != value)
-				{
-					_drawThousandsHand = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _drawHundredsHand;
-		public bool DrawHundredsHand
-		{
-			get
-			{
-				return _drawHundredsHand;
-			}
-			set
-			{
-				if (_drawHundredsHand != value)
-				{
-					_drawHundredsHand = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _drawNumerals;
-		public bool DrawNumerals
-		{
-			get
-			{
-				return _drawNumerals;
-			}
-			set
-			{
-				if (_drawNumerals != value)
-				{
-					_drawNumerals = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _drawFaceTicks;
-		public bool DrawFaceTicks
-		{
-			get
-			{
-				return _drawFaceTicks;
-			}
-			set
-			{
-				if (_drawFaceTicks != value)
-				{
-					_drawFaceTicks = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private ColorEx _faceColorHigh;
-		public ColorEx FaceColorHigh 
-		{ 
-			get
-            {
-				return _faceColorHigh;
-            }
-			set
-            {
-				if(_faceColorHigh.Color != value.Color)
-                {
-					_faceColorHigh = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _faceColorLow;
-		public ColorEx FaceColorLow 
-		{ 
-			get
-            {
-				return _faceColorLow;
-            }
-			set
-            {
-				if(_faceColorLow.Color != value.Color)
-                {
-					_faceColorLow = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private Size _faceTickSize;
-		public Size FaceTickSize 
-		{ 
-			get
-            {
-				return _faceTickSize;
-            }
-			set
-            {
-				if(_faceTickSize.Width != value.Width || _faceTickSize.Height != value.Height)
-                {
-					_faceTickSize = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private int _tenThouandsHandLengthOffset;
-		public int TenThousandsHandLengthOffset 
-		{ 
-			get
-            {
-				return _tenThouandsHandLengthOffset;
-            }
-			set
-            {
-				if(_tenThouandsHandLengthOffset != value)
-                {
-					_tenThouandsHandLengthOffset = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private int _thousandsHandLengthOffset;
-		public int ThousandsHandLengthOffset 
-		{ 
-			get
-            {
-				return _thousandsHandLengthOffset;
-            }
-			set
-            {
-				if(_thousandsHandLengthOffset != value)
-                {
-					_thousandsHandLengthOffset = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private int _hundredsHandLengthOffset;
-		public int HundredsHandLengthOffset 
-		{ 
-			get
-            {
-				return _hundredsHandLengthOffset;
-            }
-			set
-            {
-				if(_hundredsHandLengthOffset != value)
-                {
-					_hundredsHandLengthOffset = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private LinearGradientMode _faceGradientMode;
-		public LinearGradientMode FaceGradientMode 
-		{ 
-			get
-            {
-				return _faceGradientMode;
-            }
-			set
-            {
-				if(_faceGradientMode != value)
-                {
-					_faceGradientMode = value;
-					IsDirty = true;
-                }
-            }
-		}
-		#endregion
-
-		public FIPSimConnectAltimeter() : base()
-		{
-			Name = "SimConnect Altimeter";
-			MaxValue = 100000f;
-			DrawRim = true;
-			_drawFaceTicks = true;
-			_drawNumerals = true;
-			_drawHundredsHand = true;
-			_drawTenThousandsHand = true;
-			_drawThousandsHand = true;
-			_faceColorHigh = System.Drawing.Color.Black;
-			_faceColorLow = System.Drawing.Color.Black;
-			_faceGradientMode = LinearGradientMode.BackwardDiagonal;
-			GaugeImage = null;
-			_gaugeImageFilename = String.Empty;
-			_faceTickSize = new Size(5, 15);
-			FontColor = System.Drawing.Color.WhiteSmoke;
-			InnerRimColor = Color.DimGray;
-			OuterRimColor = Color.LightGray;
-			RimWidth = 15;
-			_showAltitudeStripes = true;
-			_showKollsmanWindow = true;
-			IsDirty = false;
 		}
 
         protected override void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
         {
             base.SimConnect_OnFlightDataByTypeReceived(data);
-			Value = data.PRESSURE_ALTITUDE;
+            AltimeterProperties.Value = data.PRESSURE_ALTITUDE;
 			UpdateGauge();
 		}
 
@@ -343,7 +76,7 @@ namespace FIPToolKit.Models
 			{
 				try
 				{
-					hasDrawnTheNeedle = true;
+                    AltimeterProperties.HasDrawnTheNeedle = true;
 					if (gauge == null)
 					{
 						CreateGauge();
@@ -354,9 +87,9 @@ namespace FIPToolKit.Models
 						using (Graphics grfx = Graphics.FromImage(bmp))
 						{
 							grfx.DrawImage(gauge, 0, 0);
-							double tenThousands = (Value / 10000f);
-							double thousands = ((Value % 10000f) / 1000f);
-							double hundreds = ((Value % 10000f) % 1000f);
+							double tenThousands = (AltimeterProperties.Value / 10000f);
+							double thousands = ((AltimeterProperties.Value % 10000f) / 1000f);
+							double hundreds = ((AltimeterProperties.Value % 10000f) % 1000f);
 							int diameter = Math.Min(bmp.Height - 2, bmp.Width);
 							int width = bmp.Width;
 							Point position = new Point((bmp.Width - diameter) - 6, 1);
@@ -372,52 +105,52 @@ namespace FIPToolKit.Models
 							Rectangle rect = new Rectangle(position.X, position.Y, diameter, diameter);
 							float midx = rect.X + (rect.Width / 2);
 							float midy = rect.Y + (rect.Height / 2);
-							int radius = (rect.Width / 2) - ((DrawRim ? RimWidth : 0) + 10);
-							if (ShowKollsmanWindow)
+							int radius = (rect.Width / 2) - ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0) + 10);
+							if (AltimeterProperties.ShowKollsmanWindow)
 							{
 								using (StringFormat format = new StringFormat())
 								{
 									format.Alignment = StringAlignment.Far;
 									format.LineAlignment = StringAlignment.Center;
 									format.Trimming = StringTrimming.None;
-									using (Brush brush = new SolidBrush(FontColor))
+									using (Brush brush = new SolidBrush(AltimeterProperties.FontColor))
 									{
 										string text = "29.92";
-										SizeF size = grfx.MeasureString(text, Font);
+										SizeF size = grfx.MeasureString(text, AltimeterProperties.Font);
 										Rectangle rectKollsman = new Rectangle((int)(midx + 18), (int)(midy - ((size.Height) / 2) + 2), (int)size.Width + 2, (int)size.Height);
-										grfx.DrawString(string.Format("{0:0.00}", SimConnect.CurrentWeather.KollsmanHG), Font, brush, rectKollsman, format);
+										grfx.DrawString(string.Format("{0:0.00}", SimConnect.CurrentWeather.KollsmanHG), AltimeterProperties.Font, brush, rectKollsman, format);
 									}
 								}
 							}
-							if (ShowAltitiudeStripes)
+							if (AltimeterProperties.ShowAltitiudeStripes)
 							{
 								using (GraphicsPath path = new GraphicsPath())
 								{
 									int clip = 34;
-									if (Value > 15000)
+									if (AltimeterProperties.Value > 15000)
 									{
 										clip = 0;
 									}
-									else if (Value > 10000)
+									else if (AltimeterProperties.Value > 10000)
 									{
-										int alt = (int)(Value - 10000);
+										int alt = (int)(AltimeterProperties.Value - 10000);
 										clip = 34 - (int)(34 * alt / 5000);
 									}
 									Rectangle rectStripes = new Rectangle((int)(midx - 17), (int)(midy + 38), clip, 22);
 									path.AddRectangle(rectStripes);
 									grfx.SetClip(path);
-									grfx.DrawImage(Properties.Resources.altimeter_stripes, rectStripes);
+									grfx.DrawImage(FIPToolKit.Properties.Resources.altimeter_stripes, rectStripes);
 									grfx.ResetClip();
 								}
 							}
 							Point center = new Point(0, 0);
 							//Thousands
-							if (DrawThousandsHand)
+							if (AltimeterProperties.DrawThousandsHand)
 							{
 								grfx.TranslateTransform(midx, midy);
-								float radiusThousandsHand = radius + ThousandsHandLengthOffset;
+								float radiusThousandsHand = radius + AltimeterProperties.ThousandsHandLengthOffset;
 								double thousandsAngle = ((thousands * 2.0 * Math.PI) / 10f);
-								using (Pen pen = new Pen(NeedleColor, 2))
+								using (Pen pen = new Pen(AltimeterProperties.NeedleColor, 2))
 								{
 									//pen.EndCap = LineCap.Triangle;
 									pen.CustomEndCap = new AdjustableArrowCap(1, 2);
@@ -430,12 +163,12 @@ namespace FIPToolKit.Models
 								grfx.ResetTransform();
 							}
 							//Hundreds
-							if (DrawHundredsHand)
+							if (AltimeterProperties.DrawHundredsHand)
 							{
 								grfx.TranslateTransform(midx, midy);
-								float radiusHundredsHand = radius + HundredsHandLengthOffset;
+								float radiusHundredsHand = radius + AltimeterProperties.HundredsHandLengthOffset;
 								double hundredsAngle = ((hundreds * 2.0 * Math.PI) / 1000f);
-								using (Pen pen = new Pen(NeedleColor, 2))
+								using (Pen pen = new Pen(AltimeterProperties.NeedleColor, 2))
 								{
 									//pen.EndCap = LineCap.Triangle;
 									pen.CustomEndCap = new AdjustableArrowCap(1, 3);
@@ -448,12 +181,12 @@ namespace FIPToolKit.Models
 								grfx.ResetTransform();
 							}
 							//Tenthousands
-							if (DrawTenThousandsHand)
+							if (AltimeterProperties.DrawTenThousandsHand)
 							{
 								grfx.TranslateTransform(midx, midy);
-								float radiusTenThousandsHand = radius - 10 + TenThousandsHandLengthOffset;
+								float radiusTenThousandsHand = radius - 10 + AltimeterProperties.TenThousandsHandLengthOffset;
 								double tenThousandsAngle = ((tenThousands * 2.0 * Math.PI) / 10f);
-								using (Pen pen = new Pen(NeedleColor, 2))
+								using (Pen pen = new Pen(AltimeterProperties.NeedleColor, 2))
 								{
 									using (var path = new GraphicsPath())
 									{
@@ -507,10 +240,10 @@ namespace FIPToolKit.Models
 			float offSet = 0;
 			for (int i = 1; i <= 10; i++)
 			{
-				SizeF size = g.MeasureString(i.ToString(), Font);
+				SizeF size = g.MeasureString(i.ToString(), AltimeterProperties.Font);
 				offSet = Math.Max(offSet, Math.Max(size.Width, size.Height));
 			}
-			return (offSet / 2) + ((DrawRim ? RimWidth + FaceTickSize.Height : DrawRim ? RimWidth : FaceTickSize.Height) / 2) + 5;
+			return (offSet / 2) + ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth + AltimeterProperties.FaceTickSize.Height : AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : AltimeterProperties.FaceTickSize.Height) / 2) + 5;
 		}
 
 		protected virtual void DrawFace(Graphics grfx, Size size)
@@ -536,27 +269,27 @@ namespace FIPToolKit.Models
 			Point center = new Point(0, 0);
 			//Define rectangles inside which we will draw circles.
 			Rectangle rect = new Rectangle(position.X, position.Y, diameter, diameter);
-			Rectangle rectRim = new Rectangle(rect.X + ((DrawRim ? RimWidth : 0) / 2), rect.Y + ((DrawRim ? RimWidth : 0) / 2), rect.Width - (DrawRim ? RimWidth : 0), rect.Height - (DrawRim ? RimWidth : 0));
-			Rectangle rectInner = new Rectangle(rect.X + (DrawRim ? RimWidth : 0), rect.Y + (DrawRim ? RimWidth : 0), rect.Width - ((DrawRim ? RimWidth : 0) * 2), rect.Height - ((DrawRim ? RimWidth : 0) * 2));
+			Rectangle rectRim = new Rectangle(rect.X + ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0) / 2), rect.Y + ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0) / 2), rect.Width - (AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0), rect.Height - (AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0));
+			Rectangle rectInner = new Rectangle(rect.X + (AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0), rect.Y + (AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0), rect.Width - ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0) * 2), rect.Height - ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0) * 2));
 			Rectangle rectDropShadow = rect;
 			float midx = rectInner.X + (rectInner.Width / 2);
 			float midy = rectInner.Y + (rectInner.Height / 2);
 			float radius = (diameter / 2) - GetNumeralOffset(grfx);
-			using (SolidBrush stringBrush = new SolidBrush(FontColor))
+			using (SolidBrush stringBrush = new SolidBrush(AltimeterProperties.FontColor))
 			{
 				using (Pen pen = new Pen(stringBrush, 2))
 				{
 					//Gauge Image
-					if (GaugeImage == null && !String.IsNullOrEmpty(GaugeImageFilename))
+					if (AltimeterProperties.GaugeImage == null && !String.IsNullOrEmpty(AltimeterProperties.GaugeImageFilename))
 					{
-						GaugeImage = new Bitmap(Drawing.ImageHelper.GetBitmapResource(GaugeImageFilename));
+                        AltimeterProperties.GaugeImage = new Bitmap(Drawing.ImageHelper.GetBitmapResource(AltimeterProperties.GaugeImageFilename));
 					}
-					if (GaugeImage != null)
+					if (AltimeterProperties.GaugeImage != null)
 					{
-						if (GaugeImage.IsImageTransparent())
+						if (AltimeterProperties.GaugeImage.IsImageTransparent())
 						{
 							//The the background face color for the transparency to shine through
-							using (LinearGradientBrush gb = new LinearGradientBrush(rect, FaceColorHigh, FaceColorLow, FaceGradientMode))
+							using (LinearGradientBrush gb = new LinearGradientBrush(rect, AltimeterProperties.FaceColorHigh, AltimeterProperties.FaceColorLow, AltimeterProperties.FaceGradientMode))
 							{
 								grfx.FillEllipse(gb, rectInner);
 							}
@@ -566,22 +299,22 @@ namespace FIPToolKit.Models
 						{
 							path.AddEllipse(rectInner);
 							grfx.SetClip(path);
-							grfx.DrawImage(GaugeImage, rectInner);
+							grfx.DrawImage(AltimeterProperties.GaugeImage, rectInner);
 							grfx.ResetClip();
 						}
 					}
 					else
 					{
 						//Face
-						using (LinearGradientBrush gb = new LinearGradientBrush(rect, FaceColorHigh, FaceColorLow, FaceGradientMode))
+						using (LinearGradientBrush gb = new LinearGradientBrush(rect, AltimeterProperties.FaceColorHigh, AltimeterProperties.FaceColorLow, AltimeterProperties.FaceGradientMode))
 						{
 							grfx.FillEllipse(gb, rectInner);
 						}
 					}
 					//Face Ticks
-					if (DrawFaceTicks)
+					if (AltimeterProperties.DrawFaceTicks)
 					{
-						using (SolidBrush gb = new SolidBrush(FontColor))
+						using (SolidBrush gb = new SolidBrush(AltimeterProperties.FontColor))
 						{
 							pen.Brush = gb;
 							pen.EndCap = LineCap.Flat;
@@ -594,13 +327,13 @@ namespace FIPToolKit.Models
 								float angle = (float)(2.0 * Math.PI * (i / 50.0));
 								if (i % 5 == 0)
 								{
-									startPoint = new Point((int)((tickRadius - FaceTickSize.Height) * Math.Sin(angle)), (int)(-(tickRadius - FaceTickSize.Height) * Math.Cos(angle)));
-									pen.Width = FaceTickSize.Width;
+									startPoint = new Point((int)((tickRadius - AltimeterProperties.FaceTickSize.Height) * Math.Sin(angle)), (int)(-(tickRadius - AltimeterProperties.FaceTickSize.Height) * Math.Cos(angle)));
+									pen.Width = AltimeterProperties.FaceTickSize.Width;
 								}
 								else if (i % 5 != 0)
 								{
-									startPoint = new Point((int)((tickRadius - (FaceTickSize.Height / 1.5)) * Math.Sin(angle)), (int)(-(tickRadius - (FaceTickSize.Height / 1.5)) * Math.Cos(angle)));
-									pen.Width = FaceTickSize.Width / 2;
+									startPoint = new Point((int)((tickRadius - (AltimeterProperties.FaceTickSize.Height / 1.5)) * Math.Sin(angle)), (int)(-(tickRadius - (AltimeterProperties.FaceTickSize.Height / 1.5)) * Math.Cos(angle)));
+									pen.Width = AltimeterProperties.FaceTickSize.Width / 2;
 								}
 								Point endPoint = new Point((int)(tickRadius * Math.Sin(angle)), (int)(-(tickRadius) * Math.Cos(angle)));
 								grfx.DrawLine(pen, startPoint, endPoint);
@@ -609,22 +342,22 @@ namespace FIPToolKit.Models
 						}
 					}
 					//Rim
-					if (DrawRim && RimWidth > 0)
+					if (AltimeterProperties.DrawRim && AltimeterProperties.RimWidth > 0)
 					{
-						float outerRimWidth = RimWidth / 2.75f;
-						float innerRimWidth = RimWidth - outerRimWidth;
-						RectangleF rectOuterRim = new RectangleF(rect.X + ((DrawRim ? RimWidth : 0) / 2), rect.Y + ((DrawRim ? RimWidth : 0) / 2), rect.Width - (DrawRim ? RimWidth : 0), rect.Height - (DrawRim ? RimWidth : 0));
+						float outerRimWidth = AltimeterProperties.RimWidth / 2.75f;
+						float innerRimWidth = AltimeterProperties.RimWidth - outerRimWidth;
+						RectangleF rectOuterRim = new RectangleF(rect.X + ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0) / 2), rect.Y + ((AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0) / 2), rect.Width - (AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0), rect.Height - (AltimeterProperties.DrawRim ? AltimeterProperties.RimWidth : 0));
 						RectangleF rectInnerRim = new RectangleF(rectOuterRim.X + outerRimWidth, rectOuterRim.Y + outerRimWidth, rectOuterRim.Width - (outerRimWidth * 2), rectOuterRim.Height - (outerRimWidth * 2));
-						using (Pen pen2 = new Pen(OuterRimColor, outerRimWidth))
+						using (Pen pen2 = new Pen(AltimeterProperties.OuterRimColor, outerRimWidth))
 						{
 							grfx.DrawEllipse(pen2, rectOuterRim);
 						}
-						using (Pen pen2 = new Pen(InnerRimColor, innerRimWidth))
+						using (Pen pen2 = new Pen(AltimeterProperties.InnerRimColor, innerRimWidth))
 						{
 							grfx.DrawEllipse(pen2, rectInnerRim);
 						}
 					}
-					if (DrawNumerals)
+					if (AltimeterProperties.DrawNumerals)
 					{
 						using (StringFormat format = new StringFormat())
 						{
@@ -636,34 +369,34 @@ namespace FIPToolKit.Models
 							int deg = 36;
 							for (int i = 0; i < 10; i++)
 							{
-								grfx.DrawString(i.ToString(), Font, stringBrush, -1 * GetX(i * deg + 90, radius - 5), -1 * GetY(i * deg + 90, radius - 5), format);
+								grfx.DrawString(i.ToString(), AltimeterProperties.Font, stringBrush, -1 * GetX(i * deg + 90, radius - 5), -1 * GetY(i * deg + 90, radius - 5), format);
 							}
 							grfx.ResetTransform();
 						}
 					}
 				}
-				using (Pen pen = new Pen(InnerRimColor, 2))
+				using (Pen pen = new Pen(AltimeterProperties.InnerRimColor, 2))
                 {
-					if (ShowKollsmanWindow)
+					if (AltimeterProperties.ShowKollsmanWindow)
 					{
 						string text = "00.00";
-						SizeF size2 = grfx.MeasureString(text, Font);
+						SizeF size2 = grfx.MeasureString(text, AltimeterProperties.Font);
 						Rectangle rectKollsman = new Rectangle((int)(midx + 20), (int)(midy - ((size2.Height + 4) / 2)), (int)size2.Width, (int)size2.Height);
 						grfx.DrawRectangle(pen, rectKollsman);
 					}
-					if (ShowAltitiudeStripes)
+					if (AltimeterProperties.ShowAltitiudeStripes)
 					{
 						Rectangle rectStripes = new Rectangle((int)(midx - 17), (int)(midy + 38), 34, 22);
 						grfx.DrawRectangle(pen, rectStripes);
 					}
-					if (GaugeImage == null)
+					if (AltimeterProperties.GaugeImage == null)
 					{
 						string text = "ALT";
-						SizeF size3 = grfx.MeasureString(text, Font);
+						SizeF size3 = grfx.MeasureString(text, AltimeterProperties.Font);
 						PointF altPoint = new PointF(midx - (radius / 2) - (size3.Width / 2), midy - size3.Height + 3);
-						grfx.DrawString(text, Font, stringBrush, altPoint);
-						grfx.DrawImage(Properties.Resources.cessna_logo_sm, new PointF(midx - 14, 60));
-						using (Font font = new System.Drawing.Font(Font.FontFamily, 5.5f, FontStyle.Regular, GraphicsUnit.Point))
+						grfx.DrawString(text, AltimeterProperties.Font, stringBrush, altPoint);
+						grfx.DrawImage(FIPToolKit.Properties.Resources.cessna_logo_sm, new PointF(midx - 14, 60));
+						using (Font font = new System.Drawing.Font(AltimeterProperties.Font.FontFamily, 5.5f, FontStyle.Regular, GraphicsUnit.Point))
 						{
 							grfx.DrawRotatedTextAt(-21, "100", midx - 25, 40f, font, stringBrush);
 							grfx.DrawRotatedTextAt(21, "FEET", midx + 25, 40f, font, stringBrush);

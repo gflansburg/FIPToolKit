@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class AnalogGaugeForm : Form
     {
-        public FIPPage AnalogGauge { get; set; }
+        public FIPAnalogGaugeProperties AnalogGauge { get; set; }
 
         private Font _fontHolder;
 

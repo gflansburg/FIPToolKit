@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class SimConnectMapForm : Form
     {
-        public FIPSimConnectMap SimMap { get; set; }
+        public FIPMapProperties SimMap { get; set; }
 
         private Font _fontHolder;
 

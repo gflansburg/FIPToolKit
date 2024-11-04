@@ -15,7 +15,7 @@ namespace FIPDisplayProfiler
 {
     public partial class AltimeterForm : Form
     {
-        public FIPPage Altimeter { get; set; }
+        public FIPAltimeterProperties Altimeter { get; set; }
 
         private Font _fontHolder;
 
@@ -60,63 +60,31 @@ namespace FIPDisplayProfiler
             tbFont.Font = new Font(Altimeter.Font.FontFamily, tbFont.Font.Size, Altimeter.Font.Style, Altimeter.Font.Unit, Altimeter.Font.GdiCharSet);
             tbFont.Text = Altimeter.Font.FontFamily.Name;
             btnFontColor.BackColor = Altimeter.FontColor;
-            if(Altimeter.GetType() == typeof(FIPFSUIPCAltimeter))
+            cbDrawTenThousandsHand.Checked = Altimeter.DrawTenThousandsHand;
+            cbDrawThousandsHand.Checked = Altimeter.DrawThousandsHand;
+            cbDrawHundredsHand.Checked = Altimeter.DrawHundredsHand;
+            cbDrawNumerals.Checked = Altimeter.DrawNumerals;
+            cbDrawRim.Checked = Altimeter.DrawRim;
+            cbDrawTickMarks.Checked = Altimeter.DrawFaceTicks;
+            cbShowAltitudeStripes.Checked = Altimeter.ShowAltitiudeStripes;
+            cbShowKollsman.Checked = Altimeter.ShowKollsmanWindow;
+            btnFaceColorHigh.BackColor = Altimeter.FaceColorHigh;
+            btnFaceColorLow.BackColor = Altimeter.FaceColorLow;
+            btnNeedleColor.BackColor = Altimeter.NeedleColor;
+            btnRimColorInside.BackColor = Altimeter.InnerRimColor;
+            btnRimColorOutside.BackColor = Altimeter.OuterRimColor;
+            numFaceTickMarkLength.Value = Altimeter.FaceTickSize.Height;
+            numFaceTickMarkWidth.Value = Altimeter.FaceTickSize.Width;
+            numHundredsHandLengthOffset.Value = Altimeter.HundredsHandLengthOffset;
+            numRimWidth.Value = Altimeter.RimWidth;
+            numTenThousandsHandLengthOffset.Value = Altimeter.TenThousandsHandLengthOffset;
+            numThousandsHandLengthOffset.Value = Altimeter.ThousandsHandLengthOffset;
+            cbFaceGradientMode.SelectedIndex = IndexOfLinearGradientMode(Altimeter.FaceGradientMode);
+            pbGaugeImage.Image = (Altimeter.GaugeImage != null ? new Bitmap(Altimeter.GaugeImage) : null);
+            _gaugeImageFileName = Altimeter.GaugeImageFilename;
+            if (Altimeter.GaugeImage == null && !string.IsNullOrEmpty(Altimeter.GaugeImageFilename))
             {
-                cbDrawTenThousandsHand.Checked = ((FIPFSUIPCAltimeter)Altimeter).DrawTenThousandsHand;
-                cbDrawThousandsHand.Checked = ((FIPFSUIPCAltimeter)Altimeter).DrawThousandsHand;
-                cbDrawHundredsHand.Checked = ((FIPFSUIPCAltimeter)Altimeter).DrawHundredsHand;
-                cbDrawNumerals.Checked = ((FIPFSUIPCAltimeter)Altimeter).DrawNumerals;
-                cbDrawRim.Checked = ((FIPFSUIPCAltimeter)Altimeter).DrawRim;
-                cbDrawTickMarks.Checked = ((FIPFSUIPCAltimeter)Altimeter).DrawFaceTicks;
-                cbShowAltitudeStripes.Checked = ((FIPFSUIPCAltimeter)Altimeter).ShowAltitiudeStripes;
-                cbShowKollsman.Checked = ((FIPFSUIPCAltimeter)Altimeter).ShowKollsmanWindow;
-                btnFaceColorHigh.BackColor = ((FIPFSUIPCAltimeter)Altimeter).FaceColorHigh;
-                btnFaceColorLow.BackColor = ((FIPFSUIPCAltimeter)Altimeter).FaceColorLow;
-                btnNeedleColor.BackColor = ((FIPFSUIPCAltimeter)Altimeter).NeedleColor;
-                btnRimColorInside.BackColor = ((FIPFSUIPCAltimeter)Altimeter).InnerRimColor;
-                btnRimColorOutside.BackColor = ((FIPFSUIPCAltimeter)Altimeter).OuterRimColor;
-                numFaceTickMarkLength.Value = ((FIPFSUIPCAltimeter)Altimeter).FaceTickSize.Height;
-                numFaceTickMarkWidth.Value = ((FIPFSUIPCAltimeter)Altimeter).FaceTickSize.Width;
-                numHundredsHandLengthOffset.Value = ((FIPFSUIPCAltimeter)Altimeter).HundredsHandLengthOffset;
-                numRimWidth.Value = ((FIPFSUIPCAltimeter)Altimeter).RimWidth;
-                numTenThousandsHandLengthOffset.Value = ((FIPFSUIPCAltimeter)Altimeter).TenThousandsHandLengthOffset;
-                numThousandsHandLengthOffset.Value = ((FIPFSUIPCAltimeter)Altimeter).ThousandsHandLengthOffset;
-                cbFaceGradientMode.SelectedIndex = IndexOfLinearGradientMode(((FIPFSUIPCAltimeter)Altimeter).FaceGradientMode);
-                pbGaugeImage.Image = (((FIPFSUIPCAltimeter)Altimeter).GaugeImage != null ? new Bitmap(((FIPFSUIPCAltimeter)Altimeter).GaugeImage) : null);
-                _gaugeImageFileName = ((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename;
-                if (((FIPFSUIPCAltimeter)Altimeter).GaugeImage == null && !string.IsNullOrEmpty(((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename))
-                {
-                    pbGaugeImage.Image = new Bitmap(FIPToolKit.Drawing.ImageHelper.GetBitmapResource(((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename));
-                }
-            }
-            else if(Altimeter.GetType() == typeof(FIPSimConnectAltimeter))
-            {
-                cbDrawTenThousandsHand.Checked = ((FIPSimConnectAltimeter)Altimeter).DrawTenThousandsHand;
-                cbDrawThousandsHand.Checked = ((FIPSimConnectAltimeter)Altimeter).DrawThousandsHand;
-                cbDrawHundredsHand.Checked = ((FIPSimConnectAltimeter)Altimeter).DrawHundredsHand;
-                cbDrawNumerals.Checked = ((FIPSimConnectAltimeter)Altimeter).DrawNumerals;
-                cbDrawRim.Checked = ((FIPSimConnectAltimeter)Altimeter).DrawRim;
-                cbDrawTickMarks.Checked = ((FIPSimConnectAltimeter)Altimeter).DrawFaceTicks;
-                cbShowAltitudeStripes.Checked = ((FIPSimConnectAltimeter)Altimeter).ShowAltitiudeStripes;
-                cbShowKollsman.Checked = ((FIPSimConnectAltimeter)Altimeter).ShowKollsmanWindow;
-                btnFaceColorHigh.BackColor = ((FIPSimConnectAltimeter)Altimeter).FaceColorHigh;
-                btnFaceColorLow.BackColor = ((FIPSimConnectAltimeter)Altimeter).FaceColorLow;
-                btnNeedleColor.BackColor = ((FIPSimConnectAltimeter)Altimeter).NeedleColor;
-                btnRimColorInside.BackColor = ((FIPSimConnectAltimeter)Altimeter).InnerRimColor;
-                btnRimColorOutside.BackColor = ((FIPSimConnectAltimeter)Altimeter).OuterRimColor;
-                numFaceTickMarkLength.Value = ((FIPSimConnectAltimeter)Altimeter).FaceTickSize.Height;
-                numFaceTickMarkWidth.Value = ((FIPSimConnectAltimeter)Altimeter).FaceTickSize.Width;
-                numHundredsHandLengthOffset.Value = ((FIPSimConnectAltimeter)Altimeter).HundredsHandLengthOffset;
-                numRimWidth.Value = ((FIPSimConnectAltimeter)Altimeter).RimWidth;
-                numTenThousandsHandLengthOffset.Value = ((FIPSimConnectAltimeter)Altimeter).TenThousandsHandLengthOffset;
-                numThousandsHandLengthOffset.Value = ((FIPSimConnectAltimeter)Altimeter).ThousandsHandLengthOffset;
-                cbFaceGradientMode.SelectedIndex = IndexOfLinearGradientMode(((FIPSimConnectAltimeter)Altimeter).FaceGradientMode);
-                pbGaugeImage.Image = (((FIPSimConnectAltimeter)Altimeter).GaugeImage != null ? new Bitmap(((FIPSimConnectAltimeter)Altimeter).GaugeImage) : null);
-                _gaugeImageFileName = ((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename;
-                if (((FIPSimConnectAltimeter)Altimeter).GaugeImage == null && !string.IsNullOrEmpty(((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename))
-                {
-                    pbGaugeImage.Image = new Bitmap(FIPToolKit.Drawing.ImageHelper.GetBitmapResource(((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename));
-                }
+                pbGaugeImage.Image = new Bitmap(FIPToolKit.Drawing.ImageHelper.GetBitmapResource(Altimeter.GaugeImageFilename));
             }
             numFaceTickMarkLength.Enabled = cbDrawTickMarks.Checked;
             numFaceTickMarkWidth.Enabled = cbDrawTickMarks.Checked;
@@ -137,54 +105,27 @@ namespace FIPDisplayProfiler
             Altimeter.Font = _fontHolder;
             Altimeter.FontColor = btnFontColor.BackColor;
 
-            if (Altimeter.GetType() == typeof(FIPFSUIPCAltimeter))
-            {
-                ((FIPFSUIPCAltimeter)Altimeter).DrawTenThousandsHand = cbDrawTenThousandsHand.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).DrawThousandsHand = cbDrawThousandsHand.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).DrawHundredsHand = cbDrawHundredsHand.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).DrawNumerals = cbDrawNumerals.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).DrawRim = cbDrawRim.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).DrawFaceTicks = cbDrawTickMarks.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).ShowAltitiudeStripes = cbShowAltitudeStripes.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).ShowKollsmanWindow = cbShowKollsman.Checked;
-                ((FIPFSUIPCAltimeter)Altimeter).FaceColorHigh = btnFaceColorHigh.BackColor;
-                ((FIPFSUIPCAltimeter)Altimeter).FaceColorLow = btnFaceColorLow.BackColor;
-                ((FIPFSUIPCAltimeter)Altimeter).NeedleColor = btnNeedleColor.BackColor;
-                ((FIPFSUIPCAltimeter)Altimeter).InnerRimColor = btnRimColorInside.BackColor;
-                ((FIPFSUIPCAltimeter)Altimeter).OuterRimColor = btnRimColorOutside.BackColor;
-                ((FIPFSUIPCAltimeter)Altimeter).FaceTickSize = new Size((int)numFaceTickMarkWidth.Value, (int)numFaceTickMarkLength.Value);
-                ((FIPFSUIPCAltimeter)Altimeter).HundredsHandLengthOffset = (int)numHundredsHandLengthOffset.Value;
-                ((FIPFSUIPCAltimeter)Altimeter).RimWidth = (int)numRimWidth.Value;
-                ((FIPFSUIPCAltimeter)Altimeter).TenThousandsHandLengthOffset = (int)numTenThousandsHandLengthOffset.Value;
-                ((FIPFSUIPCAltimeter)Altimeter).ThousandsHandLengthOffset = (int)numThousandsHandLengthOffset.Value;
-                ((FIPFSUIPCAltimeter)Altimeter).FaceGradientMode = (cbFaceGradientMode.SelectedItem as AltimeterLinearGradientMode).LinearGradientMode;
-                ((FIPFSUIPCAltimeter)Altimeter).GaugeImage = pbGaugeImage.Image != null ? new Bitmap(pbGaugeImage.Image) : null;
-                ((FIPFSUIPCAltimeter)Altimeter).GaugeImageFilename = _gaugeImageFileName;
-            }
-            else if (Altimeter.GetType() == typeof(FIPSimConnectAltimeter))
-            {
-                ((FIPSimConnectAltimeter)Altimeter).DrawTenThousandsHand = cbDrawTenThousandsHand.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).DrawThousandsHand = cbDrawThousandsHand.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).DrawHundredsHand = cbDrawHundredsHand.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).DrawNumerals = cbDrawNumerals.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).DrawRim = cbDrawRim.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).DrawFaceTicks = cbDrawTickMarks.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).ShowAltitiudeStripes = cbShowAltitudeStripes.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).ShowKollsmanWindow = cbShowKollsman.Checked;
-                ((FIPSimConnectAltimeter)Altimeter).FaceColorHigh = btnFaceColorHigh.BackColor;
-                ((FIPSimConnectAltimeter)Altimeter).FaceColorLow = btnFaceColorLow.BackColor;
-                ((FIPSimConnectAltimeter)Altimeter).NeedleColor = btnNeedleColor.BackColor;
-                ((FIPSimConnectAltimeter)Altimeter).InnerRimColor = btnRimColorInside.BackColor;
-                ((FIPSimConnectAltimeter)Altimeter).OuterRimColor = btnRimColorOutside.BackColor;
-                ((FIPSimConnectAltimeter)Altimeter).FaceTickSize = new Size((int)numFaceTickMarkWidth.Value, (int)numFaceTickMarkLength.Value);
-                ((FIPSimConnectAltimeter)Altimeter).HundredsHandLengthOffset = (int)numHundredsHandLengthOffset.Value;
-                ((FIPSimConnectAltimeter)Altimeter).RimWidth = (int)numRimWidth.Value;
-                ((FIPSimConnectAltimeter)Altimeter).TenThousandsHandLengthOffset = (int)numTenThousandsHandLengthOffset.Value;
-                ((FIPSimConnectAltimeter)Altimeter).ThousandsHandLengthOffset = (int)numThousandsHandLengthOffset.Value;
-                ((FIPSimConnectAltimeter)Altimeter).FaceGradientMode = (cbFaceGradientMode.SelectedItem as AltimeterLinearGradientMode).LinearGradientMode;
-                ((FIPSimConnectAltimeter)Altimeter).GaugeImage = pbGaugeImage.Image != null ? new Bitmap(pbGaugeImage.Image) : null;
-                ((FIPSimConnectAltimeter)Altimeter).GaugeImageFilename = _gaugeImageFileName;
-            }
+            Altimeter.DrawTenThousandsHand = cbDrawTenThousandsHand.Checked;
+            Altimeter.DrawThousandsHand = cbDrawThousandsHand.Checked;
+            Altimeter.DrawHundredsHand = cbDrawHundredsHand.Checked;
+            Altimeter.DrawNumerals = cbDrawNumerals.Checked;
+            Altimeter.DrawRim = cbDrawRim.Checked;
+            Altimeter.DrawFaceTicks = cbDrawTickMarks.Checked;
+            Altimeter.ShowAltitiudeStripes = cbShowAltitudeStripes.Checked;
+            Altimeter.ShowKollsmanWindow = cbShowKollsman.Checked;
+            Altimeter.FaceColorHigh = btnFaceColorHigh.BackColor;
+            Altimeter.FaceColorLow = btnFaceColorLow.BackColor;
+            Altimeter.NeedleColor = btnNeedleColor.BackColor;
+            Altimeter.InnerRimColor = btnRimColorInside.BackColor;
+            Altimeter.OuterRimColor = btnRimColorOutside.BackColor;
+            Altimeter.FaceTickSize = new Size((int)numFaceTickMarkWidth.Value, (int)numFaceTickMarkLength.Value);
+            Altimeter.HundredsHandLengthOffset = (int)numHundredsHandLengthOffset.Value;
+            Altimeter.RimWidth = (int)numRimWidth.Value;
+            Altimeter.TenThousandsHandLengthOffset = (int)numTenThousandsHandLengthOffset.Value;
+            Altimeter.ThousandsHandLengthOffset = (int)numThousandsHandLengthOffset.Value;
+            Altimeter.FaceGradientMode = (cbFaceGradientMode.SelectedItem as AltimeterLinearGradientMode).LinearGradientMode;
+            Altimeter.GaugeImage = pbGaugeImage.Image != null ? new Bitmap(pbGaugeImage.Image) : null;
+            Altimeter.GaugeImageFilename = _gaugeImageFileName;
             Altimeter.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();

@@ -26,18 +26,6 @@ namespace FIPDisplayMSFS2020.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string DeviceActivePages {
-            get {
-                return ((string)(this["DeviceActivePages"]));
-            }
-            set {
-                this["DeviceActivePages"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string DeviceSettings {
             get {
                 return ((string)(this["DeviceSettings"]));

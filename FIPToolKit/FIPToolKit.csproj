@@ -49,9 +49,6 @@
     <Reference Include="LibVLCSharp, Version=3.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\LibVLCSharp.3.9.0\lib\net471\LibVLCSharp.dll</HintPath>
     </Reference>
-    <Reference Include="MediaToolkit, Version=1.1.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MediaToolkit.1.1.0.1\lib\net40\MediaToolkit.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -102,6 +99,7 @@
       <HintPath>..\packages\System.Collections.Immutable.8.0.0\lib\net462\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data.SqlClient, Version=4.6.1.6, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Data.SqlClient.4.8.6\lib\net461\System.Data.SqlClient.dll</HintPath>
     </Reference>
@@ -115,6 +113,7 @@
       <HintPath>..\packages\System.Data.SQLite.Linq.1.0.119.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Design" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>
@@ -125,6 +124,7 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
     </Reference>
@@ -155,6 +155,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="TagLibSharp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
+      <HintPath>..\packages\TagLibSharp.2.3.0\lib\net462\TagLibSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Unosquare.Labs.EmbedIO, Version=2.2.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\EmbedIO.2.2.9\lib\net472\Unosquare.Labs.EmbedIO.dll</HintPath>
     </Reference>
@@ -175,10 +178,18 @@
     <Compile Include="FlightSim\TemperatureUnit.cs" />
     <Compile Include="FlightSim\VorToFromFlag.cs" />
     <Compile Include="FlightSim\VSpeed.cs" />
+    <Compile Include="Models\FIPAnalogClockProperties.cs" />
+    <Compile Include="Models\FIPPageProperties.cs" />
+    <Compile Include="Models\FIPSaveType.cs" />
     <Compile Include="Models\FIPScreenMirror.cs" />
+    <Compile Include="Models\FIPScreenMirrorProperties.cs" />
+    <Compile Include="Models\FIPSettableAnalogClockProperties.cs" />
+    <Compile Include="Models\FIPAirspeedProperties.cs" />
+    <Compile Include="Models\FIPSettings.cs" />
     <Compile Include="Models\FIPSimConnectAltimeter.cs" />
     <Compile Include="Models\FIPFSUIPCAltimeter.cs" />
     <Compile Include="Models\FIPSimConnectAirspeed.cs" />
+    <Compile Include="Models\FIPAltimeterProperties.cs" />
     <Compile Include="Models\FIPSimConnectAnalogGauge.cs" />
     <Compile Include="Models\FIPFSUIPCCommandButton.cs" />
     <Compile Include="Models\FIPFSUIPCCommandSequenceButton.cs" />
@@ -193,9 +204,16 @@
     <Compile Include="Models\FIPSettableAnalogClock.cs" />
     <Compile Include="Models\FIPFSUIPCPage.cs" />
     <Compile Include="Models\FIPFSUIPCMap.cs" />
+    <Compile Include="Models\FIPAnalogGaugeProperties.cs" />
     <Compile Include="Models\FIPSimConnectMap.cs" />
+    <Compile Include="Models\FIPMapProperties.cs" />
     <Compile Include="Models\FIPSimConnectNonLinearAnalogGauge.cs" />
+    <Compile Include="Models\FIPSlideShowProperties.cs" />
     <Compile Include="Models\FIPSpotifyPlayer.cs" />
+    <Compile Include="Models\FIPSpotifyPlayerProperties.cs" />
+    <Compile Include="Models\FIPMusicPlayer.cs" />
+    <Compile Include="Models\FIPMusicPlayerProperties.cs" />
+    <Compile Include="Models\FIPVideoPlayerProperties.cs" />
     <Compile Include="Models\FIPWindowsCommandButton.cs" />
     <Compile Include="Models\FIPOSCommandButton.cs" />
     <Compile Include="Models\FIPDevice.cs" />

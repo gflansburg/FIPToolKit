@@ -7,8 +7,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
@@ -47,20 +50,6 @@ namespace FIPToolKit.Models
         }
     }
 
-    [Serializable]
-    [XmlInclude(typeof(FIPAnalogClock))]
-    [XmlInclude(typeof(FIPSettableAnalogClock))]
-    [XmlInclude(typeof(FIPSlideShow))]
-    [XmlInclude(typeof(FIPSpotifyPlayer))]
-    [XmlInclude(typeof(FIPVideoPlayer))]
-    [XmlInclude(typeof(FIPFlightShare))]
-    [XmlInclude(typeof(FIPSimConnectMap))]
-    [XmlInclude(typeof(FIPSimConnectAirspeed))]
-    [XmlInclude(typeof(FIPSimConnectAltimeter))]
-    [XmlInclude(typeof(FIPFSUIPCMap))]
-    [XmlInclude(typeof(FIPFSUIPCAirspeed))]
-    [XmlInclude(typeof(FIPFSUIPCAltimeter))]
-    [XmlInclude(typeof(FIPScreenMirror))]
     public abstract class FIPPage : IDisposable
     {
         [XmlIgnore]
@@ -75,25 +64,6 @@ namespace FIPToolKit.Models
         [JsonIgnore]
         public bool IsDisposing { get; private set; }
 
-        private Guid _id;
-        public Guid Id
-        {
-            get
-            {
-                return _id;
-            }
-            set
-            {
-                if (_id != value)
-                {
-                    _id = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private Bitmap _image = null;
-
         [XmlIgnore]
         [JsonIgnore]
         protected bool ShowKnobIcons { get; set; }
@@ -104,90 +74,11 @@ namespace FIPToolKit.Models
 
         [XmlIgnore]
         [JsonIgnore]
-        public virtual bool Reload { get; set; } // used for recaching video frames when the button labels have changed.
+        public FIPPageProperties Properties { get; private set; }
 
-        private FontEx _font;
-        public virtual FontEx Font
-        {
-            get
-            {
-                return _font;
-            }
-            set
-            {
-                if (!_font.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _font.Size != value.Size || _font.Style != value.Style || _font.Strikeout != value.Strikeout || _font.Underline != value.Underline || _font.Unit != value.Unit || _font.GdiCharSet != value.GdiCharSet)
-                {
-                    _font = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private ColorEx _fontColor;
-        public virtual ColorEx FontColor
-        {
-            get
-            {
-                return _fontColor;
-            }
-            set
-            {
-                if (_fontColor.Color != value.Color)
-                {
-                    _fontColor = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private uint _page;
-        public uint Page
-        {
-            get
-            {
-                return _page;
-            }
-            set
-            {
-                if (_page != value)
-                {
-                    _page = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private bool _isDirty;
         [XmlIgnore]
         [JsonIgnore]
-        public bool IsDirty
-        {
-            get
-            {
-                if (_isDirty)
-                {
-                    return true;
-                }
-                foreach (FIPButton button in Buttons)
-                {
-                    if (button.IsDirty)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            set
-            {
-                _isDirty = value;
-                if (_isDirty == true)
-                {
-                    UpdatePage();
-                    Reload = true;
-                    OnSettingsChange?.Invoke(this, new FIPPageEventArgs(this));
-                }
-            }
-        }
+        public virtual bool Reload { get; set; } // used for recaching video frames when the button labels have changed.
 
         [XmlIgnore]
         [JsonIgnore]
@@ -199,30 +90,25 @@ namespace FIPToolKit.Models
             }
         }
 
-        [Browsable(false)]
-        [XmlElement(ElementName = "Buttons")]
-        [JsonProperty(PropertyName = "Buttons")]
-        public List<FIPButton> _buttons { get; set; }
-
         [XmlIgnore]
         [JsonIgnore]
         public IEnumerable<FIPButton> Buttons
         {
             get
             {
-                foreach (FIPButton button in _buttons)
+                foreach (FIPButton button in Properties.Buttons)
                 {
                     yield return button;
                 }
             }
             set
             {
-                _buttons.Clear();
+                Properties.Buttons.Clear();
                 foreach (FIPButton button in value)
                 {
                     AddButton(button);
                 }
-                this.IsDirty = true;
+                Properties.IsDirty = true;
             }
         }
 
@@ -232,7 +118,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return (_buttons != null ? _buttons.Count : 0);
+                return (Properties.Buttons != null ? Properties.Buttons.Count : 0);
             }
         }
 
@@ -257,22 +143,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private string _name;
-        public string Name
-        {
-            get
-            {
-                return String.IsNullOrEmpty(_name) ? this.GetType().ToString() : _name;
-            }
-            set
-            {
-                if (!(_name ?? String.Empty).Equals((value ?? String.Empty), StringComparison.OrdinalIgnoreCase))
-                {
-                    _name = value;
-                    IsDirty = true;
-                }
-            }
-        }
+        private Bitmap _image = null;
 
         public delegate void FIPPageEventHandler(object sender, FIPPageEventArgs e);
         public event FIPPageEventHandler OnImageChange;
@@ -280,15 +151,18 @@ namespace FIPToolKit.Models
         public event FIPPageEventHandler OnSoftButton;
         public event FIPPageEventHandler OnSettingsChange;
 
-        public FIPPage()
+        public FIPPage(FIPPageProperties properties)
         {
-            _id = Guid.NewGuid();
-            _name = String.Empty;
-            _font = new Font("Microsoft Sans Serif", 14.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
-            _fontColor = Color.White;
+            Properties = properties;
+            Properties.OnSettingsChange += Properties_OnSettingsChange;
             ShowKnobIcons = false;
-            _buttons = new List<FIPButton>();
-            IsDirty = false;
+        }
+
+        private void Properties_OnSettingsChange(object sender, EventArgs e)
+        {
+            UpdatePage();
+            Reload = true;
+            OnSettingsChange?.Invoke(this, new FIPPageEventArgs(this));
         }
 
         public virtual void UpdatePage()
@@ -327,11 +201,11 @@ namespace FIPToolKit.Models
                 if (bmp.PixelFormat != System.Drawing.Imaging.PixelFormat.Format24bppRgb)
                 {
                     Bitmap newBmp = bmp.ConvertTo24bpp();
-                    if (Device != null && Device.CurrentPage != null && Page == Device.CurrentPage.Page)
+                    if (Device != null && Device.CurrentPage != null && Properties.Page == Device.CurrentPage.Properties.Page)
                     {
                         try
                         {
-                            Device.DeviceClient.SetImage(Page, 0, newBmp.ImageToByte());
+                            Device.DeviceClient.SetImage(Properties.Page, 0, newBmp.ImageToByte());
                         }
                         catch
                         {
@@ -342,11 +216,11 @@ namespace FIPToolKit.Models
                 }
                 else
                 {
-                    if (Device != null && Device.CurrentPage != null && Page == Device.CurrentPage.Page)
+                    if (Device != null && Device.CurrentPage != null && Properties.Page == Device.CurrentPage.Properties.Page)
                     {
                         try
                         {
-                            Device.DeviceClient.SetImage(Page, 0, bmp.ImageToByte());
+                            Device.DeviceClient.SetImage(Properties.Page, 0, bmp.ImageToByte());
                         }
                         catch
                         {
@@ -442,7 +316,7 @@ namespace FIPToolKit.Models
 
         public FIPButton GetButton(SoftButtons button)
         {
-            foreach (FIPButton btn in _buttons)
+            foreach (FIPButton btn in Properties.Buttons)
             {
                 if (btn.SoftButton == button)
                 {
@@ -454,8 +328,8 @@ namespace FIPToolKit.Models
 
         public void AddButton(FIPButton button)
         {
-            _buttons.Add(button);
-            this.IsDirty = true;
+            Properties.Buttons.Add(button);
+            Properties.IsDirty = true;
             button.Page = this;
             UpdatePage();
             SetLEDs();
@@ -465,7 +339,7 @@ namespace FIPToolKit.Models
 
         private void Button_OnButtonChange(object sender, FIPButtonEventArgs e)
         {
-            IsDirty = true;
+            Properties.IsDirty = true;
             UpdatePage();
             ButtonChanged();
         }
@@ -476,16 +350,16 @@ namespace FIPToolKit.Models
 
         public void RemoveButton(FIPButton button)
         {
-            _buttons.Remove(button);
+            Properties.Buttons.Remove(button);
             UpdatePage();
             SetLEDs();
             ButtonChanged();
-            this.IsDirty = true;
+            Properties.IsDirty = true;
         }
 
         public void ClearButtons(bool makeDirty = true)
         {
-            foreach (FIPButton button in _buttons)
+            foreach (FIPButton button in Properties.Buttons)
             {
                 if (button.GetType().IsAssignableFrom(typeof(IDisposable)))
                 {
@@ -493,10 +367,10 @@ namespace FIPToolKit.Models
                     obj.Dispose();
                 }
             }
-            _buttons.Clear();
+            Properties.Buttons.Clear();
             if (makeDirty)
             {
-                IsDirty = true;
+                Properties.IsDirty = true;
             }
         }
 
@@ -529,16 +403,16 @@ namespace FIPToolKit.Models
 
         public virtual void SetLEDs()
         {
-            if (Device != null && Device.CurrentPage != null && Page == Device.CurrentPage.Page)
+            if (Device != null && Device.CurrentPage != null && Properties.Page == Device.CurrentPage.Properties.Page)
             {
                 try
                 {
-                    Device.DeviceClient.SetLed(Page, 1, IsLEDOn(SoftButtons.Button1));
-                    Device.DeviceClient.SetLed(Page, 2, IsLEDOn(SoftButtons.Button2));
-                    Device.DeviceClient.SetLed(Page, 3, IsLEDOn(SoftButtons.Button3));
-                    Device.DeviceClient.SetLed(Page, 4, IsLEDOn(SoftButtons.Button4));
-                    Device.DeviceClient.SetLed(Page, 5, IsLEDOn(SoftButtons.Button5));
-                    Device.DeviceClient.SetLed(Page, 6, IsLEDOn(SoftButtons.Button6));
+                    Device.DeviceClient.SetLed(Properties.Page, 1, IsLEDOn(SoftButtons.Button1));
+                    Device.DeviceClient.SetLed(Properties.Page, 2, IsLEDOn(SoftButtons.Button2));
+                    Device.DeviceClient.SetLed(Properties.Page, 3, IsLEDOn(SoftButtons.Button3));
+                    Device.DeviceClient.SetLed(Properties.Page, 4, IsLEDOn(SoftButtons.Button4));
+                    Device.DeviceClient.SetLed(Properties.Page, 5, IsLEDOn(SoftButtons.Button5));
+                    Device.DeviceClient.SetLed(Properties.Page, 6, IsLEDOn(SoftButtons.Button6));
                     FireStateChanged();
                 }
                 catch
@@ -555,7 +429,7 @@ namespace FIPToolKit.Models
         public virtual bool IsLEDOn(SoftButtons softButton)
         {
             FIPButton button = GetButton(softButton);
-            return button != null && button.IsButtonEnabled();
+            return (button != null && button.ButtonEnabled);
         }
 
         public static bool IsKnobSoftButton(SoftButtons softButton)
@@ -592,7 +466,7 @@ namespace FIPToolKit.Models
         protected virtual float MaxLabelWidth(Graphics grfx)
         {
             float size = 0f;
-            foreach (FIPButton button in _buttons)
+            foreach (FIPButton button in Properties.Buttons)
             {
                 switch (button.SoftButton)
                 {

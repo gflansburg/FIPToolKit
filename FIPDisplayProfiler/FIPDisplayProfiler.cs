@@ -46,20 +46,26 @@ namespace FIPDisplayProfiler
         public FIPDisplayProfiler()
         {
             InitializeComponent();
-            Engine = new FIPEngine();
-            Engine.OnDeviceAdded += Engine_OnDeviceAdded;
-            Engine.OnDeviceRemoved += Engine_OnDeviceRemoved;
-            Engine.OnPageChanged += Engine_OnPageChanged;
-            Engine.Initialize();
+            try
+            {
+                Engine = new FIPEngine();
+                Engine.OnDeviceAdded += Engine_OnDeviceAdded;
+                Engine.OnDeviceRemoved += Engine_OnDeviceRemoved;
+                Engine.OnPageChanged += Engine_OnPageChanged;
+                Engine.Initialize();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, string.Format("An error as occured initializing the Logitech Direct Output extension. Is it installed and running?\n\n{0}", ex.Message), "FIP Toolkit Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                Close();
+                return;
+            }
             FIPSimConnectPage.MainWindowHandle = this.Handle;
         }
 
-        private void Engine_OnPageChanged(object sender, DeviceActivePage page)
+        private void Engine_OnPageChanged(object sender, FIPDeviceActivePage page)
         {
-            if (!string.IsNullOrEmpty(ProfileName))
-            {
-                SaveActivePages(ProfileName);
-            }
+            SaveActivePages(ProfileName);
         }
 
         private void Engine_OnDeviceRemoved(object sender, FIPEngineEventArgs e)
@@ -162,6 +168,9 @@ namespace FIPDisplayProfiler
             control.MainWindowHandle = this.Handle;
             control.Device = device;
             control.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            control.OnVideoPlayerActive += Control_OnVideoPlayerActive;
+            control.OnVideoPlayerInactive += Control_OnVideoPlayerInactive;
+            control.OnPlayerCanPlay += Control_OnPlayerCanPlay;
             TabPage tab = new TabPage(device.SerialNumber);
             tab.Size = control.Size;
             tab.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
@@ -202,48 +211,49 @@ namespace FIPDisplayProfiler
 
         private void FIPDisplay_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(_saveChangesDialogShowing)
+            if (Engine != null)
             {
-                e.Cancel = true;
-                return;
-            }
-            bool saveActivePages = Engine.IsActivePagesDirty;
-            if(Engine.IsDirty)
-            {
-                if (!Properties.Settings.Default.AutoSave || string.IsNullOrEmpty(ProfileName))
+                if (_saveChangesDialogShowing)
                 {
-                    _saveChangesDialogShowing = true;
-                    DialogResult result = MessageBox.Show(this, "Do you want to save changes?", "FIP Display Profiler", MessageBoxButtons.YesNoCancel);
-                    if (result == DialogResult.Cancel)
+                    e.Cancel = true;
+                    return;
+                }
+                bool saveActivePages = Engine.IsActivePagesDirty;
+                if (Engine.IsDirty || saveActivePages)
+                {
+                    if (!Properties.Settings.Default.AutoSave || string.IsNullOrEmpty(ProfileName))
                     {
-                        e.Cancel = true;
-                        return;
-                    }
-                    _saveChangesDialogShowing = false;
-                    if (result == DialogResult.Yes)
-                    {
-                        if (!SaveSettings(ProfileName))
+                        _saveChangesDialogShowing = true;
+                        DialogResult result = MessageBox.Show(this, "Do you want to save changes?", "FIP Display Profiler", MessageBoxButtons.YesNoCancel);
+                        if (result == DialogResult.Cancel)
                         {
                             e.Cancel = true;
                             return;
                         }
-                        //Normal save method as saved the active page of each device.
-                        saveActivePages = false;
+                        _saveChangesDialogShowing = false;
+                        if (result == DialogResult.Yes)
+                        {
+                            if (!SaveSettings(ProfileName))
+                            {
+                                e.Cancel = true;
+                                return;
+                            }
+                            //Normal save method as saved the active page of each device.
+                            saveActivePages = false;
+                        }
                     }
                 }
-            }
-            if (saveActivePages)
-            {
-                //Save the active page of each device.
-                if (!string.IsNullOrEmpty(ProfileName) && File.Exists(ProfileName))
+                else if (saveActivePages)
                 {
+                    //Save the active page of each device.
                     SaveActivePages(ProfileName);
                 }
+                Engine.Dispose();
+                Engine = null;
+                FIPSimConnectPage.Deinitialize();
+                FIPFSUIPCPage.Deinitialize();
             }
-            Engine.Dispose();
-            FIPSimConnectPage.Deinitialize();
-            FIPFSUIPCPage.Deinitialize();
-            if(Properties.Settings.Default.CloseFlightShareOnExit)
+            if (Properties.Settings.Default.CloseFlightShareOnExit)
             {
                 FIPFlightShare.CloseFlightShare();
             }
@@ -253,22 +263,35 @@ namespace FIPDisplayProfiler
         {
             try
             {
-                string xmlData = File.ReadAllText(filename);
-                if (!string.IsNullOrEmpty(xmlData))
+                string xmlData;
+                if (!string.IsNullOrEmpty(filename))
                 {
-                    try
+                    bool isDirty = false;
+                    if (File.Exists(filename))
                     {
-                        using (FIPEngine deviceConfigs = (FIPEngine)SerializerHelper.FromXml(xmlData, typeof(FIPEngine)))
+                        xmlData = File.ReadAllText(filename);
+                        FIPSettings settings = (FIPSettings)SerializerHelper.FromXml(xmlData, typeof(FIPSettings));
+                        settings.ActivePages = Engine.ActivePages;
+                        xmlData = SerializerHelper.ToXml(settings);
+                        if (xmlData.StartsWith("\r\n"))
                         {
-                            deviceConfigs.ActivePages = Engine.ActivePages;
-                            xmlData = SerializerHelper.ToXml(deviceConfigs);
-                            File.WriteAllText(filename, xmlData);
-                            Engine.ActivePages.IsDirty = false;
-                            return true;
+                            xmlData = xmlData.Substring(2);
                         }
                     }
-                    catch (Exception)
+                    else
                     {
+                        xmlData = Engine.GetSaveData(FIPSaveType.Xml);
+                        isDirty = true;
+                    }
+                    if (!string.IsNullOrEmpty(xmlData))
+                    {
+                        File.WriteAllText(filename, xmlData);
+                        Engine.ActivePages.IsDirty = false;
+                        if (isDirty)
+                        {
+                            Engine.IsDirty = false;
+                        }
+                        return true;
                     }
                 }
             }
@@ -287,84 +310,7 @@ namespace FIPDisplayProfiler
                 string xmlData = File.ReadAllText(fileName);
                 if (!string.IsNullOrEmpty(xmlData))
                 {
-                    try
-                    {
-                        using (FIPEngine deviceConfigs = (FIPEngine)SerializerHelper.FromXml(xmlData, typeof(FIPEngine)))
-                        {
-                            foreach (DeviceActivePage activePage in deviceConfigs.ActivePages.Pages)
-                            {
-                                if (serialNumber == null || activePage.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    DeviceActivePage fipActivePage = Engine.FindActivePage(activePage.SerialNumber);
-                                    if (fipActivePage != null)
-                                    {
-                                        fipActivePage.Page = activePage.Page;
-                                    }
-                                }
-                            }
-                            foreach(FIPDevice device in deviceConfigs._devices)
-                            {
-                                FIPDevice d = Engine.Devices.FirstOrDefault(x => x.SerialNumber.Equals(device.SerialNumber));
-                                if (d != null)
-                                {
-                                    device.SetFIPEngine(d.FIPEngine, d.DeviceClient, d.DeviceId);
-                                }
-                            }
-                            foreach (FIPDevice device in deviceConfigs.Devices)
-                            {
-                                if (serialNumber == null || device.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    FIPDevice fipDevice = Engine.FindDevice(device.SerialNumber);
-                                    if (fipDevice != null)
-                                    {
-                                        fipDevice.ClearPages();
-                                        DeviceActivePage activePage = deviceConfigs.FindActivePage(device.SerialNumber);
-                                        if (activePage == null)
-                                        {
-                                            activePage = new DeviceActivePage()
-                                            {
-                                                SerialNumber = device.SerialNumber
-                                            };
-                                            //fipDevice.ActivePage = activePage.Page;
-                                        }
-                                        //Add pages this way instead of adding the whole collection at once so that we can set the active page.
-                                        foreach (FIPPage page in device.Pages)
-                                        {
-
-                                            fipDevice.AddPage(page, activePage.Page == page.Page);
-                                            //Re-add the buttons
-                                            List<FIPButton> tempButtons = new List<FIPButton>();
-                                            foreach (FIPButton button in page.Buttons)
-                                            {
-                                                tempButtons.Add(button);
-                                            }
-                                            page.ClearButtons(false);
-                                            foreach (FIPButton button in tempButtons)
-                                            {
-                                                page.AddButton(button);
-                                                button.IsDirty = false;
-                                            }
-                                            //Not really dirty since we just loaded it.
-                                            page.IsDirty = false;
-                                        }
-                                        device.ClearPages(false);
-                                        //Not really dirty since we just loaded it.
-                                        fipDevice.IsDirty = false;
-                                    }
-                                }
-                            }
-                            foreach (DeviceActivePage activePage in Engine.ActivePages.Pages)
-                            {
-                                if (serialNumber == null || activePage.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    activePage.IsDirty = false;
-                                }
-                            }
-                        }
-                    }
-                    catch(Exception)
-                    {
-                    }
+                    Engine.LoadSaveData(FIPSaveType.Xml, xmlData, serialNumber);
                 }
             }
             _loading = loading;
@@ -372,36 +318,35 @@ namespace FIPDisplayProfiler
 
         private bool SaveSettings(string fileName)
         {
-            string xmlData = FIPToolKit.Tools.SerializerHelper.RemoveHeader(FIPToolKit.Tools.SerializerHelper.ToXml(Engine));
-            if (xmlData.StartsWith("\r\n"))
+            if (Engine != null)
             {
-                xmlData = xmlData.Substring(2);
-            }
-            if (string.IsNullOrEmpty(ProfileName))
-            {
-                saveFileDialog1.InitialDirectory = FIPToolKit.FlightSim.Tools.GetExecutingDirectory();
-                if (!string.IsNullOrEmpty(ProfileName))
+                string xmlData = Engine.GetSaveData(FIPSaveType.Xml);
+                if (string.IsNullOrEmpty(fileName))
                 {
-                    saveFileDialog1.InitialDirectory = System.IO.Path.GetDirectoryName(ProfileName);
-                }
-                saveFileDialog1.FileName = ProfileName;
-                _saveChangesDialogShowing = true;
-                if (saveFileDialog1.ShowDialog(this) != DialogResult.OK)
-                {
+                    saveFileDialog1.InitialDirectory = FIPToolKit.FlightSim.Tools.GetExecutingDirectory();
+                    if (!string.IsNullOrEmpty(fileName))
+                    {
+                        saveFileDialog1.InitialDirectory = System.IO.Path.GetDirectoryName(fileName);
+                    }
+                    saveFileDialog1.FileName = fileName;
+                    _saveChangesDialogShowing = true;
+                    if (saveFileDialog1.ShowDialog(this) != DialogResult.OK)
+                    {
+                        _saveChangesDialogShowing = false;
+                        return false;
+                    }
                     _saveChangesDialogShowing = false;
+                    ProfileName = fileName = saveFileDialog1.FileName;
+                }
+                try
+                {
+                    File.WriteAllText(fileName, xmlData);
+                    Engine.IsDirty = false;
+                }
+                catch (Exception)
+                {
                     return false;
                 }
-                _saveChangesDialogShowing = false;
-                ProfileName = fileName = saveFileDialog1.FileName;
-            }
-            try
-            {
-                File.WriteAllText(fileName, xmlData);
-                Engine.IsDirty = false;
-            }
-            catch(Exception)
-            {
-                return false;
             }
             return true;
         }
@@ -628,36 +573,39 @@ namespace FIPDisplayProfiler
 
         private async void FIPDisplay_Load(object sender, EventArgs e)
         {
-            _loading = true;
-            await InitializeWebView2Async();
-            startMinimizedToolStripMenuItem.Checked = Properties.Settings.Default.StartMinimized;
-            autoLoadLastProfileToolStripMenuItem.Checked = Properties.Settings.Default.AutoLoadLastProfile;
-            minimizeToSystemTrayToolStripMenuItem.Checked = Properties.Settings.Default.MinimizeToSystemTray;
-            keybdeventToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.keybd_event;
-            sendInputToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.SendInput;
-            fSUIPCToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.FSUIPC;
-            previewVideoToolStripMenuItem.Checked = Properties.Settings.Default.PreviewVideo;
-            loadLastPlaylistToolStripMenuItem.Checked = Properties.Settings.Default.LoadLastPlaylist;
-            showArtistImagesToolStripMenuItem.Checked = Properties.Settings.Default.ShowArtistImages;
-            cacheSpotifyArtworkToolStripMenuItem.Checked = Properties.Settings.Default.CacheSpotifyArtwork;
-            closeFlightShareOnExitToolStripMenuItem.Checked = Properties.Settings.Default.CloseFlightShareOnExit;
-            _waitForMSFS = checkMSFSTimer.Enabled = exitWhenMSFSQuitsToolStripMenuItem.Checked = Properties.Settings.Default.CloseWithMSFS;
-            autoSaveSettingsToolStripMenuItem.Checked = Properties.Settings.Default.AutoSave;
-            for (int i = 0; i < tabDevices.TabPages.Count; i++)
+            if (Engine != null)
             {
-                TabPage tab = tabDevices.TabPages[i];
-                if (tab.Text.Equals(Properties.Settings.Default.LastSelectedDevice))
+                _loading = true;
+                await InitializeWebView2Async();
+                startMinimizedToolStripMenuItem.Checked = Properties.Settings.Default.StartMinimized;
+                autoLoadLastProfileToolStripMenuItem.Checked = Properties.Settings.Default.AutoLoadLastProfile;
+                minimizeToSystemTrayToolStripMenuItem.Checked = Properties.Settings.Default.MinimizeToSystemTray;
+                keybdeventToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.keybd_event;
+                sendInputToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.SendInput;
+                fSUIPCToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.FSUIPC;
+                previewVideoToolStripMenuItem.Checked = Properties.Settings.Default.PreviewVideo;
+                loadLastPlaylistToolStripMenuItem.Checked = Properties.Settings.Default.LoadLastPlaylist;
+                showArtistImagesToolStripMenuItem.Checked = Properties.Settings.Default.ShowArtistImages;
+                cacheSpotifyArtworkToolStripMenuItem.Checked = Properties.Settings.Default.CacheSpotifyArtwork;
+                closeFlightShareOnExitToolStripMenuItem.Checked = Properties.Settings.Default.CloseFlightShareOnExit;
+                _waitForMSFS = checkMSFSTimer.Enabled = exitWhenMSFSQuitsToolStripMenuItem.Checked = Properties.Settings.Default.CloseWithMSFS;
+                autoSaveSettingsToolStripMenuItem.Checked = Properties.Settings.Default.AutoSave;
+                for (int i = 0; i < tabDevices.TabPages.Count; i++)
                 {
-                    tabDevices.SelectedIndex = i;
-                    break;
+                    TabPage tab = tabDevices.TabPages[i];
+                    if (tab.Text.Equals(Properties.Settings.Default.LastSelectedDevice))
+                    {
+                        tabDevices.SelectedIndex = i;
+                        break;
+                    }
                 }
+                if (Properties.Settings.Default.AutoLoadLastProfile && !string.IsNullOrEmpty(Properties.Settings.Default.LastProfileName) && File.Exists(Properties.Settings.Default.LastProfileName))
+                {
+                    ProfileName = Properties.Settings.Default.LastProfileName;
+                    LoadSettings(ProfileName);
+                }
+                _loading = false;
             }
-            if (Properties.Settings.Default.AutoLoadLastProfile && !string.IsNullOrEmpty(Properties.Settings.Default.LastProfileName) && File.Exists(Properties.Settings.Default.LastProfileName))
-            {
-                ProfileName = Properties.Settings.Default.LastProfileName;
-                LoadSettings(ProfileName);
-            }
-            _loading = false;
         }
 
         public void HideWindow()
@@ -773,6 +721,42 @@ namespace FIPDisplayProfiler
             }
         }
 
+        private void Control_OnVideoPlayerInactive(object sender, FIPVideoPlayerEventArgs e)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.ResumeOtherMedia();
+                }
+            }
+        }
+
+        private void Control_OnVideoPlayerActive(object sender, FIPVideoPlayerEventArgs e)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.PauseOtherMedia();
+                }
+            }
+        }
+
+        private void Control_OnPlayerCanPlay(object sender, FIPCanPlayEventArgs e)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.CanPlayOther(e);
+                }
+            }
+        }
+
         private async Task InitializeWebView2Async(string tempDir = "")
         {
             CoreWebView2Environment webView2Environment = null;
@@ -852,6 +836,7 @@ namespace FIPDisplayProfiler
                                 WebViewShowTimes.Add(deviceControl.Device.SerialNumber, null);
                             }
                             FIPSpotifyPlayer player = page as FIPSpotifyPlayer;
+                            FIPSpotifyPlayerProperties properties = page.Properties as FIPSpotifyPlayerProperties;
                             if (player.IsAuthenticating && WebViewShowTimes[deviceControl.Device.SerialNumber] == null)
                             {
                                 WebViewShowTimes[deviceControl.Device.SerialNumber] = DateTime.Now;
@@ -874,17 +859,17 @@ namespace FIPDisplayProfiler
                                 webView21.Visible = false;
                                 webView21.SendToBack();
                             }
-                            else if (webView21.Visible && player.IsAuthorized && player.IsConfigured && player.Token != null && !player.Token.IsExpired())
+                            else if (webView21.Visible && player.IsAuthorized && player.IsConfigured && properties.Token != null && !properties.Token.IsExpired())
                             {
                                 player.IsAuthenticating = false;
                                 webView21.Visible = false;
                                 webView21.SendToBack();
                             }
-                            if (player.Token == null)
+                            if (properties.Token == null)
                             {
                                 player.Authenticate();
                             }
-                            else if (player.Token.IsExpired())
+                            else if (properties.Token.IsExpired())
                             {
                                 player.RefreshToken();
                             }

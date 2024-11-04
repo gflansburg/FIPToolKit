@@ -30,6 +30,7 @@ namespace FIPDisplayProfiler
         private void InitializeComponent()
         {
             this.pnlPageType = new System.Windows.Forms.Panel();
+            this.rbScreenMirror = new System.Windows.Forms.RadioButton();
             this.rbFSUIPCAltimeter = new System.Windows.Forms.RadioButton();
             this.rbSimConnectAltimeter = new System.Windows.Forms.RadioButton();
             this.rbSimConnectAirspeed = new System.Windows.Forms.RadioButton();
@@ -44,7 +45,7 @@ namespace FIPDisplayProfiler
             this.rbAnalogClock = new System.Windows.Forms.RadioButton();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.rbScreenMirror = new System.Windows.Forms.RadioButton();
+            this.rbMusicPlayer = new System.Windows.Forms.RadioButton();
             this.pnlPageType.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -53,6 +54,7 @@ namespace FIPDisplayProfiler
             this.pnlPageType.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlPageType.Controls.Add(this.rbMusicPlayer);
             this.pnlPageType.Controls.Add(this.rbScreenMirror);
             this.pnlPageType.Controls.Add(this.rbFSUIPCAltimeter);
             this.pnlPageType.Controls.Add(this.rbSimConnectAltimeter);
@@ -68,13 +70,24 @@ namespace FIPDisplayProfiler
             this.pnlPageType.Controls.Add(this.rbAnalogClock);
             this.pnlPageType.Location = new System.Drawing.Point(13, 12);
             this.pnlPageType.Name = "pnlPageType";
-            this.pnlPageType.Size = new System.Drawing.Size(190, 301);
+            this.pnlPageType.Size = new System.Drawing.Size(190, 326);
             this.pnlPageType.TabIndex = 4;
+            // 
+            // rbScreenMirror
+            // 
+            this.rbScreenMirror.AutoSize = true;
+            this.rbScreenMirror.Location = new System.Drawing.Point(3, 142);
+            this.rbScreenMirror.Name = "rbScreenMirror";
+            this.rbScreenMirror.Size = new System.Drawing.Size(88, 17);
+            this.rbScreenMirror.TabIndex = 6;
+            this.rbScreenMirror.Text = "Screen Mirror";
+            this.rbScreenMirror.UseVisualStyleBackColor = true;
+            this.rbScreenMirror.CheckedChanged += new System.EventHandler(this.rbScreenMirror_CheckedChanged);
             // 
             // rbFSUIPCAltimeter
             // 
             this.rbFSUIPCAltimeter.AutoSize = true;
-            this.rbFSUIPCAltimeter.Location = new System.Drawing.Point(3, 280);
+            this.rbFSUIPCAltimeter.Location = new System.Drawing.Point(3, 302);
             this.rbFSUIPCAltimeter.Name = "rbFSUIPCAltimeter";
             this.rbFSUIPCAltimeter.Size = new System.Drawing.Size(106, 17);
             this.rbFSUIPCAltimeter.TabIndex = 13;
@@ -85,7 +98,7 @@ namespace FIPDisplayProfiler
             // rbSimConnectAltimeter
             // 
             this.rbSimConnectAltimeter.AutoSize = true;
-            this.rbSimConnectAltimeter.Location = new System.Drawing.Point(3, 211);
+            this.rbSimConnectAltimeter.Location = new System.Drawing.Point(3, 233);
             this.rbSimConnectAltimeter.Name = "rbSimConnectAltimeter";
             this.rbSimConnectAltimeter.Size = new System.Drawing.Size(125, 17);
             this.rbSimConnectAltimeter.TabIndex = 10;
@@ -96,7 +109,7 @@ namespace FIPDisplayProfiler
             // rbSimConnectAirspeed
             // 
             this.rbSimConnectAirspeed.AutoSize = true;
-            this.rbSimConnectAirspeed.Location = new System.Drawing.Point(3, 189);
+            this.rbSimConnectAirspeed.Location = new System.Drawing.Point(3, 211);
             this.rbSimConnectAirspeed.Name = "rbSimConnectAirspeed";
             this.rbSimConnectAirspeed.Size = new System.Drawing.Size(126, 17);
             this.rbSimConnectAirspeed.TabIndex = 9;
@@ -107,7 +120,7 @@ namespace FIPDisplayProfiler
             // rbFSUIPCMap
             // 
             this.rbFSUIPCMap.AutoSize = true;
-            this.rbFSUIPCMap.Location = new System.Drawing.Point(3, 234);
+            this.rbFSUIPCMap.Location = new System.Drawing.Point(3, 256);
             this.rbFSUIPCMap.Name = "rbFSUIPCMap";
             this.rbFSUIPCMap.Size = new System.Drawing.Size(87, 17);
             this.rbFSUIPCMap.TabIndex = 11;
@@ -118,7 +131,7 @@ namespace FIPDisplayProfiler
             // rbFSUIPCAirspeed
             // 
             this.rbFSUIPCAirspeed.AutoSize = true;
-            this.rbFSUIPCAirspeed.Location = new System.Drawing.Point(3, 257);
+            this.rbFSUIPCAirspeed.Location = new System.Drawing.Point(3, 279);
             this.rbFSUIPCAirspeed.Name = "rbFSUIPCAirspeed";
             this.rbFSUIPCAirspeed.Size = new System.Drawing.Size(107, 17);
             this.rbFSUIPCAirspeed.TabIndex = 12;
@@ -140,7 +153,7 @@ namespace FIPDisplayProfiler
             // rbSimConnectMap
             // 
             this.rbSimConnectMap.AutoSize = true;
-            this.rbSimConnectMap.Location = new System.Drawing.Point(3, 166);
+            this.rbSimConnectMap.Location = new System.Drawing.Point(3, 188);
             this.rbSimConnectMap.Name = "rbSimConnectMap";
             this.rbSimConnectMap.Size = new System.Drawing.Size(106, 17);
             this.rbSimConnectMap.TabIndex = 8;
@@ -151,7 +164,7 @@ namespace FIPDisplayProfiler
             // rbFlightShare
             // 
             this.rbFlightShare.AutoSize = true;
-            this.rbFlightShare.Location = new System.Drawing.Point(3, 143);
+            this.rbFlightShare.Location = new System.Drawing.Point(3, 165);
             this.rbFlightShare.Name = "rbFlightShare";
             this.rbFlightShare.Size = new System.Drawing.Size(81, 17);
             this.rbFlightShare.TabIndex = 7;
@@ -162,7 +175,7 @@ namespace FIPDisplayProfiler
             // rbSpotifyPlayer
             // 
             this.rbSpotifyPlayer.AutoSize = true;
-            this.rbSpotifyPlayer.Location = new System.Drawing.Point(3, 97);
+            this.rbSpotifyPlayer.Location = new System.Drawing.Point(3, 119);
             this.rbSpotifyPlayer.Name = "rbSpotifyPlayer";
             this.rbSpotifyPlayer.Size = new System.Drawing.Size(89, 17);
             this.rbSpotifyPlayer.TabIndex = 5;
@@ -207,7 +220,7 @@ namespace FIPDisplayProfiler
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.Enabled = false;
-            this.btnOK.Location = new System.Drawing.Point(128, 319);
+            this.btnOK.Location = new System.Drawing.Point(128, 344);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -219,23 +232,23 @@ namespace FIPDisplayProfiler
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(47, 319);
+            this.btnCancel.Location = new System.Drawing.Point(47, 344);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 14;
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // rbScreenMirror
+            // rbMusicPlayer
             // 
-            this.rbScreenMirror.AutoSize = true;
-            this.rbScreenMirror.Location = new System.Drawing.Point(3, 120);
-            this.rbScreenMirror.Name = "rbScreenMirror";
-            this.rbScreenMirror.Size = new System.Drawing.Size(88, 17);
-            this.rbScreenMirror.TabIndex = 6;
-            this.rbScreenMirror.Text = "Screen Mirror";
-            this.rbScreenMirror.UseVisualStyleBackColor = true;
-            this.rbScreenMirror.CheckedChanged += new System.EventHandler(this.rbScreenMirror_CheckedChanged);
+            this.rbMusicPlayer.AutoSize = true;
+            this.rbMusicPlayer.Location = new System.Drawing.Point(3, 96);
+            this.rbMusicPlayer.Name = "rbMusicPlayer";
+            this.rbMusicPlayer.Size = new System.Drawing.Size(85, 17);
+            this.rbMusicPlayer.TabIndex = 14;
+            this.rbMusicPlayer.Text = "Music Player";
+            this.rbMusicPlayer.UseVisualStyleBackColor = true;
+            this.rbMusicPlayer.CheckedChanged += new System.EventHandler(this.rbMusicPlayer_CheckedChanged);
             // 
             // AddPageDialog
             // 
@@ -243,7 +256,7 @@ namespace FIPDisplayProfiler
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(215, 354);
+            this.ClientSize = new System.Drawing.Size(215, 379);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.pnlPageType);
@@ -278,5 +291,6 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.RadioButton rbFSUIPCAltimeter;
         private System.Windows.Forms.RadioButton rbSimConnectAltimeter;
         private System.Windows.Forms.RadioButton rbScreenMirror;
+        private System.Windows.Forms.RadioButton rbMusicPlayer;
     }
 }

@@ -5,11 +5,14 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Threading;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using FIPToolKit.Drawing;
 using FIPToolKit.Threading;
 using FIPToolKit.Tools;
+using LibVLCSharp.Shared;
 using Newtonsoft.Json;
 using Saitek.DirectOutput;
 using SpotifyAPI.Web;
@@ -19,6 +22,11 @@ using SpotifyAPI.Web.Models;
 
 namespace FIPToolKit.Models
 {
+    public class FIPCanPlayEventArgs : EventArgs
+    {
+        public bool CanPlay { get; set; } = true;
+    }
+
     public enum SpotifyPlayerPage
     {
         Player,
@@ -50,18 +58,15 @@ namespace FIPToolKit.Models
         public string PlaylistId { get; set; }
     }
 
-    [Serializable]
     public class FIPSpotifyPlayer : FIPPage
     {
-        private Token _token;
-
         [XmlIgnore]
         [JsonIgnore]
         public bool IsAuthenticating { get; set; } = false;
         
         private AuthorizationCodeAuth authorizationCodeAuth;
-        private bool _showArtistImages;
-        private bool _cacheArtwork;
+        private bool _showArtistImages = true;
+        private bool _cacheArtwork = true;
         private System.Threading.Timer Timer;
 
         [XmlIgnore]
@@ -70,7 +75,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return !string.IsNullOrEmpty(ClientId) && !string.IsNullOrEmpty(SecretId);
+                return !string.IsNullOrEmpty(SpotifyPlayerProperties.ClientId) && !string.IsNullOrEmpty(SpotifyPlayerProperties.SecretId);
             }
         }
 
@@ -80,24 +85,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return Token != null && !string.IsNullOrEmpty(Token.AccessToken) && !Token.IsExpired();
-            }
-        }
-
-        private FIPPlayList _playList;
-        public FIPPlayList Playlist 
-        { 
-            get
-            {
-                return _playList;
-            }
-            set
-            {
-                if(!(_playList.PlaylistId ?? string.Empty).Equals(value.PlaylistId ?? string.Empty, StringComparison.OrdinalIgnoreCase) || !(_playList.UserId ?? string.Empty).Equals(value.UserId ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-                {
-                    _playList = value;
-                    IsDirty = true;
-                }
+                return SpotifyPlayerProperties.Token != null && !string.IsNullOrEmpty(SpotifyPlayerProperties.Token.AccessToken) && !SpotifyPlayerProperties.Token.IsExpired();
             }
         }
 
@@ -129,61 +117,11 @@ namespace FIPToolKit.Models
 
         [XmlIgnore]
         [JsonIgnore]
-        public bool AutoPlayLastPlaylist { get; set; }
-
-        public Token Token
-        {
-            get
-            {
-                return _token;
-            }
-            set
-            {
-                _token = value;
-                IsDirty = true;
-                if (_token != null)
-                {
-                    if (_token.IsExpired())
-                    {
-                        RefreshToken();
-                    }
-                    else
-                    {
-                        if (SpotifyAPI == null)
-                        {
-                            SpotifyAPI = new SpotifyWebAPI
-                            {
-                                AccessToken = _token.AccessToken,
-                                TokenType = _token.TokenType
-                            };
-                        }
-                        else
-                        {
-                            SpotifyAPI.AccessToken = _token.AccessToken;
-                            SpotifyAPI.TokenType = _token.TokenType;
-                        }
-                        if (SpotifyController != null)
-                        {
-                            SpotifyController.SpotifyWebAPI = SpotifyAPI;
-                        }
-                        OnTokenChanged?.Invoke(_token);
-                    }
-                } 
-                else
-                {
-                    SpotifyAPI = null;
-                    if (SpotifyController != null)
-                    {
-                        SpotifyController.SpotifyWebAPI = null;
-                    }
-                    Authenticate();
-                }
-            }
-        }
+        public int PlayListIndex { get; set; }
 
         [XmlIgnore]
         [JsonIgnore]
-        public int PlayListIndex { get; set; }
+        public bool AutoPlayLastPlaylist { get; set; }
 
         [XmlIgnore]
         [JsonIgnore]
@@ -202,7 +140,7 @@ namespace FIPToolKit.Models
                     {
                         SpotifyController.AddArtistImages = _showArtistImages;
                     }
-                    ShowArtistImagesChanged?.Invoke();
+                    ShowArtistImagesChanged();
                 }
             }
         }
@@ -253,98 +191,83 @@ namespace FIPToolKit.Models
 
         private int ImageIndex { get;set; }
 
-        private string _clientId = string.Empty;
-        public string ClientId
-        {
-            get
-            {
-                return _clientId;
-            }
-            set
-            {
-                if (!(_clientId ?? string.Empty).Equals(value ?? string.Empty))
-                {
-                    _clientId = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private string _secretId = string.Empty;
-        public string SecretId
-        {
-            get
-            {
-                return _secretId;
-            }
-            set
-            {
-                if (!(_secretId ?? string.Empty).Equals(value ?? string.Empty))
-                {
-                    _secretId = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        private FontEx _artistFont;
-        public FontEx ArtistFont
-        { 
-            get
-            {
-                return _artistFont;
-            }
-            set
-            {
-                if (!_artistFont.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _artistFont.Size != value.Size || _artistFont.Style != value.Style || _artistFont.Strikeout != value.Strikeout || _artistFont.Underline != value.Underline || _artistFont.Unit != value.Unit || _artistFont.GdiCharSet != value.GdiCharSet)
-                {
-                    _artistFont = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
         public event TrackStateChangedEventHandler OnTrackStateChanged;
         public delegate void TrackStateChangedEventHandler(PlaybackContext playback, SpotifyStateType state);
         public event TokenChangedEventHandler OnTokenChanged;
         public delegate void TokenChangedEventHandler(Token token);
+        public delegate void FIPCanPlayEventHandler(object sender, FIPCanPlayEventArgs e);
         public event FIPPageEventHandler OnBeginAuthentication;
         public event FIPPageEventHandler OnEndAuthentication;
+        public event FIPCanPlayEventHandler OnCanPlay;
 
-        private event ShowArtistImagesChangedEventHandler ShowArtistImagesChanged;
-        private delegate void ShowArtistImagesChangedEventHandler();
-
-        public FIPSpotifyPlayer() : base()
+        public FIPSpotifyPlayer(FIPSpotifyPlayerProperties properties) : base(properties)
         {
-            Name = "Spotify Player";
-            if (PlayLists == null)
-            {
-                PlayLists = new List<SpotifyPlaylist>();
-            }
-            if (SpotifyController == null)
-            {
-                SpotifyController = new SpotifyController();
-                SpotifyController.SpotifyWebAPI = SpotifyAPI;
-                SpotifyController.AddArtistImages = ShowArtistImages;
-            }
+            Properties.ControlType = GetType().FullName;
+            properties.OnTokenExpired += Properties_OnTokenExpired;
+            properties.OnTokenChanged += Properties_OnTokenChanged;
+            properties.OnTokenCleared += Properties_OnTokenCleared;
+            PlayLists = new List<SpotifyPlaylist>();
+            Properties_OnTokenChanged(this, EventArgs.Empty);
+            SpotifyController = new SpotifyController();
+            SpotifyController.SpotifyWebAPI = SpotifyAPI;
+            SpotifyController.AddArtistImages = ShowArtistImages;
             SpotifyController.TrackStateChanged += SpotifyController_TrackStateChanged;
             SpotifyController.ImageStateChanged += SpotifyController_ImageStateChanged;
             SpotifyController.OnError += SpotifyController_OnError;
-            Font = new Font("Arial", 12.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
-            _artistFont = new Font("Arial", 10.0F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
-            FontColor = Color.White;
             PlayListIndex = -1;
-            ShowArtistImagesChanged += FIPSpotifyController_ShowArtistImagesChanged;
-            _playList = new FIPPlayList();
-            IsDirty = false;
             UpdatePage();
+        }
+
+        private FIPSpotifyPlayerProperties SpotifyPlayerProperties
+        {
+            get
+            {
+                return Properties as FIPSpotifyPlayerProperties;
+            }
+        }
+
+        private void Properties_OnTokenCleared(object sender, EventArgs e)
+        {
+            SpotifyAPI = null;
+            if (SpotifyController != null)
+            {
+                SpotifyController.SpotifyWebAPI = null;
+            }
+            Authenticate();
+        }
+
+        private void Properties_OnTokenChanged(object sender, EventArgs e)
+        {
+            if (SpotifyAPI == null)
+            {
+                SpotifyAPI = new SpotifyWebAPI
+                {
+                    AccessToken = SpotifyPlayerProperties.Token.AccessToken,
+                    TokenType = SpotifyPlayerProperties.Token.TokenType
+                };
+            }
+            else
+            {
+                SpotifyAPI.AccessToken = SpotifyPlayerProperties.Token.AccessToken;
+                SpotifyAPI.TokenType = SpotifyPlayerProperties.Token.TokenType;
+            }
+            if (SpotifyController != null)
+            {
+                SpotifyController.SpotifyWebAPI = SpotifyAPI;
+            }
+            OnTokenChanged?.Invoke(SpotifyPlayerProperties.Token);
+        }
+
+        private void Properties_OnTokenExpired(object sender, EventArgs e)
+        {
+            RefreshToken();
         }
 
         private void InitAuthServer()
         {
-            if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_secretId))
+            if (!string.IsNullOrEmpty(SpotifyPlayerProperties.ClientId) && !string.IsNullOrEmpty(SpotifyPlayerProperties.SecretId))
             {
-                authorizationCodeAuth = new AuthorizationCodeAuth(_clientId, _secretId, "http://localhost:51400", "http://localhost:51400", Scope.PlaylistReadPrivate | Scope.PlaylistReadCollaborative | Scope.UserReadCurrentlyPlaying | Scope.UserReadPlaybackState | Scope.UserModifyPlaybackState | Scope.UserLibraryRead | Scope.UserLibraryModify);
+                authorizationCodeAuth = new AuthorizationCodeAuth(SpotifyPlayerProperties.ClientId, SpotifyPlayerProperties.SecretId, "http://localhost:51400", "http://localhost:51400", Scope.PlaylistReadPrivate | Scope.PlaylistReadCollaborative | Scope.UserReadCurrentlyPlaying | Scope.UserReadPlaybackState | Scope.UserModifyPlaybackState | Scope.UserLibraryRead | Scope.UserLibraryModify);
                 authorizationCodeAuth.Browser = Browser;
                 authorizationCodeAuth.AuthReceived += AuthOnAuthReceived;
                 authorizationCodeAuth.AuthReceived += LoadController;
@@ -355,7 +278,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private void FIPSpotifyController_ShowArtistImagesChanged()
+        private void ShowArtistImagesChanged()
         {
             if (Timer != null)
             {
@@ -404,12 +327,19 @@ namespace FIPToolKit.Models
             }
             SetLEDs();
             OnTrackStateChanged?.Invoke(playbackContext, state);
+            FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs();
+            OnCanPlay?.Invoke(this, canPlay);
+            if (SpotifyController.IsPlaying && !canPlay.CanPlay)
+            {
+                resume = true;
+                SpotifyController.PlayPause();
+            }
         }
 
         private void SpotifyController_OnError(string message)
         {
             CurrentPage = SpotifyPlayerPage.Player;
-            if (_token != null && _token.IsExpired())
+            if (SpotifyPlayerProperties.Token != null && SpotifyPlayerProperties.Token.IsExpired())
             {
                 RefreshToken();
             }
@@ -461,7 +391,7 @@ namespace FIPToolKit.Models
 
         public void Authenticate()
         {
-            if (IsActive && (Token == null || Token.IsExpired()) && !IsAuthenticating && authorizationCodeAuth != null)
+            if (IsActive && (SpotifyPlayerProperties.Token == null || SpotifyPlayerProperties.Token.IsExpired()) && !IsAuthenticating && authorizationCodeAuth != null)
             {
                 OnBeginAuthentication?.Invoke(this, new FIPPageEventArgs(this));
                 IsAuthenticating = true;
@@ -474,29 +404,29 @@ namespace FIPToolKit.Models
         {
             if (authorizationCodeAuth != null)
             {
-                if (Token != null && Token.IsExpired() && !string.IsNullOrEmpty(Token.RefreshToken) && !IsAuthenticating)
+                if (SpotifyPlayerProperties.Token != null && SpotifyPlayerProperties.Token.IsExpired() && !string.IsNullOrEmpty(SpotifyPlayerProperties.Token.RefreshToken) && !IsAuthenticating)
                 {
                     IsAuthenticating = true;
-                    Token = await authorizationCodeAuth.RefreshToken(Token.RefreshToken);
-                    if (Token != null)
+                    SpotifyPlayerProperties.Token = await authorizationCodeAuth.RefreshToken(SpotifyPlayerProperties.Token.RefreshToken);
+                    if (SpotifyPlayerProperties.Token != null)
                     {
                         if (SpotifyAPI == null)
                         {
                             SpotifyAPI = new SpotifyWebAPI
                             {
-                                AccessToken = Token.AccessToken,
-                                TokenType = Token.TokenType
+                                AccessToken = SpotifyPlayerProperties.Token.AccessToken,
+                                TokenType = SpotifyPlayerProperties.Token.TokenType
                             };
                         }
                         else
                         {
-                            SpotifyAPI.AccessToken = Token.AccessToken;
-                            SpotifyAPI.TokenType = Token.TokenType;
+                            SpotifyAPI.AccessToken = SpotifyPlayerProperties.Token.AccessToken;
+                            SpotifyAPI.TokenType = SpotifyPlayerProperties.Token.TokenType;
                         }
                     }
                     IsAuthenticating = false;
                 }
-                else if (Token == null || Token.IsExpired())
+                else if (SpotifyPlayerProperties.Token == null || SpotifyPlayerProperties.Token.IsExpired())
                 {
                     Authenticate();
                 }
@@ -506,21 +436,21 @@ namespace FIPToolKit.Models
         private async void AuthOnAuthReceived(object sender, AuthorizationCode payload)
         {
             authorizationCodeAuth.Stop();
-            Token = await authorizationCodeAuth.ExchangeCode(payload.Code);
-            if (Token != null)
+            SpotifyPlayerProperties.Token = await authorizationCodeAuth.ExchangeCode(payload.Code);
+            if (SpotifyPlayerProperties.Token != null)
             {
                 if (SpotifyAPI == null)
                 {
                     SpotifyAPI = new SpotifyWebAPI
                     {
-                        AccessToken = Token.AccessToken,
-                        TokenType = Token.TokenType
+                        AccessToken = SpotifyPlayerProperties.Token.AccessToken,
+                        TokenType = SpotifyPlayerProperties.Token.TokenType
                     };
                 }
                 else
                 {
-                    SpotifyAPI.AccessToken = Token.AccessToken;
-                    SpotifyAPI.TokenType = Token.TokenType;
+                    SpotifyAPI.AccessToken = SpotifyPlayerProperties.Token.AccessToken;
+                    SpotifyAPI.TokenType = SpotifyPlayerProperties.Token.TokenType;
                 }
             }
             IsAuthenticating = false;
@@ -540,14 +470,14 @@ namespace FIPToolKit.Models
                 IsRunning = true;
                 Timer = new System.Threading.Timer(new TimerCallback(ImageTimer), this, ShowArtistImages ? 5000 : Timeout.Infinite, ShowArtistImages ? 5000 : Timeout.Infinite);
                 Stop = false;
-                if (Token == null)
+                if (SpotifyPlayerProperties.Token == null)
                 {
                     Bitmap bmp = Drawing.ImageHelper.GetErrorImage("Authenticating\nPlease check your browser");
                     SendImage(bmp);
                     bmp.Dispose();
                     Authenticate();
                 }
-                else if(Token.IsExpired())
+                else if(SpotifyPlayerProperties.Token.IsExpired())
                 {
                     RefreshToken();
                 }
@@ -703,12 +633,37 @@ namespace FIPToolKit.Models
             });
         }
 
+        private bool resume = false;
+        public void ExternalPause()
+        {
+            if (SpotifyController != null && SpotifyController.SpotifyState == SpotifyStateType.Playing && !resume)
+            {
+                resume = true;
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    SpotifyController.PlayPause();
+                });
+            }
+        }
+
+        public void ExternalResume()
+        {
+            if (SpotifyController != null && SpotifyController.SpotifyState == SpotifyStateType.Paused && resume)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    SpotifyController.PlayPause();
+                });
+            }
+            resume = false;
+        }
+
         private void LoadPlayList(SpotifyPlaylist playList)
         {
             CurrentPage = SpotifyPlayerPage.Player;
             if(playList != null)
             {
-                Playlist = new FIPPlayList()
+                SpotifyPlayerProperties.Playlist = new FIPPlayList()
                 {
                     UserId = playList.SimplePlaylist.Owner.Id,
                     PlaylistId = playList.SimplePlaylist.Id
@@ -755,8 +710,8 @@ namespace FIPToolKit.Models
                         {
                             format.Alignment = StringAlignment.Center;
                             format.LineAlignment = StringAlignment.Center;
-                            int titleHeight = (int)graphics.MeasureString(SpotifyController.TrackTitle, Font, 288, format).Height;
-                            int artistHeight = (int)graphics.MeasureString(SpotifyController.TrackTitle, ArtistFont, 288, format).Height;
+                            int titleHeight = (int)graphics.MeasureString(SpotifyController.TrackTitle, SpotifyPlayerProperties.Font, 288, format).Height;
+                            int artistHeight = (int)graphics.MeasureString(SpotifyController.TrackTitle, SpotifyPlayerProperties.ArtistFont, 288, format).Height;
                             int maxImageWidth = 320 - 34;
                             int maxImageHeight = 240 - (titleHeight + artistHeight);
                             //Just in case the artwork isn't a square. I have seen landscape photos and cliped album artwork.
@@ -770,11 +725,11 @@ namespace FIPToolKit.Models
                             graphics.DrawImage(SpotifyController.AlbumArtwork[ImageIndex], destRect, 0, 0, SpotifyController.AlbumArtwork[ImageIndex].Width, SpotifyController.AlbumArtwork[ImageIndex].Height, GraphicsUnit.Pixel);
                         }
                     }
-                    if (Device != null && Device.CurrentPage != null && Page == Device.CurrentPage.Page)
+                    if (Device != null && Device.CurrentPage != null && SpotifyPlayerProperties.Page == Device.CurrentPage.Properties.Page)
                     {
                         try
                         {
-                            Device.DeviceClient.SetImage(Page, 0, Image.ImageToByte());
+                            Device.DeviceClient.SetImage(SpotifyPlayerProperties.Page, 0, Image.ImageToByte());
                         }
                         catch
                         {
@@ -798,7 +753,7 @@ namespace FIPToolKit.Models
                     using (Graphics graphics = Graphics.FromImage(bmp))
                     {
                         graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-                        using (SolidBrush brush = new SolidBrush(FontColor))
+                        using (SolidBrush brush = new SolidBrush(SpotifyPlayerProperties.FontColor))
                         {
                             graphics.FillRectangle(Brushes.Black, 0, 0, bmp.Width, bmp.Height);
                             using (StringFormat format = new StringFormat())
@@ -814,18 +769,18 @@ namespace FIPToolKit.Models
                                         string time = string.Format("{0:D2}h:{1:D2}m:{2:D2}s", t.Hours, t.Minutes, t.Seconds);
                                         errorMessage += String.Format("\nRetrying in {0}", time);
                                     }
-                                    graphics.DrawString(errorMessage, Font, brush, new RectangleF(0, 0, 320, 240), format);
+                                    graphics.DrawString(errorMessage, SpotifyPlayerProperties.Font, brush, new RectangleF(0, 0, 320, 240), format);
                                 }
                                 else if (SpotifyController != null && (CurrentPlaybackContext == null || SpotifyController.SpotifyState == SpotifyStateType.Closed))
                                 {
-                                    graphics.DrawString("Start Spotify on your Mobile Device or PC", Font, brush, new RectangleF(0, 0, 320, 240), format);
+                                    graphics.DrawString("Start Spotify on your Mobile Device or PC", SpotifyPlayerProperties.Font, brush, new RectangleF(0, 0, 320, 240), format);
                                 }
                                 else if (SpotifyController != null)
                                 {
                                     if (SpotifyController.AlbumArtwork.Count > 0)
                                     {
-                                        int titleHeight = (int)graphics.MeasureString(SpotifyController.TrackTitle, Font, 288, format).Height;
-                                        int artistHeight = (int)graphics.MeasureString(SpotifyController.TrackTitle, ArtistFont, 288, format).Height;
+                                        int titleHeight = (int)graphics.MeasureString(SpotifyController.TrackTitle, SpotifyPlayerProperties.Font, 288, format).Height;
+                                        int artistHeight = (int)graphics.MeasureString(SpotifyController.TrackArtist, SpotifyPlayerProperties.ArtistFont, 288, format).Height;
                                         int maxImageWidth = 320 - 34;
                                         int maxImageHeight = 240 - (titleHeight + artistHeight);
                                         //Just in case the artwork isn't a square. I have seen landscape photos and cliped album artwork.
@@ -836,28 +791,28 @@ namespace FIPToolKit.Models
                                         int imageHeight = (int)(SpotifyController.AlbumArtwork[ImageIndex].Height * ratio);
                                         Rectangle destRect = new Rectangle(17 + ((320 - imageWidth) / 2), (maxImageHeight - imageHeight) / 2, imageWidth, imageHeight);
                                         graphics.DrawImage(SpotifyController.AlbumArtwork[ImageIndex], destRect, 0, 0, SpotifyController.AlbumArtwork[ImageIndex].Width, SpotifyController.AlbumArtwork[ImageIndex].Height, GraphicsUnit.Pixel);
-                                        graphics.DrawString(SpotifyController.TrackTitle, Font, brush, new RectangleF(32, maxImageHeight, 288, titleHeight), format);
-                                        graphics.DrawString(SpotifyController.TrackArtist, ArtistFont, brush, new RectangleF(32, maxImageHeight + titleHeight, 288, artistHeight), format);
+                                        graphics.DrawString(SpotifyController.TrackTitle, SpotifyPlayerProperties.Font, brush, new RectangleF(32, maxImageHeight, 288, titleHeight), format);
+                                        graphics.DrawString(SpotifyController.TrackArtist, SpotifyPlayerProperties.ArtistFont, brush, new RectangleF(32, maxImageHeight + titleHeight, 288, artistHeight), format);
                                     }
                                     else
                                     {
                                         string text = string.Format("{0}\n{1}", SpotifyController.TrackTitle, SpotifyController.TrackArtist);
-                                        graphics.DrawString(text, Font, brush, new RectangleF(32, 0, 288, 240), format);
+                                        graphics.DrawString(text, SpotifyPlayerProperties.Font, brush, new RectangleF(32, 0, 288, 240), format);
                                     }
                                 }
                                 else
                                 {
-                                    graphics.DrawString("Initializing", Font, brush, new RectangleF(0, 0, 320, 240), format);
+                                    graphics.DrawString("Initializing", SpotifyPlayerProperties.Font, brush, new RectangleF(0, 0, 320, 240), format);
                                 }
                             }
                             if (SpotifyController != null && (SpotifyController.SpotifyState == SpotifyStateType.Playing || SpotifyController.SpotifyState == SpotifyStateType.Paused))
                             {
-                                graphics.AddButtonIcon(SpotifyController.Mute ? Properties.Resources.media_mute : Properties.Resources.media_volumeup, SpotifyController.Mute ? Color.Red : Color.Green, true, SoftButtons.Button1);
-                                graphics.AddButtonIcon(SpotifyController.SpotifyState == SpotifyStateType.Playing ? Properties.Resources.pause : Properties.Resources.play, SpotifyController.SpotifyState == SpotifyStateType.Playing ? Color.Yellow : Color.Blue, true, SoftButtons.Button2);
-                                graphics.AddButtonIcon(Properties.Resources.shuffle, SpotifyController.ShuffleState == true ? Color.Green : Color.White, true, SoftButtons.Button3);
-                                graphics.AddButtonIcon(SpotifyController.RepeatState == RepeatState.Track ? Properties.Resources.repeat_one : Properties.Resources.repeat, SpotifyController.RepeatState != RepeatState.Off ? Color.Green : Color.White, true, SoftButtons.Button4);
-                                graphics.AddButtonIcon(CurrentPlaybackContext != null && CurrentPlaybackContext.Item != null && SpotifyController.IsLiked(CurrentPlaybackContext.Item.Id) ? Properties.Resources.heart : Properties.Resources.heart_outline, Color.Pink, true, SoftButtons.Button5);
-                                graphics.AddButtonIcon(Properties.Resources.playlist, Color.Orange, true, SoftButtons.Button6);
+                                graphics.AddButtonIcon(SpotifyController.Mute ? FIPToolKit.Properties.Resources.media_mute : FIPToolKit.Properties.Resources.media_volumeup, SpotifyController.Mute ? Color.Red : Color.Green, true, SoftButtons.Button1);
+                                graphics.AddButtonIcon(SpotifyController.SpotifyState == SpotifyStateType.Playing ? FIPToolKit.Properties.Resources.pause : FIPToolKit.Properties.Resources.play, SpotifyController.SpotifyState == SpotifyStateType.Playing ? Color.Yellow : Color.Blue, true, SoftButtons.Button2);
+                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.shuffle, SpotifyController.ShuffleState == true ? Color.Green : Color.White, true, SoftButtons.Button3);
+                                graphics.AddButtonIcon(SpotifyController.RepeatState == RepeatState.Track ? FIPToolKit.Properties.Resources.repeat_one : FIPToolKit.Properties.Resources.repeat, SpotifyController.RepeatState != RepeatState.Off ? Color.Green : Color.White, true, SoftButtons.Button4);
+                                graphics.AddButtonIcon(CurrentPlaybackContext != null && CurrentPlaybackContext.Item != null && SpotifyController.IsLiked(CurrentPlaybackContext.Item.Id) ? FIPToolKit.Properties.Resources.heart : FIPToolKit.Properties.Resources.heart_outline, Color.Pink, true, SoftButtons.Button5);
+                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.playlist, Color.Orange, true, SoftButtons.Button6);
                             }
                         }
                     }
@@ -880,7 +835,7 @@ namespace FIPToolKit.Models
                     using (Graphics graphics = Graphics.FromImage(bmp))
                     {
                         graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-                        using (SolidBrush brush = new SolidBrush(FontColor))
+                        using (SolidBrush brush = new SolidBrush(SpotifyPlayerProperties.FontColor))
                         {
                             using (StringFormat format = new StringFormat())
                             {
@@ -903,7 +858,7 @@ namespace FIPToolKit.Models
                                         graphics.DrawImage(spotifyPlaylist.AlbumArtwork, destRect, 0, 0, spotifyPlaylist.AlbumArtwork.Width, spotifyPlaylist.AlbumArtwork.Height, GraphicsUnit.Pixel);
                                     }
                                     destRect = new Rectangle(64, (30 * i), 256, 30);
-                                    graphics.DrawString(spotifyPlaylist.SimplePlaylist.Name, Font, brush, destRect, format);
+                                    graphics.DrawString(spotifyPlaylist.SimplePlaylist.Name, SpotifyPlayerProperties.Font, brush, destRect, format);
                                 }
                                 //Draw currently selectd playlist
                                 SpotifyPlaylist playList = PlayLists[PlayListIndex];
@@ -911,7 +866,7 @@ namespace FIPToolKit.Models
                                 destRect = new Rectangle(32, selectOffset, 288, 30);
                                 graphics.FillRectangle(SystemBrushes.Highlight, destRect);
                                 destRect = new Rectangle(64, selectOffset, 256, 30);
-                                graphics.DrawString(playList.SimplePlaylist.Name, Font, brush, destRect, format);
+                                graphics.DrawString(playList.SimplePlaylist.Name, SpotifyPlayerProperties.Font, brush, destRect, format);
                                 if (playList.AlbumArtwork != null)
                                 {
                                     destRect = new Rectangle(34, selectOffset + 1, 28, 28);
@@ -919,8 +874,8 @@ namespace FIPToolKit.Models
                                 }
                             }
                         }
-                        graphics.AddButtonIcon(Properties.Resources.checkmark, Color.Green, true, SoftButtons.Button1);
-                        graphics.AddButtonIcon(Properties.Resources.cancel, Color.Red, true, SoftButtons.Button2);
+                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.checkmark, Color.Green, true, SoftButtons.Button1);
+                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.cancel, Color.Red, true, SoftButtons.Button2);
                     }
                     SendImage(bmp);
                     bmp.Dispose();
@@ -1083,9 +1038,9 @@ namespace FIPToolKit.Models
 
         private void Init()
         {
-            if (Playlist != null && !String.IsNullOrEmpty(Playlist.PlaylistId) && !String.IsNullOrEmpty(Playlist.UserId) && AutoPlayLastPlaylist)
+            if (SpotifyPlayerProperties.Playlist != null && !String.IsNullOrEmpty(SpotifyPlayerProperties.Playlist.PlaylistId) && !String.IsNullOrEmpty(SpotifyPlayerProperties.Playlist.UserId) && AutoPlayLastPlaylist)
             {
-                SpotifyController.PlayUserPlaylist(Playlist.PlaylistId, Playlist.PlaylistId);
+                SpotifyController.PlayUserPlaylist(SpotifyPlayerProperties.Playlist.PlaylistId, SpotifyPlayerProperties.Playlist.PlaylistId);
             }
             UpdatePlayer();
         }

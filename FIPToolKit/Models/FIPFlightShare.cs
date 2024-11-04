@@ -14,11 +14,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-    [Serializable]
     public class FIPFlightShare : FIPPage
     {
 		[XmlIgnore]
@@ -49,15 +49,16 @@ namespace FIPToolKit.Models
 
 		private const int PIXEL_SCROLL = 50;
 
-		public FIPFlightShare() : base()
+		public FIPFlightShare(FIPPageProperties properties) : base(properties)
         {
-            Name = "Flight Share";
-			Map = IntPtr.Zero;
+            Properties.Name = "Flight Share";
+            Properties.IsDirty = false;
+            Properties.ControlType = GetType().FullName;
+            Map = IntPtr.Zero;
 			FollowMyPlane = IntPtr.Zero;
 			LockWaypoints = IntPtr.Zero;
 			ClearTracks = IntPtr.Zero;
 			GoToMyPlane = IntPtr.Zero;
-			IsDirty = false;
 		}
 
         public override void Dispose()
@@ -370,12 +371,12 @@ namespace FIPToolKit.Models
 										Rectangle destRect = new Rectangle(34 + ((286 - newWidth) / 2), (240 - newHeight) / 2, newWidth, newHeight);
 										Rectangle srcRect = new Rectangle(0, 0, map.Width, map.Height);
 										graphics.DrawImage(map, destRect, srcRect, GraphicsUnit.Pixel);
-										graphics.AddButtonIcon(Properties.Resources.go, Color.Black, false, SoftButtons.Button1);
-										graphics.AddButtonIcon(Properties.Resources.follow, Color.Black, false, SoftButtons.Button2);
-										graphics.AddButtonIcon(Properties.Resources._lock, Color.Black, false, SoftButtons.Button3);
-										graphics.AddButtonIcon(Properties.Resources.clear, Color.Black, false, SoftButtons.Button4);
-										graphics.AddButtonIcon(Properties.Resources.map_zoomin, Color.Black, false, SoftButtons.Button5);
-										graphics.AddButtonIcon(Properties.Resources.map_zoomout, Color.Black, false, SoftButtons.Button6);
+										graphics.AddButtonIcon(FIPToolKit.Properties.Resources.go, Color.Black, false, SoftButtons.Button1);
+										graphics.AddButtonIcon(FIPToolKit.Properties.Resources.follow, Color.Black, false, SoftButtons.Button2);
+										graphics.AddButtonIcon(FIPToolKit.Properties.Resources._lock, Color.Black, false, SoftButtons.Button3);
+										graphics.AddButtonIcon(FIPToolKit.Properties.Resources.clear, Color.Black, false, SoftButtons.Button4);
+										graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin, Color.Black, false, SoftButtons.Button5);
+										graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout, Color.Black, false, SoftButtons.Button6);
 									}
 								}
 								SendImage(bmp);

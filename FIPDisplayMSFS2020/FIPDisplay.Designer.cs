@@ -46,7 +46,7 @@ namespace FIPDisplayMSFS2020
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnOK.Location = new System.Drawing.Point(317, 352);
+            this.btnOK.Location = new System.Drawing.Point(317, 102);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 1;
@@ -63,7 +63,7 @@ namespace FIPDisplayMSFS2020
             this.label1.ForeColor = System.Drawing.SystemColors.WindowText;
             this.label1.Location = new System.Drawing.Point(53, 13);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(339, 318);
+            this.label1.Size = new System.Drawing.Size(339, 68);
             this.label1.TabIndex = 0;
             // 
             // label2
@@ -75,7 +75,7 @@ namespace FIPDisplayMSFS2020
             this.label2.ForeColor = System.Drawing.SystemColors.WindowText;
             this.label2.Location = new System.Drawing.Point(0, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(404, 344);
+            this.label2.Size = new System.Drawing.Size(404, 94);
             this.label2.TabIndex = 2;
             // 
             // pictureBox1
@@ -103,7 +103,7 @@ namespace FIPDisplayMSFS2020
             this.webView21.DefaultBackgroundColor = System.Drawing.Color.White;
             this.webView21.Location = new System.Drawing.Point(0, 0);
             this.webView21.Name = "webView21";
-            this.webView21.Size = new System.Drawing.Size(404, 344);
+            this.webView21.Size = new System.Drawing.Size(404, 94);
             this.webView21.TabIndex = 4;
             this.webView21.Visible = false;
             this.webView21.ZoomFactor = 1D;
@@ -118,7 +118,7 @@ namespace FIPDisplayMSFS2020
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnOK;
-            this.ClientSize = new System.Drawing.Size(404, 387);
+            this.ClientSize = new System.Drawing.Size(404, 137);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.label1);

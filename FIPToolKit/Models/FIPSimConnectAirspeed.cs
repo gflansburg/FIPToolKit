@@ -10,6 +10,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
@@ -21,99 +22,74 @@ namespace FIPToolKit.Models
 
         private List<VSpeed> vSpeeds { get; set; }
 
-        private VSpeed _selectedVSpeed;
-
-        [XmlIgnore]
-        [JsonIgnore]
-        public VSpeed SelectedVSpeed
+        public FIPSimConnectAirspeed(FIPAirspeedProperties properties) : base(properties)
         {
-            get
+            Properties.ControlType = GetType().FullName;
+            AirspeedProperties.Name = "SimConnect Airspeed Indicator Gauge (Linear)";
+            AirspeedProperties.IsDirty = false;
+            properties.OnSelectedAircraftChanged += Properties_OnSelectedAircraftChanged;
+            properties.OnValueChanged += Properties_OnValueChanged;
+            properties.OnSelectedVSpeedChanged += Properties_OnSelectedVSpeedChanged;
+            vSpeeds = VSpeed.LoadVSpeeds();
+            OnAircraftChange += FIPSimConnectAirspeed_OnAircraftChange;
+        }
+
+        private void Properties_OnSelectedVSpeedChanged(object sender, EventArgs e)
+        {
+            CreateGauge();
+            showName = true;
+            showTime = DateTime.Now;
+            UpdateGauge();
+        }
+
+        private void Properties_OnValueChanged(object sender, FIPValueChangedEventArgs e)
+        {
+            if (AirspeedProperties.SelectedVSpeed != null)
             {
-                return _selectedVSpeed;
-            }
-            set
-            {
-                if (_selectedVSpeed == null && value == null)
+                double temp = Math.Min(e.Value, AirspeedProperties.SelectedVSpeed.HighLimit);
+                temp = Math.Max(temp, AirspeedProperties.SelectedVSpeed.LowLimit);
+                if (e.Value != temp || !AirspeedProperties.HasDrawnTheNeedle || showName)
                 {
-                    return;
-                }
-                if ((_selectedVSpeed == null && value != null) || (_selectedVSpeed != null && value == null) || (_selectedVSpeed.AircraftId != value.AircraftId))
-                {
-                    _selectedVSpeed = value;
-                    MinValue = _selectedVSpeed.MinSpeed;
-                    MaxValue = _selectedVSpeed.MaxSpeed;
-                    CreateGauge();
-                    showName = true;
-                    showTime = DateTime.Now;
+                    e.Value = temp;
+                    e.DoOverride = true;
                     UpdateGauge();
                 }
             }
         }
 
-        private int _selectedAircraftId;
-        public int SelectedAircraftId
+        private FIPAirspeedProperties AirspeedProperties
         {
             get
             {
-                return _selectedAircraftId;
-            }
-            set
-            {
-                if (_selectedAircraftId != value)
-                {
-                    _selectedAircraftId = value;
-                    IsDirty = true;
-                    SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == _selectedAircraftId);
-                }
+                return Properties as FIPAirspeedProperties;
             }
         }
 
-        private bool _autoSelectAircraft;
-        public bool AutoSelectAircraft
+        private void Properties_OnSelectedAircraftChanged(object sender, EventArgs e)
         {
-            get
-            {
-                return _autoSelectAircraft;
-            }
-            set
-            {
-                if (_autoSelectAircraft != value)
-                {
-                    _autoSelectAircraft = value;
-                    IsDirty = true;
-                }
-            }
-        }
-
-        public FIPSimConnectAirspeed() : base()
-        {
-            Name = "SimConnect Airspeed Indicator Gauge (Linear)";
-            vSpeeds = VSpeed.LoadVSpeeds();
-            _autoSelectAircraft = true;
-            IsDirty = false;
-            OnAircraftChange += FIPSimConnectAirspeed_OnAircraftChange;
+            AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
         }
 
         private void FIPSimConnectAirspeed_OnAircraftChange(int aircraftId)
         {
-            if (AutoSelectAircraft && aircraftId > 0)
+            if (AirspeedProperties.AutoSelectAircraft && aircraftId > 0)
             {
-                SelectedAircraftId = aircraftId;
+                AirspeedProperties.SelectedAircraftId = aircraftId;
             }
         }
 
         protected override void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
         {
-            Value = (Convert.ToBoolean(data.SIM_ON_GROUND) ? data.GROUND_VELOCITY : data.AIRSPEED_INDICATED);
+            AirspeedProperties.Value = (Convert.ToBoolean(data.SIM_ON_GROUND) ? data.GROUND_VELOCITY : data.AIRSPEED_INDICATED);
         }
 
         public override void StartTimer()
         {
             base.StartTimer();
-            if (SelectedVSpeed == null && vSpeeds.Count > 0)
+            if (AirspeedProperties.SelectedVSpeed == null && vSpeeds.Count > 0)
             {
                 showName = true;
-                SelectedAircraftId = vSpeeds[0].AircraftId;
+                AirspeedProperties.SelectedAircraftId = vSpeeds[0].AircraftId;
             }
         }
 
@@ -130,7 +106,7 @@ namespace FIPToolKit.Models
 
         public override void ExecuteSoftButton(SoftButtons softButton)
         {
-            int index = vSpeeds.FindIndex(v => v.AircraftId == SelectedAircraftId);
+            int index = vSpeeds.FindIndex(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
             switch (softButton)
             {
                 case SoftButtons.Left:
@@ -139,7 +115,7 @@ namespace FIPToolKit.Models
                     {
                         index = vSpeeds.Count - 1;
                     }
-                    SelectedAircraftId = vSpeeds[index].AircraftId;
+                    AirspeedProperties.SelectedAircraftId = vSpeeds[index].AircraftId;
                     break;
                 case SoftButtons.Right:
                     index++;
@@ -147,7 +123,10 @@ namespace FIPToolKit.Models
                     {
                         index = 0;
                     }
-                    SelectedAircraftId = vSpeeds[index].AircraftId;
+                    AirspeedProperties.SelectedAircraftId = vSpeeds[index].AircraftId;
+                    break;
+                default:
+                    base.ExecuteSoftButton(softButton);
                     break;
             }
         }
@@ -160,11 +139,11 @@ namespace FIPToolKit.Models
                 TimeSpan elapsed = DateTime.Now - showTime;
                 if (elapsed.TotalSeconds < 5)
                 {
-                    if (SelectedVSpeed != null)
+                    if (AirspeedProperties.SelectedVSpeed != null)
                     {
                         using (Graphics g = Graphics.FromImage(bmp))
                         {
-                            using (SolidBrush brush = new SolidBrush(FontColor))
+                            using (SolidBrush brush = new SolidBrush(AirspeedProperties.FontColor))
                             {
                                 using (StringFormat format = new StringFormat())
                                 {
@@ -175,13 +154,13 @@ namespace FIPToolKit.Models
                                         rect = new RectangleF(width, 0, 320 - width, 240);
                                     }
                                     format.Alignment = StringAlignment.Center;
-                                    SizeF textSize = g.MeasureString(SelectedVSpeed.AircraftName, Font, (int)rect.Width, format);
+                                    SizeF textSize = g.MeasureString(AirspeedProperties.SelectedVSpeed.AircraftName, AirspeedProperties.Font, (int)rect.Width, format);
                                     rect = new RectangleF(rect.Left, rect.Bottom - textSize.Height, rect.Width, rect.Height);
                                     using (SolidBrush transBrush = new SolidBrush(Color.FromArgb(128, 0, 0, 0)))
                                     {
                                         g.FillRectangle(transBrush, rect);
                                     }
-                                    g.DrawString(SelectedVSpeed.AircraftName, Font, brush, rect, format);
+                                    g.DrawString(AirspeedProperties.SelectedVSpeed.AircraftName, AirspeedProperties.Font, brush, rect, format);
                                 }
                             }
                         }
@@ -195,38 +174,15 @@ namespace FIPToolKit.Models
             return bmp;
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public override double Value
-        {
-            get
-            {
-                return base.Value;
-            }
-            set
-            {
-                if (SelectedVSpeed != null)
-                {
-                    double temp = Math.Min(value, SelectedVSpeed.HighLimit);
-                    temp = Math.Max(temp, SelectedVSpeed.LowLimit);
-                    if (base.Value != temp || !hasDrawnTheNeedle || showName)
-                    {
-                        base.Value = temp;
-                        UpdateGauge();
-                    }
-                }
-            }
-        }
-
         protected override float GetAngle(double speed)
         {
-            if (SelectedVSpeed != null)
+            if (AirspeedProperties.SelectedVSpeed != null)
             {
-                if (SelectedVSpeed.NonLinearSettings != null)
+                if (AirspeedProperties.SelectedVSpeed.NonLinearSettings != null)
                 {
                     NonLinearSetting minSetting = null;
                     NonLinearSetting maxSetting = null;
-                    foreach (NonLinearSetting setting in SelectedVSpeed.NonLinearSettings)
+                    foreach (NonLinearSetting setting in AirspeedProperties.SelectedVSpeed.NonLinearSettings)
                     {
                         if (speed > setting.Value)
                         {
@@ -247,8 +203,8 @@ namespace FIPToolKit.Models
                         return angle;
                     }
                 }
-                float speedRange = SelectedVSpeed.MaxSpeed - SelectedVSpeed.MinSpeed;
-                return (float)(((speed - SelectedVSpeed.MinSpeed) * 360) / speedRange);
+                float speedRange = AirspeedProperties.SelectedVSpeed.MaxSpeed - AirspeedProperties.SelectedVSpeed.MinSpeed;
+                return (float)(((speed - AirspeedProperties.SelectedVSpeed.MinSpeed) * 360) / speedRange);
             }
             return 0f;
         }
@@ -256,7 +212,7 @@ namespace FIPToolKit.Models
         private int GetTicks()
         {
             int tickSpeed = 5;
-            float angle1 = GetAngle(SelectedVSpeed.NonLinearSettings.Count > 0 ? 45 : 10);
+            float angle1 = GetAngle(AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0 ? 45 : 10);
             if (angle1 <= 40)
             {
                 tickSpeed = 10;
@@ -300,7 +256,7 @@ namespace FIPToolKit.Models
                 speed = Math.Min(speed, vSpeed.RedStart);
             }
             int tickSpeed = GetTicks();
-            speed = Math.Min(speed, SelectedVSpeed.NonLinearSettings.Count > 0 ? 40 : tickSpeed);
+            speed = Math.Min(speed, AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0 ? 40 : tickSpeed);
             return GetAngle(speed);
         }
 
@@ -342,7 +298,7 @@ namespace FIPToolKit.Models
         {
             try
             {
-                if (SelectedVSpeed != null)
+                if (AirspeedProperties.SelectedVSpeed != null)
                 {
                     Bitmap bmp = new Bitmap(320, 240, PixelFormat.Format32bppArgb);
                     using (Graphics g = Graphics.FromImage(bmp))
@@ -363,43 +319,43 @@ namespace FIPToolKit.Models
                         position.Y += 20;
                         position.X += 20;
                         Rectangle rect = new Rectangle(position.X, position.Y, diameter, diameter);
-                        int innerRimWidth = (int)(RimWidth / 2.75f);
-                        int outerRimWidth = (int)(RimWidth - innerRimWidth);
-                        int innerRimOffset = (int)((outerRimWidth / 2) + (innerRimWidth / 2) - (RimWidth % 2.75 == 0 ? 0 : 1));
+                        int innerRimWidth = (int)(AirspeedProperties.RimWidth / 2.75f);
+                        int outerRimWidth = (int)(AirspeedProperties.RimWidth - innerRimWidth);
+                        int innerRimOffset = (int)((outerRimWidth / 2) + (innerRimWidth / 2) - (AirspeedProperties.RimWidth % 2.75 == 0 ? 0 : 1));
                         int outerRimOffset = (int)((outerRimWidth / 2) - (outerRimWidth % 2 == 0 ? 0 : 1));
                         Rectangle rectOuterRim = new Rectangle(rect.X + outerRimWidth, rect.Y + outerRimWidth, rect.Width - (outerRimWidth * 2), rect.Height - (outerRimWidth * 2));
                         Rectangle rectInnerRim = new Rectangle(rectOuterRim.X + innerRimOffset, rectOuterRim.Y + innerRimOffset, rectOuterRim.Width - (innerRimOffset * 2), rectOuterRim.Height - (innerRimOffset * 2));
                         Rectangle rectOuterRimEdge = new Rectangle(rectOuterRim.X + outerRimOffset, rectOuterRim.Y + outerRimOffset, rectOuterRim.Width - (outerRimOffset * 2), rectOuterRim.Height - (outerRimOffset * 2));
                         using (Pen pen = new Pen(Color.White, 1))
                         {
-                            g.DrawArc(pen, rectOuterRimEdge, GetMinAngle(SelectedVSpeed) - 90, GetMaxAngle(SelectedVSpeed) - GetMinAngle(SelectedVSpeed));
+                            g.DrawArc(pen, rectOuterRimEdge, GetMinAngle(AirspeedProperties.SelectedVSpeed) - 90, GetMaxAngle(AirspeedProperties.SelectedVSpeed) - GetMinAngle(AirspeedProperties.SelectedVSpeed));
                         }
-                        if (SelectedVSpeed.WhiteEnd - SelectedVSpeed.WhiteStart > 0)
+                        if (AirspeedProperties.SelectedVSpeed.WhiteEnd - AirspeedProperties.SelectedVSpeed.WhiteStart > 0)
                         {
                             using (Pen pen = new Pen(Color.White, innerRimWidth))
                             {
-                                g.DrawArc(pen, rectInnerRim, GetAngle(SelectedVSpeed.WhiteStart) - 90, GetAngle(SelectedVSpeed.WhiteEnd) - GetAngle(SelectedVSpeed.WhiteStart));
+                                g.DrawArc(pen, rectInnerRim, GetAngle(AirspeedProperties.SelectedVSpeed.WhiteStart) - 90, GetAngle(AirspeedProperties.SelectedVSpeed.WhiteEnd) - GetAngle(AirspeedProperties.SelectedVSpeed.WhiteStart));
                             }
                         }
-                        if (SelectedVSpeed.GreenEnd - SelectedVSpeed.GreenStart > 0)
+                        if (AirspeedProperties.SelectedVSpeed.GreenEnd - AirspeedProperties.SelectedVSpeed.GreenStart > 0)
                         {
                             using (Pen pen = new Pen(Color.Green, outerRimWidth))
                             {
-                                g.DrawArc(pen, rectOuterRim, GetAngle(SelectedVSpeed.GreenStart) - 90, GetAngle(SelectedVSpeed.GreenEnd) - GetAngle(SelectedVSpeed.GreenStart));
+                                g.DrawArc(pen, rectOuterRim, GetAngle(AirspeedProperties.SelectedVSpeed.GreenStart) - 90, GetAngle(AirspeedProperties.SelectedVSpeed.GreenEnd) - GetAngle(AirspeedProperties.SelectedVSpeed.GreenStart));
                             }
                         }
-                        if (SelectedVSpeed.YellowEnd - SelectedVSpeed.YellowStart > 0)
+                        if (AirspeedProperties.SelectedVSpeed.YellowEnd - AirspeedProperties.SelectedVSpeed.YellowStart > 0)
                         {
                             using (Pen pen = new Pen(Color.Yellow, outerRimWidth))
                             {
-                                g.DrawArc(pen, rectOuterRim, GetAngle(SelectedVSpeed.YellowStart) - 90, GetAngle(SelectedVSpeed.YellowEnd) - GetAngle(SelectedVSpeed.YellowStart));
+                                g.DrawArc(pen, rectOuterRim, GetAngle(AirspeedProperties.SelectedVSpeed.YellowStart) - 90, GetAngle(AirspeedProperties.SelectedVSpeed.YellowEnd) - GetAngle(AirspeedProperties.SelectedVSpeed.YellowStart));
                             }
                         }
-                        if (SelectedVSpeed.RedEnd - SelectedVSpeed.RedStart > 0)
+                        if (AirspeedProperties.SelectedVSpeed.RedEnd - AirspeedProperties.SelectedVSpeed.RedStart > 0)
                         {
                             using (Pen pen = new Pen(Color.Red, outerRimWidth))
                             {
-                                g.DrawArc(pen, rectOuterRim, GetAngle(SelectedVSpeed.RedStart) - 90, GetAngle(SelectedVSpeed.RedEnd) - GetAngle(SelectedVSpeed.RedStart));
+                                g.DrawArc(pen, rectOuterRim, GetAngle(AirspeedProperties.SelectedVSpeed.RedStart) - 90, GetAngle(AirspeedProperties.SelectedVSpeed.RedEnd) - GetAngle(AirspeedProperties.SelectedVSpeed.RedStart));
                             }
                         }
                         int ticks = GetTicks();
@@ -410,9 +366,9 @@ namespace FIPToolKit.Models
                         {
                             using (StringFormat format = new StringFormat())
                             {
-                                using (SolidBrush stringBrush = new SolidBrush(FontColor))
+                                using (SolidBrush stringBrush = new SolidBrush(AirspeedProperties.FontColor))
                                 {
-                                    using (Font font = new System.Drawing.Font(Font.FontFamily, 8f, FontStyle.Regular, GraphicsUnit.Point))
+                                    using (Font font = new System.Drawing.Font(AirspeedProperties.Font.FontFamily, 8f, FontStyle.Regular, GraphicsUnit.Point))
                                     {
                                         format.Alignment = StringAlignment.Center;
                                         format.LineAlignment = StringAlignment.Center;
@@ -420,9 +376,9 @@ namespace FIPToolKit.Models
                                         pen.StartCap = LineCap.Flat;
                                         float tickRadius = (rectInnerRim.Width / 2) + outerRimWidth;
                                         g.TranslateTransform(midx, midy);
-                                        for (float i = SelectedVSpeed.MinSpeed; i <= SelectedVSpeed.MaxSpeed; i++)
+                                        for (float i = AirspeedProperties.SelectedVSpeed.MinSpeed; i <= AirspeedProperties.SelectedVSpeed.MaxSpeed; i++)
                                         {
-                                            if (GetAngle(i) >= GetMinAngle(SelectedVSpeed) && GetAngle(i) <= GetMaxAngle(SelectedVSpeed) && i > SelectedVSpeed.MinSpeed && i < SelectedVSpeed.MaxSpeed)
+                                            if (GetAngle(i) >= GetMinAngle(AirspeedProperties.SelectedVSpeed) && GetAngle(i) <= GetMaxAngle(AirspeedProperties.SelectedVSpeed) && i > AirspeedProperties.SelectedVSpeed.MinSpeed && i < AirspeedProperties.SelectedVSpeed.MaxSpeed)
                                             {
                                                 if (i % ticks == 0)
                                                 {
@@ -450,9 +406,9 @@ namespace FIPToolKit.Models
                             }
                             g.ResetTransform();
 
-                            using (SolidBrush stringBrush = new SolidBrush(FontColor))
+                            using (SolidBrush stringBrush = new SolidBrush(AirspeedProperties.FontColor))
                             {
-                                using (Font font = new System.Drawing.Font(Font.FontFamily, 10f, FontStyle.Regular, GraphicsUnit.Point))
+                                using (Font font = new System.Drawing.Font(AirspeedProperties.Font.FontFamily, 10f, FontStyle.Regular, GraphicsUnit.Point))
                                 {
                                     string text = "AIRSPEED";
                                     SizeF size = g.MeasureString(text, font);

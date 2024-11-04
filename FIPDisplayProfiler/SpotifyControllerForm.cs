@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class SpotifyControllerForm : Form
     {
-        public FIPSpotifyPlayer SpotifyController { get; set; }
+        public FIPSpotifyPlayerProperties SpotifyController { get; set; }
 
         private Font _fontHolderTitle;
         private Font _fontHolderArtist;

@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class ScreenMirrorForm : Form
     {
-        public FIPScreenMirror Page { get; set; }
+        public FIPScreenMirrorProperties Page { get; set; }
         
         private Font _fontHolder;
 

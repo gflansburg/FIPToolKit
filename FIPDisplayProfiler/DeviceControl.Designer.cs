@@ -56,13 +56,6 @@ namespace FIPDisplayProfiler
             this.contextMenuKnob = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.volumeControlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.pbS6ButtonOn = new System.Windows.Forms.PictureBox();
-            this.pbS5ButtonOn = new System.Windows.Forms.PictureBox();
-            this.pbS4ButtonOn = new System.Windows.Forms.PictureBox();
-            this.pbS3ButtonOn = new System.Windows.Forms.PictureBox();
-            this.pbS2ButtonOn = new System.Windows.Forms.PictureBox();
-            this.pbS1ButtonOn = new System.Windows.Forms.PictureBox();
-            this.pbPageButtonsOn = new System.Windows.Forms.PictureBox();
             this.btnMoveDown = new System.Windows.Forms.Button();
             this.btnDelete = new System.Windows.Forms.Button();
             this.btnMoveUp = new System.Windows.Forms.Button();
@@ -76,15 +69,15 @@ namespace FIPDisplayProfiler
             this.pbS4ButtonOff = new System.Windows.Forms.PictureBox();
             this.pbS5ButtonOff = new System.Windows.Forms.PictureBox();
             this.pbS6ButtonOff = new System.Windows.Forms.PictureBox();
+            this.pbS2ButtonOn = new System.Windows.Forms.PictureBox();
+            this.pbS3ButtonOn = new System.Windows.Forms.PictureBox();
+            this.pbS4ButtonOn = new System.Windows.Forms.PictureBox();
+            this.pbS5ButtonOn = new System.Windows.Forms.PictureBox();
+            this.pbS6ButtonOn = new System.Windows.Forms.PictureBox();
+            this.pbPageButtonsOn = new System.Windows.Forms.PictureBox();
+            this.pbS1ButtonOn = new System.Windows.Forms.PictureBox();
             this.contextMenuBindType.SuspendLayout();
             this.contextMenuKnob.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS3ButtonOn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS2ButtonOn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS1ButtonOn)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPageButtonsOn)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fipImage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.devicePictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbKnobRight)).BeginInit();
@@ -95,6 +88,13 @@ namespace FIPDisplayProfiler
             ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOff)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOff)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOff)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS2ButtonOn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS3ButtonOn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPageButtonsOn)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS1ButtonOn)).BeginInit();
             this.SuspendLayout();
             // 
             // btnNewPage
@@ -293,90 +293,6 @@ namespace FIPDisplayProfiler
             this.volumeControlToolStripMenuItem.Text = "&Volume Control";
             this.volumeControlToolStripMenuItem.Click += new System.EventHandler(this.volumeControlToolStripMenuItem_Click);
             // 
-            // pbS6ButtonOn
-            // 
-            this.pbS6ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbS6ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s6_on;
-            this.pbS6ButtonOn.Location = new System.Drawing.Point(13, 157);
-            this.pbS6ButtonOn.Name = "pbS6ButtonOn";
-            this.pbS6ButtonOn.Size = new System.Drawing.Size(26, 12);
-            this.pbS6ButtonOn.TabIndex = 21;
-            this.pbS6ButtonOn.TabStop = false;
-            this.pbS6ButtonOn.Visible = false;
-            this.pbS6ButtonOn.Click += new System.EventHandler(this.pbS6Button_Click);
-            // 
-            // pbS5ButtonOn
-            // 
-            this.pbS5ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbS5ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s5_on;
-            this.pbS5ButtonOn.Location = new System.Drawing.Point(13, 132);
-            this.pbS5ButtonOn.Name = "pbS5ButtonOn";
-            this.pbS5ButtonOn.Size = new System.Drawing.Size(26, 12);
-            this.pbS5ButtonOn.TabIndex = 20;
-            this.pbS5ButtonOn.TabStop = false;
-            this.pbS5ButtonOn.Visible = false;
-            this.pbS5ButtonOn.Click += new System.EventHandler(this.pbS5Button_Click);
-            // 
-            // pbS4ButtonOn
-            // 
-            this.pbS4ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbS4ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s4_on;
-            this.pbS4ButtonOn.Location = new System.Drawing.Point(13, 107);
-            this.pbS4ButtonOn.Name = "pbS4ButtonOn";
-            this.pbS4ButtonOn.Size = new System.Drawing.Size(26, 12);
-            this.pbS4ButtonOn.TabIndex = 19;
-            this.pbS4ButtonOn.TabStop = false;
-            this.pbS4ButtonOn.Visible = false;
-            this.pbS4ButtonOn.Click += new System.EventHandler(this.pbS4Button_Click);
-            // 
-            // pbS3ButtonOn
-            // 
-            this.pbS3ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbS3ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s3_on;
-            this.pbS3ButtonOn.Location = new System.Drawing.Point(13, 82);
-            this.pbS3ButtonOn.Name = "pbS3ButtonOn";
-            this.pbS3ButtonOn.Size = new System.Drawing.Size(26, 12);
-            this.pbS3ButtonOn.TabIndex = 18;
-            this.pbS3ButtonOn.TabStop = false;
-            this.pbS3ButtonOn.Visible = false;
-            this.pbS3ButtonOn.Click += new System.EventHandler(this.pbS3Button_Click);
-            // 
-            // pbS2ButtonOn
-            // 
-            this.pbS2ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbS2ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s2_on;
-            this.pbS2ButtonOn.Location = new System.Drawing.Point(13, 57);
-            this.pbS2ButtonOn.Name = "pbS2ButtonOn";
-            this.pbS2ButtonOn.Size = new System.Drawing.Size(26, 12);
-            this.pbS2ButtonOn.TabIndex = 17;
-            this.pbS2ButtonOn.TabStop = false;
-            this.pbS2ButtonOn.Visible = false;
-            this.pbS2ButtonOn.Click += new System.EventHandler(this.pbS2Button_Click);
-            // 
-            // pbS1ButtonOn
-            // 
-            this.pbS1ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbS1ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s1_on;
-            this.pbS1ButtonOn.Location = new System.Drawing.Point(13, 32);
-            this.pbS1ButtonOn.Name = "pbS1ButtonOn";
-            this.pbS1ButtonOn.Size = new System.Drawing.Size(26, 12);
-            this.pbS1ButtonOn.TabIndex = 16;
-            this.pbS1ButtonOn.TabStop = false;
-            this.pbS1ButtonOn.Visible = false;
-            this.pbS1ButtonOn.Click += new System.EventHandler(this.pbS1Button_Click);
-            // 
-            // pbPageButtonsOn
-            // 
-            this.pbPageButtonsOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbPageButtonsOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_page_on;
-            this.pbPageButtonsOn.Location = new System.Drawing.Point(131, 195);
-            this.pbPageButtonsOn.Name = "pbPageButtonsOn";
-            this.pbPageButtonsOn.Size = new System.Drawing.Size(25, 25);
-            this.pbPageButtonsOn.TabIndex = 9;
-            this.pbPageButtonsOn.TabStop = false;
-            this.pbPageButtonsOn.Visible = false;
-            this.pbPageButtonsOn.Click += new System.EventHandler(this.pbPageButtons_Click);
-            // 
             // btnMoveDown
             // 
             this.btnMoveDown.BackgroundImage = global::FIPDisplayProfiler.Properties.Resources.down_arrow;
@@ -519,18 +435,101 @@ namespace FIPDisplayProfiler
             this.pbS6ButtonOff.TabStop = false;
             this.pbS6ButtonOff.Click += new System.EventHandler(this.pbS6Button_Click);
             // 
+            // pbS2ButtonOn
+            // 
+            this.pbS2ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbS2ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s2_on;
+            this.pbS2ButtonOn.Location = new System.Drawing.Point(13, 57);
+            this.pbS2ButtonOn.Name = "pbS2ButtonOn";
+            this.pbS2ButtonOn.Size = new System.Drawing.Size(26, 12);
+            this.pbS2ButtonOn.TabIndex = 26;
+            this.pbS2ButtonOn.TabStop = false;
+            this.pbS2ButtonOn.Visible = false;
+            this.pbS2ButtonOn.Click += new System.EventHandler(this.pbS2Button_Click);
+            // 
+            // pbS3ButtonOn
+            // 
+            this.pbS3ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbS3ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s3_on;
+            this.pbS3ButtonOn.Location = new System.Drawing.Point(13, 82);
+            this.pbS3ButtonOn.Name = "pbS3ButtonOn";
+            this.pbS3ButtonOn.Size = new System.Drawing.Size(26, 12);
+            this.pbS3ButtonOn.TabIndex = 27;
+            this.pbS3ButtonOn.TabStop = false;
+            this.pbS3ButtonOn.Visible = false;
+            this.pbS3ButtonOn.Click += new System.EventHandler(this.pbS3Button_Click);
+            // 
+            // pbS4ButtonOn
+            // 
+            this.pbS4ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbS4ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s4_on;
+            this.pbS4ButtonOn.Location = new System.Drawing.Point(13, 107);
+            this.pbS4ButtonOn.Name = "pbS4ButtonOn";
+            this.pbS4ButtonOn.Size = new System.Drawing.Size(26, 12);
+            this.pbS4ButtonOn.TabIndex = 28;
+            this.pbS4ButtonOn.TabStop = false;
+            this.pbS4ButtonOn.Visible = false;
+            this.pbS4ButtonOn.Click += new System.EventHandler(this.pbS4Button_Click);
+            // 
+            // pbS5ButtonOn
+            // 
+            this.pbS5ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbS5ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s5_on;
+            this.pbS5ButtonOn.Location = new System.Drawing.Point(13, 132);
+            this.pbS5ButtonOn.Name = "pbS5ButtonOn";
+            this.pbS5ButtonOn.Size = new System.Drawing.Size(26, 12);
+            this.pbS5ButtonOn.TabIndex = 29;
+            this.pbS5ButtonOn.TabStop = false;
+            this.pbS5ButtonOn.Visible = false;
+            this.pbS5ButtonOn.Click += new System.EventHandler(this.pbS5Button_Click);
+            // 
+            // pbS6ButtonOn
+            // 
+            this.pbS6ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbS6ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s6_on;
+            this.pbS6ButtonOn.Location = new System.Drawing.Point(13, 157);
+            this.pbS6ButtonOn.Name = "pbS6ButtonOn";
+            this.pbS6ButtonOn.Size = new System.Drawing.Size(26, 12);
+            this.pbS6ButtonOn.TabIndex = 30;
+            this.pbS6ButtonOn.TabStop = false;
+            this.pbS6ButtonOn.Visible = false;
+            this.pbS6ButtonOn.Click += new System.EventHandler(this.pbS6Button_Click);
+            // 
+            // pbPageButtonsOn
+            // 
+            this.pbPageButtonsOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbPageButtonsOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_page_on;
+            this.pbPageButtonsOn.Location = new System.Drawing.Point(131, 195);
+            this.pbPageButtonsOn.Name = "pbPageButtonsOn";
+            this.pbPageButtonsOn.Size = new System.Drawing.Size(25, 25);
+            this.pbPageButtonsOn.TabIndex = 24;
+            this.pbPageButtonsOn.TabStop = false;
+            this.pbPageButtonsOn.Visible = false;
+            this.pbPageButtonsOn.Click += new System.EventHandler(this.pbPageButtons_Click);
+            // 
+            // pbS1ButtonOn
+            // 
+            this.pbS1ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbS1ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s1_on;
+            this.pbS1ButtonOn.Location = new System.Drawing.Point(13, 32);
+            this.pbS1ButtonOn.Name = "pbS1ButtonOn";
+            this.pbS1ButtonOn.Size = new System.Drawing.Size(26, 12);
+            this.pbS1ButtonOn.TabIndex = 25;
+            this.pbS1ButtonOn.TabStop = false;
+            this.pbS1ButtonOn.Visible = false;
+            this.pbS1ButtonOn.Click += new System.EventHandler(this.pbS1Button_Click);
+            // 
             // DeviceControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.Controls.Add(this.pbKnobRight);
-            this.Controls.Add(this.pbKnobLeft);
-            this.Controls.Add(this.pbS6ButtonOn);
-            this.Controls.Add(this.pbS5ButtonOn);
-            this.Controls.Add(this.pbS4ButtonOn);
-            this.Controls.Add(this.pbS3ButtonOn);
             this.Controls.Add(this.pbS2ButtonOn);
+            this.Controls.Add(this.pbS3ButtonOn);
+            this.Controls.Add(this.pbS4ButtonOn);
+            this.Controls.Add(this.pbS5ButtonOn);
+            this.Controls.Add(this.pbS6ButtonOn);
+            this.Controls.Add(this.pbPageButtonsOn);
             this.Controls.Add(this.pbS1ButtonOn);
             this.Controls.Add(this.pbS6ButtonOff);
             this.Controls.Add(this.pbS5ButtonOff);
@@ -538,7 +537,8 @@ namespace FIPDisplayProfiler
             this.Controls.Add(this.pbS3ButtonOff);
             this.Controls.Add(this.pbS2ButtonOff);
             this.Controls.Add(this.pbS1ButtonOff);
-            this.Controls.Add(this.pbPageButtonsOn);
+            this.Controls.Add(this.pbKnobRight);
+            this.Controls.Add(this.pbKnobLeft);
             this.Controls.Add(this.btnMoveDown);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.btnMoveUp);
@@ -551,13 +551,6 @@ namespace FIPDisplayProfiler
             this.Load += new System.EventHandler(this.DeviceControl_Load);
             this.contextMenuBindType.ResumeLayout(false);
             this.contextMenuKnob.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS3ButtonOn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS2ButtonOn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbS1ButtonOn)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPageButtonsOn)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.fipImage)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.devicePictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbKnobRight)).EndInit();
@@ -568,6 +561,13 @@ namespace FIPDisplayProfiler
             ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOff)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOff)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOff)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS2ButtonOn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS3ButtonOn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS4ButtonOn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS5ButtonOn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS6ButtonOn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPageButtonsOn)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbS1ButtonOn)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -581,13 +581,6 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.Button btnMoveUp;
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnMoveDown;
-        private System.Windows.Forms.PictureBox pbPageButtonsOn;
-        private System.Windows.Forms.PictureBox pbS1ButtonOn;
-        private System.Windows.Forms.PictureBox pbS2ButtonOn;
-        private System.Windows.Forms.PictureBox pbS3ButtonOn;
-        private System.Windows.Forms.PictureBox pbS4ButtonOn;
-        private System.Windows.Forms.PictureBox pbS5ButtonOn;
-        private System.Windows.Forms.PictureBox pbS6ButtonOn;
         private System.Windows.Forms.ContextMenuStrip contextMenuBindType;
         private System.Windows.Forms.ToolStripMenuItem oSCommandToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem keyPressToolStripMenuItem;
@@ -619,5 +612,12 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.PictureBox pbS4ButtonOff;
         private System.Windows.Forms.PictureBox pbS5ButtonOff;
         private System.Windows.Forms.PictureBox pbS6ButtonOff;
+        private System.Windows.Forms.PictureBox pbS2ButtonOn;
+        private System.Windows.Forms.PictureBox pbS3ButtonOn;
+        private System.Windows.Forms.PictureBox pbS4ButtonOn;
+        private System.Windows.Forms.PictureBox pbS5ButtonOn;
+        private System.Windows.Forms.PictureBox pbS6ButtonOn;
+        private System.Windows.Forms.PictureBox pbPageButtonsOn;
+        private System.Windows.Forms.PictureBox pbS1ButtonOn;
     }
 }

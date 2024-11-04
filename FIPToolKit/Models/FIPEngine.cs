@@ -1,11 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using FIPToolKit.Tools;
+using Newtonsoft.Json;
 using Saitek.DirectOutput;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
@@ -29,9 +32,11 @@ namespace FIPToolKit.Models
     }
 
     [Serializable]
-    public class ActivePages
+    public class FIPActivePages
     {
-        public List<DeviceActivePage> Pages { get; private set; }
+        [XmlElement(ElementName = "ActivePage")]
+        [JsonProperty(PropertyName = "ActivePage")]
+        public List<FIPDeviceActivePage> Pages { get; private set; }
 
         [XmlIgnore]
         [JsonIgnore]
@@ -39,7 +44,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                foreach(DeviceActivePage page in Pages)
+                foreach(FIPDeviceActivePage page in Pages)
                 {
                     if(page.IsDirty)
                     {
@@ -50,21 +55,21 @@ namespace FIPToolKit.Models
             }
             set
             {
-                foreach(DeviceActivePage page in Pages)
+                foreach(FIPDeviceActivePage page in Pages)
                 {
                     page.IsDirty = value;
                 }
             }
         }
 
-        public ActivePages()
+        public FIPActivePages()
         {
-            Pages = new List<DeviceActivePage>();
+            Pages = new List<FIPDeviceActivePage>();
         }
     }
 
     [Serializable]
-    public class DeviceActivePage
+    public class FIPDeviceActivePage
     {
         public string SerialNumber { get; set; }
 
@@ -114,6 +119,7 @@ namespace FIPToolKit.Models
             }
             set
             {
+                _devices.Clear();
                 foreach (FIPDevice device in value)
                 {
                     _devices.Add(device);
@@ -131,18 +137,18 @@ namespace FIPToolKit.Models
             }
         }
 
-        public ActivePages ActivePages { get; set; }
+        public FIPActivePages ActivePages { get; set; }
 
         public delegate void FIPEngineEventHandler(object sender, FIPEngineEventArgs e);
         public event FIPEngineEventHandler OnDeviceAdded;
         public event FIPEngineEventHandler OnDeviceRemoved;
         public event FIPEnginePageChangeEventHandler OnPageChanged;
-        public delegate void FIPEnginePageChangeEventHandler(object sender, DeviceActivePage page);
+        public delegate void FIPEnginePageChangeEventHandler(object sender, FIPDeviceActivePage page);
 
         public FIPEngine()
         {
             _devices = new List<FIPDevice>();
-            ActivePages = new ActivePages();
+            ActivePages = new FIPActivePages();
         }
 
         public void Initialize()
@@ -196,10 +202,10 @@ namespace FIPToolKit.Models
                         FIPDevice device = new FIPDevice(this, deviceClient, e.Device);
                         _devices.Add(device);
                         OnDeviceAdded?.Invoke(this, new FIPEngineEventArgs(device, true));
-                        DeviceActivePage activePage = FindActivePage(device.SerialNumber);
+                        FIPDeviceActivePage activePage = FindActivePage(device.SerialNumber);
                         if (activePage == null)
                         {
-                            activePage = new DeviceActivePage()
+                            activePage = new FIPDeviceActivePage()
                             {
                                 SerialNumber = device.SerialNumber
                             };
@@ -223,7 +229,7 @@ namespace FIPToolKit.Models
                         if (fipDevice.DeviceId == e.Device)
                         {
                             OnDeviceRemoved?.Invoke(this, new FIPEngineEventArgs(fipDevice));
-                            DeviceActivePage activePage = FindActivePage(fipDevice.SerialNumber);
+                            FIPDeviceActivePage activePage = FindActivePage(fipDevice.SerialNumber);
                             if (activePage == null)
                             {
                                 ActivePages.Pages.Remove(activePage);
@@ -239,9 +245,9 @@ namespace FIPToolKit.Models
             }
         }
 
-        public DeviceActivePage FindActivePage(string serialNumber)
+        public FIPDeviceActivePage FindActivePage(string serialNumber)
         {
-            foreach (DeviceActivePage activePage in ActivePages.Pages)
+            foreach (FIPDeviceActivePage activePage in ActivePages.Pages)
             {
                 if (activePage.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase))
                 {
@@ -268,10 +274,10 @@ namespace FIPToolKit.Models
                             _devices.Add(device);
                             if (device.DeviceType == DeviceType.Fip)
                             {
-                                DeviceActivePage activePage = FindActivePage(device.SerialNumber);
+                                FIPDeviceActivePage activePage = FindActivePage(device.SerialNumber);
                                 if (activePage == null)
                                 {
-                                    activePage = new DeviceActivePage()
+                                    activePage = new FIPDeviceActivePage()
                                     {
                                         SerialNumber = device.SerialNumber
                                     };
@@ -300,7 +306,7 @@ namespace FIPToolKit.Models
         private void Device_OnPageChanged(object sender, FIPDeviceEventArgs e)
         {
             FIPDevice device = sender as FIPDevice;
-            DeviceActivePage activePage = FindActivePage(device.SerialNumber);
+            FIPDeviceActivePage activePage = FindActivePage(device.SerialNumber);
             if (activePage != null)
             {
                 activePage.Page = device.ActivePage;
@@ -339,7 +345,7 @@ namespace FIPToolKit.Models
             {
                 if (value == false)
                 {
-                    foreach (DeviceActivePage deviceActivePage in ActivePages.Pages)
+                    foreach (FIPDeviceActivePage deviceActivePage in ActivePages.Pages)
                     {
                         deviceActivePage.IsDirty = false;
                     }
@@ -348,7 +354,7 @@ namespace FIPToolKit.Models
                         device.IsDirty = false;
                         foreach (FIPPage page in device.Pages)
                         {
-                            page.IsDirty = false;
+                            page.Properties.IsDirty = false;
                             foreach (FIPButton button in page.Buttons)
                             {
                                 button.IsDirty = false;
@@ -384,6 +390,122 @@ namespace FIPToolKit.Models
                 device.Dispose();
             }
             _devices.Clear();
+        }
+
+        public string GetSaveData(FIPSaveType type)
+        {
+            FIPSettings settings = new FIPSettings();
+            foreach (FIPDevice device in Devices)
+            {
+                FIPDeviceProperties deviceProperties = new FIPDeviceProperties()
+                {
+                    SerialNumber = device.SerialNumber,
+                    Pages = new List<FIPPageProperties>()
+                };
+                foreach(FIPPage page in device.Pages.OrderBy(p => p.Properties.Page))
+                {
+                    page.Properties.ControlType = page.GetType().FullName;
+                    deviceProperties.Pages.Add(page.Properties);
+                }
+                settings.Devices.Add(deviceProperties);
+            }
+            settings.ActivePages = ActivePages;
+            string output = string.Empty;
+            switch(type)
+            {
+                case FIPSaveType.Xml:
+                    output = SerializerHelper.RemoveHeader(SerializerHelper.ToXml(settings));
+                    if (output.StartsWith("\r\n"))
+                    {
+                        output = output.Substring(2);
+                    }
+                    break;
+                case FIPSaveType.Json:
+                    output = SerializerHelper.ToJson(settings);
+                    break;
+            }
+            return output;
+        }
+
+        public void LoadSaveData(FIPSaveType type, string data, string serialNumber = null)
+        {
+            FIPSettings settings = null;
+            try
+            {
+                switch (type)
+                {
+                    case FIPSaveType.Xml:
+                        settings = (FIPSettings)SerializerHelper.FromXml(data, typeof(FIPSettings));
+                        break;
+                    case FIPSaveType.Json:
+                        settings = (FIPSettings)SerializerHelper.FromJson(data, typeof(FIPSettings));
+                        break;
+                }
+                if (string.IsNullOrEmpty(serialNumber))
+                {
+                    foreach (FIPDeviceProperties deviceProperties in settings.Devices)
+                    {
+                        FIPDevice device = FindDevice(deviceProperties.SerialNumber);
+                        if (device != null)
+                        {
+                            FIPDeviceActivePage activePage = settings.FindActivePage(device.SerialNumber);
+                            if (activePage == null)
+                            {
+                                activePage = new FIPDeviceActivePage()
+                                {
+                                    SerialNumber = device.SerialNumber
+                                };
+                            }
+                            device.ClearPages();
+                            foreach (FIPPageProperties pageProperties in deviceProperties.Pages)
+                            {
+                                Type t = Type.GetType(pageProperties.ControlType);
+                                FIPPage page = (FIPPage)Activator.CreateInstance(t, pageProperties);
+                                device.AddPage(page, activePage.Page == page.Properties.Page);
+                            }
+                            FIPDeviceActivePage activePage2 = FindActivePage(device.SerialNumber);
+                            if (activePage2 != null)
+                            {
+                                activePage2.IsDirty = false;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    FIPDeviceProperties deviceProperties = settings.Devices.FirstOrDefault(d => d.SerialNumber.Equals(serialNumber, StringComparison.OrdinalIgnoreCase));
+                    if (deviceProperties != null)
+                    {
+                        FIPDevice device = FindDevice(deviceProperties.SerialNumber);
+                        if (device != null)
+                        {
+                            FIPDeviceActivePage activePage = settings.FindActivePage(device.SerialNumber);
+                            if (activePage == null)
+                            {
+                                activePage = new FIPDeviceActivePage()
+                                {
+                                    SerialNumber = device.SerialNumber
+                                };
+                            }
+                            device.ClearPages();
+                            foreach (FIPPageProperties pageProperties in deviceProperties.Pages)
+                            {
+                                Type t = Type.GetType(pageProperties.ControlType);
+                                FIPPage page = (FIPPage)Activator.CreateInstance(t, pageProperties);
+                                device.AddPage(page, activePage.Page == page.Properties.Page);
+                            }
+                            FIPDeviceActivePage activePage2 = FindActivePage(device.SerialNumber);
+                            if (activePage2 != null)
+                            {
+                                activePage2.IsDirty = false;
+                            }
+                        }
+                    }
+                }
+            }
+            catch(Exception)
+            {
+            }
         }
 
         public void Dispose()

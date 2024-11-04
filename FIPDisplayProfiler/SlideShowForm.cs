@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class SlideShowForm : Form
     {
-        public FIPSlideShow SlideShow { get; set; }
+        public FIPSlideShowProperties SlideShow { get; set; }
 
         private Font _fontHolder;
 

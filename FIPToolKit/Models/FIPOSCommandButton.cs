@@ -167,9 +167,12 @@ namespace FIPToolKit.Models
             _processes.Remove(e.Process);
         }
 
-        public override bool IsButtonEnabled()
+        public override bool ButtonEnabled
         {
-            return !String.IsNullOrEmpty(Label) && !String.IsNullOrEmpty(Command);
+            get
+            {
+                return (!string.IsNullOrEmpty(Label) && !string.IsNullOrEmpty(Command));
+            }
         }
 
         public override void Dispose()

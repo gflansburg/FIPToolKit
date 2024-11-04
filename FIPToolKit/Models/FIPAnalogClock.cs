@@ -21,7 +21,6 @@ using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-	[Serializable]
 	public class FIPAnalogClock : FIPPage
 	{
 		public enum TickStyle
@@ -140,912 +139,24 @@ namespace FIPToolKit.Models
 		[XmlIgnore]
 		[JsonIgnore]
 		public AbortableBackgroundWorker Timer { get; set; }
-
-		/// <summary>
-		/// The Background image used in the clock face.
-		/// </summary>
-		/// <remarks>Using a large image will result in poor performance and increased memory consumption.</remarks>
-		[XmlIgnore]
-		[JsonIgnore]
-		public Bitmap FaceImage { get; set; }
-
-		private string _faceImageFilename;
-		/// <summary>
-		/// The filename to the Background image used in the clock face.
-		/// </summary>
-		/// <remarks>Using a large image will result in poor performance and increased memory consumption.</remarks>
-		public string FaceImageFilename
-		{
-			get
-			{
-				return (_faceImageFilename ?? string.Empty);
-			}
-			set
-			{
-				if (!(_faceImageFilename ?? string.Empty).Equals(value ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-				{
-					_faceImageFilename = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private NumeralTypes _numeralType;
-		/// <summary>
-		/// Sets the character type for the numbers drawn on the clock face.
-		/// </summary>
-		public NumeralTypes NumeralType
-		{
-			get
-			{
-				return _numeralType;
-			}
-			set
-			{
-				if (_numeralType != value)
-				{
-					_numeralType = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private FaceTickStyles _faceTickStyle;
-		/// <summary>
-		/// Style for the face ticks.
-		/// </summary>
-		public FaceTickStyles FaceTickStyle
-		{
-			get
-			{
-				return _faceTickStyle;
-			}
-			set
-			{
-				if (_faceTickStyle != value)
-				{
-					_faceTickStyle = value;
-					IsDirty = true;
-				}
-			}
-		}
-
-		private bool _drawFaceTicks;
-		/// <summary>
-		/// Determines whether tick marks are drawn on the clock face.
-		/// </summary>
-		public bool DrawFaceTicks
-		{
-			get
-			{
-				return _drawFaceTicks;
-			}
-			set
-			{
-				if (_drawFaceTicks != value)
-				{
-					_drawFaceTicks = value;
-					IsDirty = true;
-				}
-			}
-        }
-
-		//private string _cultureCode;
-		/// <summary>
-		/// Sets culture code for the NumeralType (when set to Default).
-		/// </summary>
-		//public string CultureCode
-		//{
-		//	get
-		//	{
-		//		return (_cultureCode ?? string.Empty);
-		//	}
-		//	set
-		//	{
-		//		if(!(_cultureCode ?? string.Empty).Equals(value ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-		//		{
-		//			_cultureCode = value;
-		//			IsDirty = true;
-		//		}
-		//	}
-		//}
-
-		private bool _drawCaption;
-		/// <summary>
-		/// Determines whether the caption is drawn or not.
-		/// </summary>
-		public bool DrawCaption
-		{ 
-			get
-            {
-				return _drawCaption;
-            }
-			set
-            {
-				if(_drawCaption != value)
-                {
-					_drawCaption = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _captionColor;
-		/// <summary>
-		/// Sets or gets the color of the caption.
-		/// </summary>
-		/// <remarks>To change the caption font use the <see cref=" Font "/> Property </remarks>
-		public ColorEx CaptionColor
-		{ 
-			get
-            {
-				return _captionColor;
-            }
-			set
-            {
-				if(_captionColor.Color != value.Color)
-                {
-					_captionColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private string _timeZone;
-		/// <summary>
-		/// Defines the timezone for the clock.
-		/// </summary>
-		public string TimeZone 
-		{ 
-			get
-            {
-				return (_timeZone ?? TimeZoneInfo.Local.Id);
-            }
-			set
-            {
-				if(!(_timeZone ?? string.Empty).Equals(value ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-                {
-					_timeZone = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _twentyFourHour;
-		/// <summary>
-		/// Defines the clock is 12 or 24 hours.
-		/// </summary>
-		public bool TwentyFourHour 
-		{ 
-			get
-            {
-				return _twentyFourHour;
-            }
-			set
-            {
-				if(_twentyFourHour != value)
-                {
-					_twentyFourHour = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private TickStyle _secondHandTickStyle;
-		/// <summary>
-		/// Defines the second hand tick style.
-		/// </summary>
-		public TickStyle SecondHandTickStyle 
-		{ 
-			get
-            {
-				return _secondHandTickStyle;
-            }
-			set
-            {
-				if(_secondHandTickStyle != value)
-                {
-					_secondHandTickStyle = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private TickStyle _minuteHandTickStyle;
-		/// <summary>
-		/// Defines the minute hand tick style.
-		/// </summary>
-		public TickStyle MinuteHandTickStyle 
-		{ 
-			get
-            {
-				return _minuteHandTickStyle;
-            }
-			set
-            {
-				if(_minuteHandTickStyle != value)
-                {
-					_minuteHandTickStyle = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawNumerals;
-		/// <summary>
-		/// Determines whether the Numerals are drawn on the clock face.
-		/// </summary>
-		public bool DrawNumerals 
-		{ 
-			get
-            {
-				return _drawNumerals;
-            }
-			set
-            {
-				if(_drawNumerals != value)
-                {
-					_drawNumerals = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private SmoothingMode _smoothingMode;
-		/// <summary>
-		/// Sets or gets the rendering quality of the clock.
-		/// </summary>
-		/// <remarks>This property does not effect the numeral text rendering quality. To set the numeral text rendering quality use the <see cref="TextRenderingHint"/> Property</remarks>
-		public SmoothingMode SmoothingMode 
-		{ 
-			get
-            {
-				return _smoothingMode;
-            }
-			set
-            {
-				if(_smoothingMode != value)
-                {
-					_smoothingMode = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private TextRenderingHint _textRenderingHint;
-		/// <summary>
-		/// Sets or gets the text rendering mode used for the clock numerals.
-		/// </summary>
-		public TextRenderingHint TextRenderingHint 
-		{ 
-			get
-            {
-				return _textRenderingHint;
-            }
-			set
-            {
-				if(_textRenderingHint != value)
-                {
-					_textRenderingHint = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawRim;
-		/// <summary>
-		/// Determines whether the clock Rim is drawn or not.
-		/// </summary>
-		public bool DrawRim 
-		{ 
-			get
-            {
-				return _drawRim;
-            }
-			set
-            {
-				if(_drawRim != value)
-                {
-					_drawRim = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawDropShadow;
-		/// <summary>
-		/// Determines whether drop shadow for the clock is drawn or not.
-		/// </summary>
-		public bool DrawDropShadow 
-		{ 
-			get
-            {
-				return _drawDropShadow;
-            }
-			set
-            {
-				if(_drawDropShadow != value)
-                {
-					_drawDropShadow = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _dropShadowColor;
-		/// <summary>
-		/// Sets or gets the color of the Drop Shadow.
-		/// </summary>
-		public ColorEx DropShadowColor 
-		{ 
-			get
-            {
-				return _dropShadowColor;
-            }
-			set
-            {
-				if(_dropShadowColor.Color != value.Color)
-                {
-					_dropShadowColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _secondHandDropShadowColor;
-		/// <summary>
-		/// Sets or gets the color of the second hand drop Shadow.
-		/// </summary>
-		public ColorEx SecondHandDropShadowColor 
-		{ 
-			get
-            {
-				return _secondHandDropShadowColor;
-            }
-			set
-            {
-				if(_secondHandDropShadowColor.Color != value.Color)
-                {
-					_secondHandDropShadowColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _minuteHandDropShadowColor;
-		/// <summary>
-		/// Sets or gets the color of the Minute hand drop Shadow.
-		/// </summary>
-		public ColorEx MinuteHandDropShadowColor 
-		{ 
-			get
-            {
-				return _minuteHandDropShadowColor;
-            }
-			set
-            {
-				if(_minuteHandDropShadowColor.Color != value.Color)
-                {
-					_minuteHandDropShadowColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _hourHandDropShadowColor;
-		/// <summary>
-		/// Sets or gets the color of the hour hand drop Shadow.
-		/// </summary>
-		public ColorEx HourHandDropShadowColor 
-		{ 
-			get
-            {
-				return _hourHandDropShadowColor;
-            }
-			set
-            {
-				if(_hourHandDropShadowColor.Color != value.Color)
-                {
-					_hourHandDropShadowColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _faceColorHigh;
-		/// <summary>
-		/// Determines the first color of the clock face gradient.
-		/// </summary>
-		public ColorEx FaceColorHigh 
-		{ 
-			get
-            {
-				return _faceColorHigh;
-            }
-			set
-            {
-				if(_faceColorHigh.Color != value.Color)
-                {
-					_faceColorHigh = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _faceColorLow;
-		/// <summary>
-		/// Determines the second color of the clock face gradient.
-		/// </summary>
-		public ColorEx FaceColorLow 
-		{ 
-			get
-            {
-				return _faceColorLow;
-            }
-			set
-            {
-				if(_faceColorLow.Color != value.Color)
-                {
-					_faceColorLow = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawSecondHandShadow;
-		/// <summary>
-		/// Determines whether the second hand casts a drop shadow for added realism.  
-		/// </summary>
-		public bool DrawSecondHandShadow 
-		{ 
-			get
-            {
-				return _drawSecondHandShadow;
-            }
-			set
-            {
-				if(_drawSecondHandShadow != value)
-                {
-					_drawSecondHandShadow = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawHourHandShadow;
-		/// <summary>
-		/// Determines whether the hour hand casts a drop shadow for added realism.  
-		/// </summary>
-		public bool DrawHourHandShadow 
-		{ 
-			get
-            {
-				return _drawHourHandShadow;
-            }
-			set
-            {
-				if(_drawHourHandShadow != value)
-                {
-					_drawHourHandShadow = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawMinuteHandShadow;
-		/// <summary>
-		/// Determines whether the minute hand casts a drop shadow for added realism.  
-		/// </summary>
-		public bool DrawMinuteHandShadow 
-		{ 
-			get
-            {
-				return _drawMinuteHandShadow;
-            }
-			set
-            {
-				if(_drawMinuteHandShadow != value)
-                {
-					_drawMinuteHandShadow = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private int _rimWidth;
-		/// <summary>
-		/// Determines the width of the rim.
-		/// </summary>
-		public int RimWidth 
-		{ 
-			get
-            {
-				return _rimWidth;
-            }
-			set
-            {
-				if(_rimWidth != value)
-                {
-					_rimWidth = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private Size _faceTickSize;
-		/// <summary>
-		/// Determines the width of the clock face tick marks.
-		/// </summary>
-		public Size FaceTickSize 
-		{ 
-			get
-            {
-				return _faceTickSize;
-            }
-			set
-            {
-				if(_faceTickSize.Width != value.Width || _faceTickSize.Height != value.Height)
-                {
-					_faceTickSize = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private int _secondHandLengthOffset;
-		/// <summary>
-		/// Reduces the length of the second hand.
-		/// </summary>
-		public int SecondHandLengthOffset 
-		{ 
-			get
-            {
-				return _secondHandLengthOffset;
-            }
-			set
-            {
-				if(_secondHandLengthOffset != value)
-                {
-					_secondHandLengthOffset = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private int _minuteHandLengthOffset;
-		/// <summary>
-		/// Reduces the length of the minute hand.
-		/// </summary>
-		public int MinuteHandLengthOffset 
-		{ 
-			get
-            {
-				return _minuteHandLengthOffset;
-            }
-			set
-            {
-				if(_minuteHandLengthOffset != value)
-                {
-					_minuteHandLengthOffset = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private int _hourHandLengthOffset;
-		/// <summary>
-		/// Reduces the length of the hour hand.
-		/// </summary>
-		public int HourHandLengthOffset 
-		{ 
-			get
-            {
-				return _hourHandLengthOffset;
-            }
-			set
-            {
-				if(_hourHandLengthOffset != value)
-                {
-					_hourHandLengthOffset = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _rimColorHigh;
-		/// <summary>
-		/// Determines the first color of the rim gradient.
-		/// </summary>
-		public ColorEx RimColorHigh 
-		{ 
-			get
-            {
-				return _rimColorHigh;
-            }
-			set
-            {
-				if(_rimColorHigh.Color != value.Color)
-                {
-					_rimColorHigh = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _rimColorLow;
-		/// <summary>
-		/// Determines the second color of the rim face gradient.
-		/// </summary>
-		public ColorEx RimColorLow 
-		{ 
-			get
-            {
-				return _rimColorLow;
-            }
-			set
-            {
-				if(_rimColorLow.Color != value.Color)
-                {
-					_rimColorLow = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private LinearGradientMode _rimGradientMode;
-		/// <summary>
-		/// Gets or sets the direction of the Rim gradient.
-		/// </summary>
-		public LinearGradientMode RimGradientMode 
-		{ 
-			get
-            {
-				return _rimGradientMode;
-            }
-			set
-            {
-				if(_rimGradientMode != value)
-                {
-					_rimGradientMode = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private LinearGradientMode _faceGradientMode;
-		/// <summary>
-		/// Gets or sets the direction of the Clock Face gradient.
-		/// </summary>
-		public LinearGradientMode FaceGradientMode 
-		{ 
-			get
-            {
-				return _faceGradientMode;
-            }
-			set
-            {
-				if(_faceGradientMode != value)
-                {
-					_faceGradientMode = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private LineCap _secondHandEndCap;
-		/// <summary>
-		/// Determines the Seconds hand end line shape.
-		/// </summary>
-		public LineCap SecondHandEndCap 
-		{ 
-			get
-            {
-				return _secondHandEndCap;
-            }
-			set
-            {
-				if(_secondHandEndCap != value)
-                {
-					_secondHandEndCap = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _secondHandColor;
-		/// <summary>
-		/// Gets or sets the color of the Seconds Hand.
-		/// </summary>
-		public ColorEx SecondHandColor 
-		{ 
-			get
-            {
-				return _secondHandColor;
-            }
-			set
-            {
-				if(_secondHandColor.Color != value.Color)
-                {
-					_secondHandColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _hourHandColor;
-		/// <summary>
-		/// Gets or sets the color of the Hour Hand.
-		/// </summary>
-		public ColorEx HourHandColor 
-		{ 
-			get
-            {
-				return _hourHandColor;
-            }
-			set
-            {
-				if(_hourHandColor.Color != value.Color)
-                {
-					_hourHandColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private ColorEx _minuteHandColor;
-		/// <summary>
-		/// Gets or sets the color of the Minute Hand.
-		/// </summary>
-		public ColorEx MinuteHandColor 
-		{ 
-			get
-            {
-				return _minuteHandColor;
-            }
-			set
-            {
-				if(_minuteHandColor.Color != value.Color)
-                {
-					_minuteHandColor = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawSecondHand;
-		/// <summary>
-		/// Determines whether the second Hand is shown. 
-		/// </summary>
-		public bool DrawSecondHand 
-		{ 
-			get
-            {
-				return _drawSecondHand;
-            }
-			set
-            {
-				if(_drawSecondHand != value)
-                {
-					_drawSecondHand = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawMinuteHand;
-		/// <summary>
-		/// Determines whether the minute hand is shown. 
-		/// </summary>
-		public bool DrawMinuteHand 
-		{ 
-			get
-            {
-				return _drawMinuteHand;
-            }
-			set
-            {
-				if(_drawMinuteHand != value)
-                {
-					_drawMinuteHand = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private bool _drawHourHand;
-		/// <summary>
-		/// Determines whether the hour Hand is shown. 
-		/// </summary>
-		public bool DrawHourHand 
-		{ 
-			get
-            {
-				return _drawHourHand;
-            }
-			set
-            {
-				if(_drawHourHand != value)
-                {
-					_drawHourHand = value;
-					IsDirty = true;
-                }
-            }
-		}
-
-		private Point _dropShadowOffset;
-		/// <summary>
-		/// Gets or sets the drop shadow offset.
-		/// </summary>
-		public Point DropShadowOffset 
-		{ 
-			get
-            {
-				return _dropShadowOffset;
-            }
-			set
-            {
-				if(_dropShadowOffset.X != value.X || _dropShadowOffset.Y != value.Y)
-                {
-					_dropShadowOffset = value;
-					IsDirty = true;
-                }
-            }
-		}
 		#endregion
 
 		protected bool Stop { get; set; }
 
 		private Bitmap clockFace;
 
-		public FIPAnalogClock() : base()
+		public FIPAnalogClock(FIPAnalogClockProperties properties) : base(properties)
 		{
-			_timeZone = TimeZoneInfo.Local.Id;
-			Name = "Clock";
-			_captionColor = System.Drawing.Color.WhiteSmoke;
-			//_cultureCode = "en";
-			_drawFaceTicks = true;
-			_drawHourHand = true;
-			_drawHourHandShadow = true;
-			_drawMinuteHand = true;
-			_drawMinuteHandShadow = true;
-			_drawNumerals = true;
-			_drawRim = true;
-			_drawSecondHand = true;
-			_drawSecondHandShadow = true;
-			_dropShadowColor = System.Drawing.Color.Black;
-			_dropShadowOffset = new Point(0, 0);
-			_faceColorHigh = System.Drawing.Color.RoyalBlue;
-			_faceColorLow = System.Drawing.Color.SkyBlue;
-			_faceGradientMode = LinearGradientMode.BackwardDiagonal;
-			FaceImage = null;
-			_faceImageFilename = String.Empty;
-			_faceTickSize = new Size(5, 10);
-			_faceTickStyle = FaceTickStyles.Both;
-			_hourHandColor = System.Drawing.Color.Gainsboro;
-			_hourHandDropShadowColor = System.Drawing.Color.Gray;
-			_minuteHandColor = System.Drawing.Color.WhiteSmoke;
-			_minuteHandDropShadowColor = System.Drawing.Color.Gray;
-			_minuteHandTickStyle = TickStyle.Normal;
-			FontColor = System.Drawing.Color.WhiteSmoke;
-			_rimColorHigh = System.Drawing.Color.RoyalBlue;
-			_rimColorLow = System.Drawing.Color.SkyBlue;
-			_rimGradientMode = LinearGradientMode.ForwardDiagonal;
-			_rimWidth = 10;
-			_secondHandColor = System.Drawing.Color.Tomato;
-			_secondHandDropShadowColor = System.Drawing.Color.Gray;
-			_secondHandEndCap = LineCap.Round;
-			_secondHandTickStyle = TickStyle.Normal;
-			_smoothingMode = SmoothingMode.AntiAlias;
-			_textRenderingHint = TextRenderingHint.AntiAlias;
-			IsDirty = false;
+			Properties.ControlType = GetType().FullName;
 		}
 
-		public FIPAnalogClock(FIPAnalogClock template) : base()
+		public FIPAnalogClock(FIPAnalogClock template) : base(template.Properties)
 		{
-			PropertyCopier<FIPAnalogClock, FIPAnalogClock>.Copy(template, this);
-		}
+			PropertyCopier<FIPAnalogClockProperties, FIPAnalogClockProperties>.Copy(template.Properties as FIPAnalogClockProperties, AnalogClockProperties);
+            Properties.ControlType = GetType().FullName;
+        }
 
-		public override void StopTimer(int timeOut = 100)
+        public override void StopTimer(int timeOut = 100)
 		{
 			if (Timer != null)
 			{
@@ -1128,12 +239,19 @@ namespace FIPToolKit.Models
 			}
 		}
 
+		private FIPAnalogClockProperties AnalogClockProperties
+		{
+			get
+			{
+				return Properties as FIPAnalogClockProperties;
+			}
+		}
 
 		protected virtual DateTime CurrentTime
         {
 			get
             {
-				TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(TimeZone);
+				TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(AnalogClockProperties.TimeZone);
 				return DateTime.UtcNow + timeZone.GetUtcOffset(DateTime.UtcNow);
 			}
         }
@@ -1165,20 +283,20 @@ namespace FIPToolKit.Models
 							width = width - (int)MaxLabelWidth(grfx);
 							position.X = Math.Min((int)MaxLabelWidth(grfx) + ((width - diameter) / 2), position.X);
 						}
-						if (DrawCaption)
+						if (AnalogClockProperties.DrawCaption)
 						{
 							FontStyle captionStyle = FontStyle.Bold;
-							if ((Font.Style & FontStyle.Italic) == FontStyle.Italic)
+							if ((AnalogClockProperties.Font.Style & FontStyle.Italic) == FontStyle.Italic)
 							{
 								captionStyle |= FontStyle.Italic;
 							}
-							if ((Font.Style & FontStyle.Underline) == FontStyle.Underline)
+							if ((AnalogClockProperties.Font.Style & FontStyle.Underline) == FontStyle.Underline)
 							{
 								captionStyle |= FontStyle.Underline;
 							}
-							using (Font captionFont = new Font(Font.FontFamily, Font.Size, captionStyle, Font.Unit, Font.GdiCharSet))
+							using (Font captionFont = new Font(AnalogClockProperties.Font.FontFamily, AnalogClockProperties.Font.Size, captionStyle, AnalogClockProperties.Font.Unit, AnalogClockProperties.Font.GdiCharSet))
 							{
-								SizeF captionSize = grfx.MeasureString(Name, captionFont);
+								SizeF captionSize = grfx.MeasureString(AnalogClockProperties.Name, captionFont);
 								diameter -= (int)Math.Round(captionSize.Height);
 								position = new Point((bmp.Width - diameter) - 6, 1);
 								if (SoftButtonCount == 0)
@@ -1195,28 +313,28 @@ namespace FIPToolKit.Models
 						Rectangle rect = new Rectangle(position.X, position.Y, diameter, diameter);
 						float midx = rect.X + (rect.Width / 2);
 						float midy = rect.Y + (rect.Height / 2);
-						int radius = (rect.Width / 2) - ((DrawRim ? RimWidth : 0) + 10);
+						int radius = (rect.Width / 2) - ((AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0) + 10);
 						Point center = new Point(0, 0);
 						// Draw Hour Hand
-						if (DrawHourHand)
+						if (AnalogClockProperties.DrawHourHand)
 						{
 							grfx.TranslateTransform(midx, midy);
-							float radiusHourHand = radius + HourHandLengthOffset;
-							float hourAngle = (float)(2.0 * Math.PI * (time.Hour + time.Minute / 60.0) / (TwentyFourHour ? 24.0 : 12.0));
-							using (Pen pen = new Pen(HourHandColor, 2))
+							float radiusHourHand = radius + AnalogClockProperties.HourHandLengthOffset;
+							float hourAngle = (float)(2.0 * Math.PI * (time.Hour + time.Minute / 60.0) / (AnalogClockProperties.TwentyFourHour ? 24.0 : 12.0));
+							using (Pen pen = new Pen(AnalogClockProperties.HourHandColor, 2))
 							{
 								pen.EndCap = LineCap.Round;
 								pen.StartCap = LineCap.RoundAnchor;
 								pen.Width = (int)radius / 14;
-								if (DrawHourHandShadow)
+								if (AnalogClockProperties.DrawHourHandShadow)
 								{
 									center.X = center.Y = 2;
-									pen.Color = HourHandDropShadowColor;
+									pen.Color = AnalogClockProperties.HourHandDropShadowColor;
 									Point hourHandShadow = new Point((int)((radiusHourHand * Math.Sin(hourAngle) / 1.5) + 2), (int)((-(radiusHourHand) * Math.Cos(hourAngle) / 1.5) + 2));
 									grfx.DrawLine(pen, center, hourHandShadow);
 								}
 								center.X = center.Y = 0;
-								pen.Color = HourHandColor;
+								pen.Color = AnalogClockProperties.HourHandColor;
 								Point hourHand = new Point((int)(radiusHourHand * Math.Sin(hourAngle) / 1.5), (int)(-(radiusHourHand) * Math.Cos(hourAngle) / 1.5));
 								grfx.DrawLine(pen, center, hourHand);
 							}
@@ -1224,12 +342,12 @@ namespace FIPToolKit.Models
 						}
 						//---End Hour Hand
 						//Draw Minute hand
-						if (DrawMinuteHand)
+						if (AnalogClockProperties.DrawMinuteHand)
 						{
 							grfx.TranslateTransform(midx, midy);
-							float radiusMinuteHand = radius + MinuteHandLengthOffset;
+							float radiusMinuteHand = radius + AnalogClockProperties.MinuteHandLengthOffset;
 							float minuteAngle;
-							if (MinuteHandTickStyle == TickStyle.Smooth)
+							if (AnalogClockProperties.MinuteHandTickStyle == TickStyle.Smooth)
 							{
 								minuteAngle = (float)(2.0 * Math.PI * (time.Minute + time.Second / 60.0) / 60.0);
 							}
@@ -1237,20 +355,20 @@ namespace FIPToolKit.Models
 							{
 								minuteAngle = (float)(2.0 * Math.PI * (time.Minute / 60.0));
 							}
-							using (Pen pen = new Pen(MinuteHandColor, 2))
+							using (Pen pen = new Pen(AnalogClockProperties.MinuteHandColor, 2))
 							{
 								pen.EndCap = LineCap.Round;
 								pen.StartCap = LineCap.RoundAnchor;
 								pen.Width = (int)radius / 14;
-								if (DrawMinuteHandShadow)
+								if (AnalogClockProperties.DrawMinuteHandShadow)
 								{
 									center.X = center.Y = 1;
-									pen.Color = MinuteHandDropShadowColor;
+									pen.Color = AnalogClockProperties.MinuteHandDropShadowColor;
 									Point minHandShadow = new Point((int)(radiusMinuteHand * Math.Sin(minuteAngle)), (int)(-(radiusMinuteHand) * Math.Cos(minuteAngle) + 2));
 									grfx.DrawLine(pen, center, minHandShadow);
 								}
 								center.X = center.Y = 0;
-								pen.Color = MinuteHandColor;
+								pen.Color = AnalogClockProperties.MinuteHandColor;
 								Point minHand = new Point((int)(radiusMinuteHand * Math.Sin(minuteAngle)), (int)(-(radiusMinuteHand) * Math.Cos(minuteAngle)));
 								grfx.DrawLine(pen, center, minHand);
 							}
@@ -1258,12 +376,12 @@ namespace FIPToolKit.Models
 						}
 						//--End Minute Hand
 						//Draw Sec Hand
-						if (DrawSecondHand)
+						if (AnalogClockProperties.DrawSecondHand)
 						{
 							grfx.TranslateTransform(midx, midy);
-							float radiusSecondHand = radius + SecondHandLengthOffset;
+							float radiusSecondHand = radius + AnalogClockProperties.SecondHandLengthOffset;
 							float secondAngle;
-							if (SecondHandTickStyle == TickStyle.Smooth)
+							if (AnalogClockProperties.SecondHandTickStyle == TickStyle.Smooth)
 							{
 								secondAngle = (float)(2.0 * Math.PI * (time.Second + (time.Millisecond * 0.001)) / 60.0);
 							}
@@ -1271,21 +389,21 @@ namespace FIPToolKit.Models
 							{
 								secondAngle = (float)(2.0 * Math.PI * (time.Second / 60.0));
 							}
-							using (Pen pen = new Pen(SecondHandColor, 2))
+							using (Pen pen = new Pen(AnalogClockProperties.SecondHandColor, 2))
 							{
 								pen.Width = (int)radius / 25;
-								pen.EndCap = SecondHandEndCap;
+								pen.EndCap = AnalogClockProperties.SecondHandEndCap;
 								pen.StartCap = LineCap.RoundAnchor;
 								//Draw Second Hand Drop Shadow
-								if (DrawSecondHandShadow)
+								if (AnalogClockProperties.DrawSecondHandShadow)
 								{
 									center.X = center.Y = 1;
-									pen.Color = SecondHandDropShadowColor;
+									pen.Color = AnalogClockProperties.SecondHandDropShadowColor;
 									Point secHandshadow = new Point((int)(radiusSecondHand * Math.Sin(secondAngle)), (int)(-(radiusSecondHand) * Math.Cos(secondAngle) + 2));
 									grfx.DrawLine(pen, center, secHandshadow);
 								}
 								center.X = center.Y = 0;
-								pen.Color = SecondHandColor;
+								pen.Color = AnalogClockProperties.SecondHandColor;
 								Point secHand = new Point((int)(radiusSecondHand * Math.Sin(secondAngle)), (int)(-(radiusSecondHand) * Math.Cos(secondAngle)));
 								grfx.DrawLine(pen, center, secHand);
 							}
@@ -1317,7 +435,7 @@ namespace FIPToolKit.Models
 
 		private string GetNumeral(int i)
 		{
-			switch (NumeralType)
+			switch (AnalogClockProperties.NumeralType)
 			{
 				case NumeralTypes.RomanClassic:
 					return RomanClassicNumerals[i - 1];
@@ -1395,15 +513,15 @@ namespace FIPToolKit.Models
 
 		private float GetNumeralOffset(Graphics g)
 		{
-			if (DrawNumerals)
+			if (AnalogClockProperties.DrawNumerals)
 			{
 				float offSet = 0;
 				for (int i = 1; i <= 12; i++)
 				{
-					SizeF size = g.MeasureString(GetNumeral(i), Font);
+					SizeF size = g.MeasureString(GetNumeral(i), AnalogClockProperties.Font);
 					offSet = Math.Max(offSet, Math.Max(size.Width, size.Height));
 				}
-				return (offSet / 2) + ((DrawRim && DrawFaceTicks ? RimWidth + FaceTickSize.Height : DrawRim ? RimWidth : DrawFaceTicks ? FaceTickSize.Height : 0) / 2) + (DrawFaceTicks ? 5 : 0);
+				return (offSet / 2) + ((AnalogClockProperties.DrawRim && AnalogClockProperties.DrawFaceTicks ? AnalogClockProperties.RimWidth + AnalogClockProperties.FaceTickSize.Height : AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : AnalogClockProperties.DrawFaceTicks ? AnalogClockProperties.FaceTickSize.Height : 0) / 2) + (AnalogClockProperties.DrawFaceTicks ? 5 : 0);
 			}
 			return 0f;
 		}
@@ -1416,8 +534,8 @@ namespace FIPToolKit.Models
 			int diameter = Math.Min(size.Height - 2, size.Width);
 			int width = size.Width;
 
-			grfx.SmoothingMode = SmoothingMode;
-			grfx.TextRenderingHint = TextRenderingHint;
+			grfx.SmoothingMode = AnalogClockProperties.SmoothingMode;
+			grfx.TextRenderingHint = AnalogClockProperties.TextRenderingHint;
 			grfx.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
 			grfx.FillRectangle(Brushes.Black, 0, 0, width, size.Height);
 			Point position = new Point((size.Width - diameter) - 6, 1);
@@ -1431,18 +549,18 @@ namespace FIPToolKit.Models
 				position.X = Math.Min((int)MaxLabelWidth(grfx) + ((width - diameter) / 2), position.X);
 			}
 			FontStyle captionStyle = FontStyle.Bold;
-			if ((Font.Style & FontStyle.Italic) == FontStyle.Italic)
+			if ((AnalogClockProperties.Font.Style & FontStyle.Italic) == FontStyle.Italic)
 			{
 				captionStyle |= FontStyle.Italic;
 			}
-			if ((Font.Style & FontStyle.Underline) == FontStyle.Underline)
+			if ((AnalogClockProperties.Font.Style & FontStyle.Underline) == FontStyle.Underline)
 			{
 				captionStyle |= FontStyle.Underline;
 			}
-			using (Font captionFont = new Font(Font.FontFamily, Font.Size, captionStyle, Font.Unit, Font.GdiCharSet))
+			using (Font captionFont = new Font(AnalogClockProperties.Font.FontFamily, AnalogClockProperties.Font.Size, captionStyle, AnalogClockProperties.Font.Unit, AnalogClockProperties.Font.GdiCharSet))
 			{
-				SizeF captionSize = grfx.MeasureString(Name, captionFont);
-				if (DrawCaption)
+				SizeF captionSize = grfx.MeasureString(AnalogClockProperties.Name, captionFont);
+				if (AnalogClockProperties.DrawCaption)
 				{
 					diameter -= (int)Math.Round(captionSize.Height);
 					position = new Point((size.Width - diameter) - 6, 1);
@@ -1456,37 +574,37 @@ namespace FIPToolKit.Models
 					}
 				}
 				diameter = Math.Min(diameter, size.Height);
-				using (SolidBrush stringBrush = new SolidBrush(FontColor))
+				using (SolidBrush stringBrush = new SolidBrush(AnalogClockProperties.FontColor))
 				{
 					using (Pen pen = new Pen(stringBrush, 2))
 					{
 						Point center = new Point(0, 0);
 						//Define rectangles inside which we will draw circles.
 						Rectangle rect = new Rectangle(position.X, position.Y, diameter, diameter);
-						Rectangle rectRim = new Rectangle(rect.X + ((DrawRim ? RimWidth : 0) / 2), rect.Y + ((DrawRim ? RimWidth : 0) / 2), rect.Width - (DrawRim ? RimWidth : 0), rect.Height - (DrawRim ? RimWidth : 0));
-						Rectangle rectInner = new Rectangle(rect.X + (DrawRim ? RimWidth : 0), rect.Y + (DrawRim ? RimWidth : 0), rect.Width - ((DrawRim ? RimWidth : 0) * 2), rect.Height - ((DrawRim ? RimWidth : 0) * 2));
+						Rectangle rectRim = new Rectangle(rect.X + ((AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0) / 2), rect.Y + ((AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0) / 2), rect.Width - (AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0), rect.Height - (AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0));
+						Rectangle rectInner = new Rectangle(rect.X + (AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0), rect.Y + (AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0), rect.Width - ((AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0) * 2), rect.Height - ((AnalogClockProperties.DrawRim ? AnalogClockProperties.RimWidth : 0) * 2));
 						Rectangle rectDropShadow = rect;
 						float radius = (diameter / 2) - GetNumeralOffset(grfx);
 						//Drop Shadow
-						using (LinearGradientBrush gb = new LinearGradientBrush(rect, System.Drawing.Color.Transparent, DropShadowColor, LinearGradientMode.BackwardDiagonal))
+						using (LinearGradientBrush gb = new LinearGradientBrush(rect, System.Drawing.Color.Transparent, AnalogClockProperties.DropShadowColor, LinearGradientMode.BackwardDiagonal))
 						{
-							rectDropShadow.Offset(DropShadowOffset);
-							if (DrawDropShadow)
+							rectDropShadow.Offset(AnalogClockProperties.DropShadowOffset);
+							if (AnalogClockProperties.DrawDropShadow)
 							{
 								grfx.FillEllipse(gb, rectDropShadow);
 							}
 						}
 						//Face Image
-						if (FaceImage == null && !String.IsNullOrEmpty(FaceImageFilename))
+						if (AnalogClockProperties.FaceImage == null && !String.IsNullOrEmpty(AnalogClockProperties.FaceImageFilename))
 						{
-							FaceImage = new Bitmap(Drawing.ImageHelper.GetBitmapResource(FaceImageFilename));
+                            AnalogClockProperties.FaceImage = new Bitmap(Drawing.ImageHelper.GetBitmapResource(AnalogClockProperties.FaceImageFilename));
 						}
-						if (FaceImage != null)
+						if (AnalogClockProperties.FaceImage != null)
 						{
-							if (FaceImage.IsImageTransparent())
+							if (AnalogClockProperties.FaceImage.IsImageTransparent())
 							{
 								//The the background face color for the transparency to shine through
-								using (LinearGradientBrush gb = new LinearGradientBrush(rect, FaceColorHigh, FaceColorLow, FaceGradientMode))
+								using (LinearGradientBrush gb = new LinearGradientBrush(rect, AnalogClockProperties.FaceColorHigh, AnalogClockProperties.FaceColorLow, AnalogClockProperties.FaceGradientMode))
 								{
 									grfx.FillEllipse(gb, rectInner);
 								}
@@ -1496,14 +614,14 @@ namespace FIPToolKit.Models
 							{
 								path.AddEllipse(rectInner);
 								grfx.SetClip(path);
-								grfx.DrawImage(FaceImage, rectInner);
+								grfx.DrawImage(AnalogClockProperties.FaceImage, rectInner);
 								grfx.ResetClip();
 							}
 						}
 						else
 						{
 							//Face
-							using (LinearGradientBrush gb = new LinearGradientBrush(rect, FaceColorHigh, FaceColorLow, FaceGradientMode))
+							using (LinearGradientBrush gb = new LinearGradientBrush(rect, AnalogClockProperties.FaceColorHigh, AnalogClockProperties.FaceColorLow, AnalogClockProperties.FaceGradientMode))
 							{
 								grfx.FillEllipse(gb, rectInner);
 							}
@@ -1511,9 +629,9 @@ namespace FIPToolKit.Models
 						float midx = rectInner.X + (rectInner.Width / 2);
 						float midy = rectInner.Y + (rectInner.Height / 2);
 						//Face Ticks
-						if (DrawFaceTicks)
+						if (AnalogClockProperties.DrawFaceTicks)
 						{
-							using (LinearGradientBrush gb = new LinearGradientBrush(rect, RimColorHigh, RimColorLow, RimGradientMode))
+							using (LinearGradientBrush gb = new LinearGradientBrush(rect, AnalogClockProperties.RimColorHigh, AnalogClockProperties.RimColorLow, AnalogClockProperties.RimGradientMode))
 							{
 								pen.Brush = gb;
 								pen.EndCap = LineCap.Flat;
@@ -1521,18 +639,18 @@ namespace FIPToolKit.Models
 								Point startPoint = new Point(0, 0);
 								float tickRadius = (rectInner.Width / 2) + 1;
 								grfx.TranslateTransform(midx, midy);
-								for (int i = 1; i <= (TwentyFourHour ? 120 : 60); i++)
+								for (int i = 1; i <= (AnalogClockProperties.TwentyFourHour ? 120 : 60); i++)
 								{
-									float angle = (float)(2.0 * Math.PI * (i / (TwentyFourHour ? 120.0 : 60.0)));
-									if (i % 5 == 0 && (FaceTickStyle == FaceTickStyles.Hours || FaceTickStyle == FaceTickStyles.Both))
+									float angle = (float)(2.0 * Math.PI * (i / (AnalogClockProperties.TwentyFourHour ? 120.0 : 60.0)));
+									if (i % 5 == 0 && (AnalogClockProperties.FaceTickStyle == FaceTickStyles.Hours || AnalogClockProperties.FaceTickStyle == FaceTickStyles.Both))
 									{
-										startPoint = new Point((int)((tickRadius - FaceTickSize.Height) * Math.Sin(angle)), (int)(-(tickRadius - FaceTickSize.Height) * Math.Cos(angle)));
-										pen.Width = FaceTickSize.Width;
+										startPoint = new Point((int)((tickRadius - AnalogClockProperties.FaceTickSize.Height) * Math.Sin(angle)), (int)(-(tickRadius - AnalogClockProperties.FaceTickSize.Height) * Math.Cos(angle)));
+										pen.Width = AnalogClockProperties.FaceTickSize.Width;
 									}
-									else if ((i % 5 != 0 && (FaceTickStyle == FaceTickStyles.Minutes || FaceTickStyle == FaceTickStyles.Both)) || (i % 5 == 0 && FaceTickStyle == FaceTickStyles.Minutes))
+									else if ((i % 5 != 0 && (AnalogClockProperties.FaceTickStyle == FaceTickStyles.Minutes || AnalogClockProperties.FaceTickStyle == FaceTickStyles.Both)) || (i % 5 == 0 && AnalogClockProperties.FaceTickStyle == FaceTickStyles.Minutes))
 									{
-										startPoint = new Point((int)((tickRadius - (FaceTickSize.Height / 2)) * Math.Sin(angle)), (int)(-(tickRadius - (FaceTickSize.Height / 2)) * Math.Cos(angle)));
-										pen.Width = FaceTickSize.Width / 2;
+										startPoint = new Point((int)((tickRadius - (AnalogClockProperties.FaceTickSize.Height / 2)) * Math.Sin(angle)), (int)(-(tickRadius - (AnalogClockProperties.FaceTickSize.Height / 2)) * Math.Cos(angle)));
+										pen.Width = AnalogClockProperties.FaceTickSize.Width / 2;
 									}
 									else
 									{
@@ -1545,12 +663,12 @@ namespace FIPToolKit.Models
 							}
 						}
 						//Rim
-						if (DrawRim && RimWidth > 0)
+						if (AnalogClockProperties.DrawRim && AnalogClockProperties.RimWidth > 0)
 						{
-							using (LinearGradientBrush gb = new LinearGradientBrush(rect, RimColorHigh, RimColorLow, RimGradientMode))
+							using (LinearGradientBrush gb = new LinearGradientBrush(rect, AnalogClockProperties.RimColorHigh, AnalogClockProperties.RimColorLow, AnalogClockProperties.RimGradientMode))
 							{
 								pen.Brush = gb;
-								pen.Width = RimWidth;
+								pen.Width = AnalogClockProperties.RimWidth;
 								grfx.DrawEllipse(pen, rectRim);
 							}
 						}
@@ -1575,23 +693,23 @@ namespace FIPToolKit.Models
 							//Define the midpoint of the control as the centre
 							grfx.TranslateTransform(midx, midy + 2);
 							//Draw Numerals on the Face 
-							if (DrawNumerals)
+							if (AnalogClockProperties.DrawNumerals)
 							{
-								int deg = 360 / (TwentyFourHour ? 24 : 12);
-								for (int i = 1; i <= (TwentyFourHour ? 24 : 12); i++)
+								int deg = 360 / (AnalogClockProperties.TwentyFourHour ? 24 : 12);
+								for (int i = 1; i <= (AnalogClockProperties.TwentyFourHour ? 24 : 12); i++)
 								{
-									grfx.DrawString(GetNumeral(i), Font, stringBrush, -1 * GetX(i * deg + 90, radius), -1 * GetY(i * deg + 90, radius), format);
+									grfx.DrawString(GetNumeral(i), AnalogClockProperties.Font, stringBrush, -1 * GetX(i * deg + 90, radius), -1 * GetY(i * deg + 90, radius), format);
 								}
 							}
 							grfx.ResetTransform();
 						}
 					}
 				}
-				if (DrawCaption)
+				if (AnalogClockProperties.DrawCaption)
 				{
-					using (SolidBrush captionBrush = new SolidBrush(CaptionColor))
+					using (SolidBrush captionBrush = new SolidBrush(AnalogClockProperties.CaptionColor))
 					{
-						grfx.DrawString(Name, captionFont, captionBrush, position.X + ((diameter - captionSize.Width) / 2), size.Height - captionSize.Height);
+						grfx.DrawString(AnalogClockProperties.Name, captionFont, captionBrush, position.X + ((diameter - captionSize.Width) / 2), size.Height - captionSize.Height);
 					}
 				}
 				DrawButtons(grfx);
@@ -1605,11 +723,6 @@ namespace FIPToolKit.Models
 				clockFace.Dispose();
 				clockFace = null;
             }
-			if (FaceImage != null)
-			{
-				FaceImage.Dispose();
-				FaceImage = null;
-			}
 			if (Timer != null)
 			{
 				Timer.Abort();
@@ -1619,11 +732,11 @@ namespace FIPToolKit.Models
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockParis
+		static public FIPAnalogClockProperties FIPAnalogClockParis
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+				FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "fr",
@@ -1643,7 +756,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.RoyalBlue,
 					FaceColorLow = Color.SkyBlue,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.Paris_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.Paris_FaceImage,
 					FaceImageFilename = "resources:Paris.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					FaceTickSize = new Size(5, 10),
@@ -1667,18 +780,17 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Romance Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+				return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockSydney
+		static public FIPAnalogClockProperties FIPAnalogClockSydney
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
-				{
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
+                {
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en-AU",
 					DrawCaption = true,
@@ -1697,8 +809,8 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.SkyBlue,
 					FaceColorLow = Color.RoyalBlue,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.Sydney_FaceImage,
-					FaceImageFilename = "resources:Sydney.FaceImage",
+                    FaceImage = FIPToolKit.Properties.Resources.Sydney_FaceImage,
+                    FaceImageFilename = "resources:Sydney.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					FaceTickSize = new Size(5, 10),
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -1721,18 +833,17 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "AUS Eastern Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+				return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockDenver
+		static public FIPAnalogClockProperties FIPAnalogClockDenver
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
-				{
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
+                {
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en-US",
 					DrawCaption = true,
@@ -1751,8 +862,8 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.SkyBlue,
 					FaceColorLow = Color.RoyalBlue,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.Denver_FaceImage,
-					FaceImageFilename = "resources:Denver.FaceImage",
+                    FaceImage = FIPToolKit.Properties.Resources.Denver_FaceImage,
+                    FaceImageFilename = "resources:Denver.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					FaceTickSize = new Size(5, 10),
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -1776,18 +887,17 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Mountain Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockMoscow
+		static public FIPAnalogClockProperties FIPAnalogClockMoscow
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
-				{
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
+                {
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "ru",
 					DrawCaption = true,
@@ -1806,8 +916,8 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Red,
 					FaceColorLow = ColorTranslator.FromHtml("#FF8080"),
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.Moscow_FaceImage,
-					FaceImageFilename = "resources:Moscow.FaceImage",
+                    FaceImage = FIPToolKit.Properties.Resources.Moscow_FaceImage,
+                    FaceImageFilename = "resources:Moscow.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					FaceTickSize = new Size(5, 10),
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -1831,18 +941,17 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Russian Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockLondon
+		static public FIPAnalogClockProperties FIPAnalogClockLondon
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
-				{
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
+                {
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en-GB",
 					DrawCaption = true,
@@ -1861,8 +970,8 @@ namespace FIPToolKit.Models
 					FaceColorHigh = ColorTranslator.FromHtml("#8000FF"),
 					FaceColorLow = ColorTranslator.FromHtml("#FF8080"),
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.London_FaceImage,
-					FaceImageFilename = "resources:London.FaceImage",
+                    FaceImage = FIPToolKit.Properties.Resources.London_FaceImage,
+                    FaceImageFilename = "resources:London.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					FaceTickSize = new Size(5, 10),
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -1886,18 +995,17 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "W. Europe Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockTokyo
+		static public FIPAnalogClockProperties FIPAnalogClockTokyo
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
-				{
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
+                {
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "ja-JP",
 					DrawCaption = true,
@@ -1916,8 +1024,8 @@ namespace FIPToolKit.Models
 					FaceColorHigh = ColorTranslator.FromHtml("#FFFF8A"),
 					FaceColorLow = ColorTranslator.FromHtml("#FFFF80"),
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.Tokyo_FaceImage,
-					FaceImageFilename = "resources:Tokyo.FaceImage",
+                    FaceImage = FIPToolKit.Properties.Resources.Tokyo_FaceImage,
+                    FaceImageFilename = "resources:Tokyo.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					FaceTickSize = new Size(5, 10),
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -1941,18 +1049,17 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Tokyo Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockShanghai
+		static public FIPAnalogClockProperties FIPAnalogClockShanghai
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
-				{
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
+                {
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "zh-CN",
 					DrawCaption = true,
@@ -1971,8 +1078,8 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Khaki,
 					FaceColorLow = ColorTranslator.FromHtml("#FFFF80"),
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.Shanghai_FaceImage,
-					FaceImageFilename = "resources:Shanghai.FaceImage",
+                    FaceImage = FIPToolKit.Properties.Resources.Shanghai_FaceImage,
+                    FaceImageFilename = "resources:Shanghai.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					FaceTickSize = new Size(5, 10),
 					Font = new Font("Palatino Linotype", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0))),
@@ -1996,18 +1103,17 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "China Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		public static FIPAnalogClock FIPAnalogClockChicago
+		public static FIPAnalogClockProperties FIPAnalogClockChicago
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
-				{
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
+                {
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en-US",
 					DrawCaption = true,
@@ -2026,8 +1132,8 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Red,
 					FaceColorLow = Color.Crimson,
 					FaceGradientMode = LinearGradientMode.Vertical,
-					FaceImage = Properties.Resources.Chicago_FaceImage,
-					FaceImageFilename = "resources:Chicago.FaceImage",
+                    FaceImage = FIPToolKit.Properties.Resources.Chicago_FaceImage,
+                    FaceImageFilename = "resources:Chicago.FaceImage",
 					FaceTickSize = new Size(5, 10),
 					FaceTickStyle = FaceTickStyles.Both,
 					Font = new Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((System.Byte)(0))),
@@ -2051,17 +1157,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Central Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		public static FIPAnalogClock FIPAnalogClockKarachi
+		public static FIPAnalogClockProperties FIPAnalogClockKarachi
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "ur-PK",
@@ -2081,7 +1186,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Red,
 					FaceColorLow = Color.Crimson,
 					FaceGradientMode = LinearGradientMode.Vertical,
-					FaceImage = Properties.Resources.Karachi_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.Karachi_FaceImage,
 					FaceImageFilename = "resources:Karachi.FaceImage",
 					FaceTickSize = new Size(5, 10),
 					FaceTickStyle = FaceTickStyles.Both,
@@ -2106,17 +1211,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Pakistan Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		public static FIPAnalogClock FIPAnalogClockHonolulu
+		public static FIPAnalogClockProperties FIPAnalogClockHonolulu
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en-US",
@@ -2136,7 +1240,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.LightSeaGreen,
 					FaceColorLow = Color.SeaGreen,
 					FaceGradientMode = LinearGradientMode.Vertical,
-					FaceImage = Properties.Resources.Honolulu_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.Honolulu_FaceImage,
 					FaceImageFilename = "resources:Honolulu.FaceImage",
 					FaceTickSize = new Size(5, 10),
 					FaceTickStyle = FaceTickStyles.Both,
@@ -2161,17 +1265,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Hawaiian Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		public static FIPAnalogClock FIPAnalogClockHongKong
+		public static FIPAnalogClockProperties FIPAnalogClockHongKong
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "zh-Hant",
@@ -2191,7 +1294,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.DimGray,
 					FaceColorLow = Color.LightGray,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.HongKong_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.HongKong_FaceImage,
 					FaceImageFilename = "resources:HongKong.FaceImage",
 					FaceTickSize = new Size(5, 10),
 					FaceTickStyle = FaceTickStyles.Both,
@@ -2216,17 +1319,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "China Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		public static FIPAnalogClock FIPAnalogClockNewYork
+		public static FIPAnalogClockProperties FIPAnalogClockNewYork
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en-US",
@@ -2246,7 +1348,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Silver,
 					FaceColorLow = Color.LightGray,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.NewYork_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.NewYork_FaceImage,
 					FaceImageFilename = "resources:NewYork.FaceImage",
 					FaceTickSize = new Size(5, 10),
 					FaceTickStyle = FaceTickStyles.Both,
@@ -2270,16 +1372,15 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Eastern Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
-		public static FIPAnalogClock FIPAnalogClockBerlin
+		public static FIPAnalogClockProperties FIPAnalogClockBerlin
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "de",
@@ -2299,7 +1400,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Silver,
 					FaceColorLow = Color.LightGray,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.Berlin_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.Berlin_FaceImage,
 					FaceImageFilename = "resources:Berlin.FaceImage",
 					FaceTickSize = new Size(5, 10),
 					FaceTickStyle = FaceTickStyles.Both,
@@ -2324,17 +1425,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "W. Europe Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		public static FIPAnalogClock FIPAnalogClockLosAngeles
+		public static FIPAnalogClockProperties FIPAnalogClockLosAngeles
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en-US",
@@ -2354,7 +1454,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Silver,
 					FaceColorLow = Color.LightGray,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.LosAngeles_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.LosAngeles_FaceImage,
 					FaceImageFilename = "resources:LosAngeles.FaceImage",
 					FaceTickSize = new Size(5, 10),
 					FaceTickStyle = FaceTickStyles.Both,
@@ -2378,17 +1478,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = "Pacific Standard Time"
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockCessnaClock1
+		static public FIPAnalogClockProperties FIPAnalogClockCessnaClock1
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en",
@@ -2408,7 +1507,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Black,
 					FaceColorLow = Color.Black,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.CessnaClock1_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.CessnaClock1_FaceImage,
 					FaceImageFilename = "resources:CessnaClock1.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -2430,17 +1529,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = TimeZoneInfo.Local.Id
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockCessnaClock2
+		static public FIPAnalogClockProperties FIPAnalogClockCessnaClock2
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en",
@@ -2460,7 +1558,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Black,
 					FaceColorLow = Color.Black,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.CessnaClock2_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.CessnaClock2_FaceImage,
 					FaceImageFilename = "resources:CessnaClock2.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -2483,17 +1581,16 @@ namespace FIPToolKit.Models
 					TimeZone = "Greenwich Standard Time",
 					TwentyFourHour = true
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockCessnaAirspeed
+		static public FIPAnalogClockProperties FIPAnalogClockCessnaAirspeed
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en",
@@ -2513,7 +1610,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Black,
 					FaceColorLow = Color.Black,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.CessnaAirspeed2_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.CessnaAirspeed2_FaceImage,
 					FaceImageFilename = "resources:CessnaAirspeed2.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -2538,17 +1635,16 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = TimeZoneInfo.Local.Id
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 
 		[XmlIgnore]
-		static public FIPAnalogClock FIPAnalogClockCessnaAltimeter
+		static public FIPAnalogClockProperties FIPAnalogClockCessnaAltimeter
 		{
 			get
 			{
-				FIPAnalogClock clock = new FIPAnalogClock()
+                FIPAnalogClockProperties properties = new FIPAnalogClockProperties()
 				{
 					CaptionColor = System.Drawing.Color.WhiteSmoke,
 					//CultureCode = "en",
@@ -2568,7 +1664,7 @@ namespace FIPToolKit.Models
 					FaceColorHigh = Color.Black,
 					FaceColorLow = Color.Black,
 					FaceGradientMode = LinearGradientMode.BackwardDiagonal,
-					FaceImage = Properties.Resources.CessnaAltimeter_FaceImage,
+					FaceImage = FIPToolKit.Properties.Resources.CessnaAltimeter_FaceImage,
 					FaceImageFilename = "resources:CessnaAltimeter.FaceImage",
 					FaceTickStyle = FaceTickStyles.Both,
 					Font = new Font("Arial", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0))),
@@ -2593,8 +1689,7 @@ namespace FIPToolKit.Models
 					TextRenderingHint = TextRenderingHint.AntiAlias,
 					TimeZone = TimeZoneInfo.Local.Id,
 				};
-				clock.IsDirty = false;
-				return clock;
+                return properties;
 			}
 		}
 	}

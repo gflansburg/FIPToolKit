@@ -200,9 +200,12 @@ namespace FIPToolKit.Models
             Label = String.Empty;
         }
 
-        public virtual bool IsButtonEnabled()
+        public virtual bool ButtonEnabled
         {
-            return !String.IsNullOrEmpty(Label) || !String.IsNullOrEmpty(IconFilename);
+            get
+            {
+                return (!string.IsNullOrEmpty(Label) || !string.IsNullOrEmpty(IconFilename));
+            }
         }
 
         public virtual void Execute()

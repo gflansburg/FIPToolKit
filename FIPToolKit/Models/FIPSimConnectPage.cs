@@ -15,7 +15,6 @@ using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-    [Serializable]
     public abstract class FIPSimConnectPage : FIPPage
     {
         private static IntPtr _mainWindowHandle;
@@ -80,7 +79,7 @@ namespace FIPToolKit.Models
         public delegate void SimConnectAircraftChangeEventHandler(int aircraftId);
         public static event SimConnectAircraftChangeEventHandler OnAircraftChange;
 
-        public FIPSimConnectPage() : base()
+        public FIPSimConnectPage(FIPPageProperties properties) : base(properties)
         {
             Initialize();
             SimConnect.OnError += SimConnect_OnError;
@@ -91,7 +90,6 @@ namespace FIPToolKit.Models
             SimConnect.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
             SimConnect.OnAirportListReceived += SimConnect_OnAirportListReceived;
             SimConnect.OnTrafficReceived += SimConnect_OnTrafficReceived;
-            IsDirty = false;
         }
 
         protected virtual void SimConnect_OnTrafficReceived(uint objectId, Aircraft aircraft, TrafficEvent eventType)

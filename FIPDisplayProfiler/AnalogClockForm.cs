@@ -17,7 +17,7 @@ namespace FIPDisplayProfiler
 {
     public partial class AnalogClockForm : Form
     {
-        public FIPAnalogClock AnalogClock { get; set; }
+        public FIPAnalogClockProperties AnalogClock { get; set; }
 
         private Font _fontHolder;
 
@@ -579,7 +579,7 @@ namespace FIPDisplayProfiler
             btnRimColorLow.Enabled = cbDrawTickMarks.Checked || cbDrawRim.Checked;
         }
 
-        private void LoadAnalogClock(FIPAnalogClock analogClock)
+        private void LoadAnalogClock(FIPAnalogClockProperties analogClock)
         {
             tbName.Text = analogClock.Name;
             cbDrawCaption.Checked = analogClock.DrawCaption;
@@ -666,7 +666,7 @@ namespace FIPDisplayProfiler
             AnalogClockTemplateDialog dlg = new AnalogClockTemplateDialog();
             if(dlg.ShowDialog(this) == DialogResult.OK)
             {
-                FIPAnalogClock template = null;
+                FIPAnalogClockProperties template = null;
                 switch(dlg.TemplateType)
                 {
                     case AnalogClockTemplateTypes.CessnaAirspeed:

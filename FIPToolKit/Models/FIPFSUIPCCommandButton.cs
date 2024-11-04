@@ -211,13 +211,16 @@ namespace FIPToolKit.Models
             base.Execute();
         }
 
-        public override bool IsButtonEnabled()
+        public override bool ButtonEnabled
         {
-            return !String.IsNullOrEmpty(Label) && FIPFSUIPCPage.IsConnected && FIPFSUIPCPage.ReadyToFly == FlightSim.ReadyToFly.Ready &&
-                ((Control.HasValue && ControlSet == FIPFSUIPCControlSet.FsControl) || 
-                 (FSUIPCControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcControl) || 
-                 (FSUIPCAutoPilotControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcAutoPilotControl) || 
-                 (FSUIPCAxisControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcAxisControl));
+            get
+            {
+                return (!string.IsNullOrEmpty(Label) && FIPFSUIPCPage.IsConnected && FIPFSUIPCPage.ReadyToFly == FlightSim.ReadyToFly.Ready &&
+                    ((Control.HasValue && ControlSet == FIPFSUIPCControlSet.FsControl) ||
+                     (FSUIPCControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcControl) ||
+                     (FSUIPCAutoPilotControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcAutoPilotControl) ||
+                     (FSUIPCAxisControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcAxisControl)));
+            }
         }
 
         private static string FixStringExceptions(string text)

@@ -6,6 +6,7 @@ using Microsoft.Web.WebView2.Core;
 using Saitek.DirectOutput;
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -19,9 +20,13 @@ namespace FIPDisplayProfiler
         private global::FIPDisplayProfiler.ToolStripSubMenu leftToolStripMenuItem;
         private global::FIPDisplayProfiler.ToolStripSubMenu rightToolStripMenuItem;
 
+        public event FIPVideoPlayer.FIPVideoPlayerEventHandler OnVideoPlayerActive;
+        public event FIPVideoPlayer.FIPVideoPlayerEventHandler OnVideoPlayerInactive;
+        public event FIPSpotifyPlayer.FIPCanPlayEventHandler OnPlayerCanPlay;
+
         public IntPtr MainWindowHandle { get; set; }
         private FIPDevice _device;
-        public FIPPage SelectedPage { get; private set; }
+        public FIPPageProperties SelectedPage { get; private set; }
         public FIPDevice Device
         {
             get
@@ -43,8 +48,8 @@ namespace FIPDisplayProfiler
 
         private void Device_OnPageRemoved(object sender, FIPDeviceEventArgs e)
         {
-            lbPages.Items.Remove(e.Page);
-            lbPages.SelectedItem = Device.CurrentPage;
+            lbPages.Items.Remove(e.Page.Properties);
+            lbPages.SelectedItem = Device.CurrentPage.Properties;
             pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
             btnDelete.Enabled = lbPages.SelectedIndex != -1;
             btnMoveUp.Enabled = lbPages.SelectedIndex > 0;
@@ -60,7 +65,7 @@ namespace FIPDisplayProfiler
         {
             for (int i = 0; i < lbPages.Items.Count; i++)
             {
-                FIPPage fipPage = lbPages.Items[i] as FIPPage;
+                FIPPageProperties fipPage = lbPages.Items[i] as FIPPageProperties;
                 if (fipPage.Page > page)
                 {
                     return i;
@@ -73,7 +78,7 @@ namespace FIPDisplayProfiler
         {
             for (int i = 0; i < lbPages.Items.Count; i++)
             {
-                FIPPage fipPage = lbPages.Items[i] as FIPPage;
+                FIPPageProperties fipPage = lbPages.Items[i] as FIPPageProperties;
                 if (fipPage.Page == page)
                 {
                     return i;
@@ -84,7 +89,7 @@ namespace FIPDisplayProfiler
 
         private void Device_OnPageAdded(object sender, FIPDeviceEventArgs e)
         {
-            lbPages.Items.Insert(InsertIndex(e.Page.Page), e.Page);
+            lbPages.Items.Insert(InsertIndex(e.Page.Properties.Page), e.Page.Properties);
             e.Page.OnImageChange += Page_OnImageChange;
             e.Page.OnStateChange += Page_OnStateChange;
             if (e.Page.GetType() == typeof(FIPSpotifyPlayer))
@@ -93,12 +98,21 @@ namespace FIPDisplayProfiler
                 ((FIPSpotifyPlayer)e.Page).CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
                 ((FIPSpotifyPlayer)e.Page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
                 ((FIPSpotifyPlayer)e.Page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
-                ((FIPSpotifyPlayer)e.Page).OnBeginAuthentication += DeviceControl_OnBeginAuthentication;
-                ((FIPSpotifyPlayer)e.Page).OnEndAuthentication += DeviceControl_OnEndAuthentication;
+                ((FIPSpotifyPlayer)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
+            }
+            else if (e.Page.GetType() == typeof(FIPMusicPlayer))
+            {
+                ((FIPMusicPlayer)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPMusicPlayer)e.Page).Init();
+            }
+            else if (e.Page.GetType() == typeof(FIPVideoPlayer))
+            {
+                ((FIPVideoPlayer)e.Page).OnActive += Page_OnActive;
+                ((FIPVideoPlayer)e.Page).OnInactive += Page_OnInactive;
             }
             if (e.IsActive)
             {
-                lbPages.SelectedItem = e.Page;
+                lbPages.SelectedItem = e.Page.Properties;
             }
             pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
             btnDelete.Enabled = lbPages.SelectedIndex != -1;
@@ -126,7 +140,7 @@ namespace FIPDisplayProfiler
                 {
                     SelectPage(e.Page);
                 }
-                else if (SelectedPage != null && SelectedPage == e.Page)
+                else if (SelectedPage != null && SelectedPage == e.Page.Properties)
                 {
                     lbPages.SelectedItem = SelectedPage = null;
                     SetFIPImage(Device.GetDefaultPageImage);
@@ -205,17 +219,26 @@ namespace FIPDisplayProfiler
 
         public int AddPage(FIPPage page, bool select = false)
         {
-            int index = lbPages.Items.Add(page);
+            int index = lbPages.Items.Add(page.Properties);
             lbPages.SelectedIndex = index;
-            SelectedPage = lbPages.SelectedItem as FIPPage;
+            SelectedPage = lbPages.SelectedItem as FIPPageProperties;
             if (page.GetType() == typeof(FIPSpotifyPlayer))
             {
                 ((FIPSpotifyPlayer)page).Browser = WebView21;
                 ((FIPSpotifyPlayer)page).CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
                 ((FIPSpotifyPlayer)page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
                 ((FIPSpotifyPlayer)page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
-                ((FIPSpotifyPlayer)page).OnBeginAuthentication += DeviceControl_OnBeginAuthentication;
-                ((FIPSpotifyPlayer)page).OnEndAuthentication += DeviceControl_OnEndAuthentication;
+                ((FIPSpotifyPlayer)page).OnCanPlay += DeviceControl_OnCanPlay;
+            }
+            else if (page.GetType() == typeof(FIPMusicPlayer))
+            {
+                ((FIPMusicPlayer)page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPMusicPlayer)page).Init();
+            }
+            else if (page.GetType() == typeof(FIPVideoPlayer))
+            {
+                ((FIPVideoPlayer)page).OnActive += Page_OnActive;
+                ((FIPVideoPlayer)page).OnInactive += Page_OnInactive;
             }
             return index;
         }
@@ -260,7 +283,8 @@ namespace FIPDisplayProfiler
         private void btnMoveUp_Click(object sender, EventArgs e)
         {
             int index = lbPages.SelectedIndex;
-            FIPPage page = lbPages.SelectedItem as FIPPage;
+            FIPPageProperties properties = lbPages.SelectedItem as FIPPageProperties;
+            FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == properties);
             lbPages.Items.Remove(page);
             lbPages.Items.Insert(index - 1, page);
             lbPages.SelectedIndex = index - 1;
@@ -269,7 +293,8 @@ namespace FIPDisplayProfiler
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            FIPPage page = lbPages.SelectedItem as FIPPage;
+            FIPPageProperties properties = lbPages.SelectedItem as FIPPageProperties;
+            FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == properties);
             if (page != null)
             {
                 if (MessageBox.Show(this, "Are you sure you wish to delete this page?", "Delete Page", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -284,7 +309,8 @@ namespace FIPDisplayProfiler
         private void btnMoveDown_Click(object sender, EventArgs e)
         {
             int index = lbPages.SelectedIndex;
-            FIPPage page = lbPages.SelectedItem as FIPPage;
+            FIPPageProperties properties = lbPages.SelectedItem as FIPPageProperties;
+            FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == properties);
             lbPages.Items.Remove(page);
             lbPages.Items.Insert(index + 1, page);
             lbPages.SelectedIndex = index + 1;
@@ -303,48 +329,62 @@ namespace FIPDisplayProfiler
                             AnalogClockForm form = new AnalogClockForm();
                             if (dlg.Settable)
                             {
-                                form.AnalogClock = new FIPSettableAnalogClock();
+                                form.AnalogClock = new FIPSettableAnalogClockProperties();
+                                if (form.ShowDialog(this) == DialogResult.OK)
+                                {
+                                    Device.AddPage(new FIPSettableAnalogClock(form.AnalogClock as FIPSettableAnalogClockProperties), true);
+                                }
                             }
                             else
                             {
-                                form.AnalogClock = new FIPAnalogClock();
-                            }
-                            if (form.ShowDialog(this) == DialogResult.OK)
-                            {
-                                Device.AddPage(form.AnalogClock, true);
+                                form.AnalogClock = new FIPAnalogClockProperties();
+                                if (form.ShowDialog(this) == DialogResult.OK)
+                                {
+                                    Device.AddPage(new FIPAnalogClock(form.AnalogClock), true);
+                                }
                             }
                         }
                         break;
                     case PageType.Slideshow:
                         {
-                            FIPPage page = new FIPSlideShow();
                             SlideShowForm form = new SlideShowForm()
                             {
-                                SlideShow = page as FIPSlideShow
+                                SlideShow = new FIPSlideShowProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.SlideShow, true);
+                                Device.AddPage(new FIPSlideShow(form.SlideShow), true);
                             }
                         }
                         break;
                     case PageType.VideoPlayer:
                         {
-                            FIPVideoPlayer page = new FIPVideoPlayer();
-                            page.OnSettingsUpdated += Page_OnSettingsUpdated;
                             VideoPlayerForm form = new VideoPlayerForm()
                             {
-                                VideoPlayer = page
+                                VideoPlayer = new FIPVideoPlayerProperties()
                             };
                             if(form.ShowDialog(this) == DialogResult.OK)
                             {
-                                form.VideoPlayer.Name = form.VideoName;
-                                form.VideoPlayer.Filename = form.Filename;
-                                form.VideoPlayer.Font = form.PlayerFont;
-                                form.VideoPlayer.FontColor = form.FontColor;
-                                form.VideoPlayer.MaintainAspectRatio = form.MaintainAspectRatio;
-                                form.VideoPlayer.IsDirty = true;
-                                Device.AddPage(form.VideoPlayer, true);
+                                FIPVideoPlayer page = new FIPVideoPlayer(form.VideoPlayer);
+                                page.OnSettingsUpdated += Page_OnSettingsUpdated;
+                                page.OnActive += Page_OnActive;
+                                page.OnInactive += Page_OnInactive;
+                                Device.AddPage(page, true);
+                            }
+                        }
+                        break;
+                    case PageType.MusicPlayer:
+                        {
+                            MusicPlayerForm form = new MusicPlayerForm()
+                            {
+                                MusicPlayer = new FIPMusicPlayerProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                FIPMusicPlayer page = new FIPMusicPlayer(form.MusicPlayer);
+                                page.OnCanPlay += DeviceControl_OnCanPlay;
+                                page.Init();
+                                Device.AddPage(page, true);
                             }
                         }
                         break;
@@ -358,41 +398,39 @@ namespace FIPDisplayProfiler
                                     return;
                                 }
                             }
-                            FIPSpotifyPlayer page = new FIPSpotifyPlayer();
-                            page.Browser = WebView21;
-                            page.CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
-                            page.ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
-                            page.OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
-                            page.OnBeginAuthentication += DeviceControl_OnBeginAuthentication;
-                            page.OnEndAuthentication += DeviceControl_OnEndAuthentication;
                             SpotifyControllerForm form = new SpotifyControllerForm()
                             {
-                                SpotifyController = page
+                                SpotifyController = new FIPSpotifyPlayerProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.SpotifyController, true);
+                                FIPSpotifyPlayer page = new FIPSpotifyPlayer(form.SpotifyController);
+                                page.Browser = WebView21;
+                                page.CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
+                                page.ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
+                                page.OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
+                                page.OnCanPlay += DeviceControl_OnCanPlay;
+                                Device.AddPage(page, true);
                             }
                         }
                         break;
                     case PageType.ScreenMirror:
                         {
-                            FIPPage page = new FIPScreenMirror();
                             ScreenMirrorForm form = new ScreenMirrorForm()
                             {
-                                Page = page as FIPScreenMirror
+                                Page = new FIPScreenMirrorProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
                                 foreach (FIPPage fipPage in Device.Pages)
                                 {
-                                    if (fipPage.GetType() == typeof(FIPScreenMirror) && ((FIPScreenMirror)fipPage).ScreenIndex == form.Page.ScreenIndex)
+                                    if (fipPage.GetType() == typeof(FIPScreenMirror) && ((FIPScreenMirrorProperties)fipPage.Properties).ScreenIndex == form.Page.ScreenIndex)
                                     {
                                         MessageBox.Show(this, "You can only have one Screen Mirror per screen per device.", "Screen Mirror", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                                         return;
                                     }
                                 }
-                                Device.AddPage(form.Page, true);
+                                Device.AddPage(new FIPScreenMirror(form.Page), true);
                             }
                         }
                         break;
@@ -406,7 +444,7 @@ namespace FIPDisplayProfiler
                                     return;
                                 }
                             }
-                            Device.AddPage(new FIPFlightShare(), true);
+                            Device.AddPage(new FIPFlightShare(new FIPPageProperties()), true);
                         }
                         break;
                     case PageType.SimConnectMap:
@@ -419,14 +457,13 @@ namespace FIPDisplayProfiler
                                     return;
                                 }
                             }
-                            FIPPage page = new FIPSimConnectMap();
                             SimConnectMapForm form = new SimConnectMapForm()
                             {
-                                SimMap = page as FIPSimConnectMap
+                                SimMap = new FIPMapProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.SimMap, true);
+                                Device.AddPage(new FIPSimConnectMap(form.SimMap), true);
                             }
                         }
                         break;
@@ -440,29 +477,26 @@ namespace FIPDisplayProfiler
                                     return;
                                 }
                             }
-                            FIPPage page = new FIPSimConnectAirspeed();
                             AirspeedForm form = new AirspeedForm()
                             {
-                                AirspeedGauge = page,
-                                AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
+                                AirspeedGauge = new FIPAirspeedProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                ((FIPSimConnectAirspeed)form.AirspeedGauge).AutoSelectAircraft = form.AutoSelectAircraft;
-                                Device.AddPage(form.AirspeedGauge, true);
+                                FIPSimConnectAirspeed page = new FIPSimConnectAirspeed(form.AirspeedGauge);
+                                Device.AddPage(page, true);
                             }
                         }
                         break;
                     case PageType.SimConnectAltimeter:
                         {
-                            FIPPage page = new FIPSimConnectAltimeter();
                             AltimeterForm form = new AltimeterForm()
                             {
-                                Altimeter = page as FIPSimConnectAltimeter
+                                Altimeter = new FIPAltimeterProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.Altimeter, true);
+                                Device.AddPage(new FIPSimConnectAltimeter(form.Altimeter), true);
                             }
                         }
                         break;
@@ -476,14 +510,13 @@ namespace FIPDisplayProfiler
                                     return;
                                 }
                             }
-                            FIPPage page = new FIPFSUIPCMap();
                             FSUIPCMapForm form = new FSUIPCMapForm()
                             {
-                                FSUIPCMap = page as FIPFSUIPCMap
+                                FSUIPCMap = new FIPMapProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.FSUIPCMap, true);
+                                Device.AddPage(new FIPFSUIPCMap(form.FSUIPCMap), true);
                             }
                         }
                         break;
@@ -497,29 +530,25 @@ namespace FIPDisplayProfiler
                                     return;
                                 }
                             }
-                            FIPPage page = new FIPFSUIPCAirspeed();
                             AirspeedForm form = new AirspeedForm()
                             {
-                                AirspeedGauge = page,
-                                AutoSelectAircraft = ((FIPFSUIPCAirspeed)page).AutoSelectAircraft
+                                AirspeedGauge = new FIPAirspeedProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                ((FIPFSUIPCAirspeed)form.AirspeedGauge).AutoSelectAircraft = form.AutoSelectAircraft;
-                                Device.AddPage(form.AirspeedGauge, true);
+                                Device.AddPage(new FIPFSUIPCAirspeed(form.AirspeedGauge), true);
                             }
                         }
                         break;
                     case PageType.FSUIPCAltimeter:
                         {
-                            FIPPage page = new FIPFSUIPCAltimeter();
                             AltimeterForm form = new AltimeterForm()
                             {
-                                Altimeter = page as FIPFSUIPCAltimeter
+                                Altimeter = new FIPAltimeterProperties()
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(form.Altimeter, true);
+                                Device.AddPage(new FIPFSUIPCAltimeter(form.Altimeter), true);
                             }
                         }
                         break;
@@ -554,7 +583,7 @@ namespace FIPDisplayProfiler
                 {
                     if (SelectedPage != null)
                     {
-                        if (lbPages.Items.Contains(e.Page) && e.Page == SelectedPage)
+                        if (lbPages.Items.Contains(e.Page.Properties) && e.Page.Properties == SelectedPage)
                         {
                             if (e.Page.GetType() != typeof(FIPVideoPlayer) || (e.Page.GetType() == typeof(FIPVideoPlayer) && Properties.Settings.Default.PreviewVideo))
                             {
@@ -577,33 +606,41 @@ namespace FIPDisplayProfiler
         {
             if (page != null)
             {
-                lbPages.SelectedItem = page;
-                SelectedPage = page;
+                lbPages.SelectedItem = page.Properties;
+                SelectedPage = page.Properties;
             }
         }
 
         private void lbPages_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(SelectedPage != null /*&& SelectedPage != Device.CurrentPage*/)
+            if (SelectedPage != null /*&& SelectedPage != Device.CurrentPage*/)
             {
-                SelectedPage.Inactive();
+                FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (page != null)
+                {
+                    page.Inactive();
+                }
             }
-            SelectedPage = lbPages.SelectedItem as FIPPage;
+            SelectedPage = lbPages.SelectedItem as FIPPageProperties;
             if (SelectedPage == null)
             {
                 SetFIPImage(Device.GetDefaultPageImage);
             }
             else
             {
-                SetFIPImage(SelectedPage.Image != null ? SelectedPage.Image : Device.GetDefaultPageImage);
-                //if (SelectedPage != Device.CurrentPage)
+                FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (page != null)
                 {
-                    SelectedPage.Active();
-                    foreach (FIPPage p in Device.Pages)
+                    SetFIPImage(page.Image != null ? page.Image : Device.GetDefaultPageImage);
+                    //if (SelectedPage != Device.CurrentPage)
                     {
-                        if (p != SelectedPage)
+                        page.Active();
+                        foreach (FIPPage p in Device.Pages)
                         {
-                            p.Inactive();
+                            if (p != page)
+                            {
+                                p.Inactive();
+                            }
                         }
                     }
                 }
@@ -619,14 +656,15 @@ namespace FIPDisplayProfiler
             int index = lbPages.IndexFromPoint(e.Location);
             if (index != -1)
             {
-                FIPPage page = lbPages.Items[index] as FIPPage;
+                FIPPageProperties properties = lbPages.Items[index] as FIPPageProperties;
+                FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == properties);
                 if (page != null)
                 {
                     if (typeof(FIPAnalogClock).IsAssignableFrom(page.GetType()))
                     {
                         AnalogClockForm dlg = new AnalogClockForm()
                         {
-                            AnalogClock = page as FIPAnalogClock
+                            AnalogClock = ((FIPAnalogClock)page).Properties as FIPAnalogClockProperties
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
@@ -639,7 +677,7 @@ namespace FIPDisplayProfiler
                     {
                         SlideShowForm dlg = new SlideShowForm()
                         {
-                            SlideShow = page as FIPSlideShow
+                            SlideShow = ((FIPSlideShow)page).Properties as FIPSlideShowProperties
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
@@ -650,16 +688,18 @@ namespace FIPDisplayProfiler
                     }
                     else if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()))
                     {
+                        FIPVideoPlayerProperties properties2 = new FIPVideoPlayerProperties();
+                        PropertyCopier<FIPVideoPlayerProperties, FIPVideoPlayerProperties>.Copy(((FIPVideoPlayer)page).Properties as FIPVideoPlayerProperties, properties2);
                         VideoPlayerForm dlg = new VideoPlayerForm()
                         {
-                            VideoPlayer = page as FIPVideoPlayer
+                            VideoPlayer = properties2
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
                             ((FIPVideoPlayer)page).OnSettingsUpdated += Page_OnSettingsUpdated;
                             this.Invoke((Action)(() =>
                             {
-                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback);
+                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback, dlg.PauseOtherMedia);
                             }));
 
                             /*ThreadPool.QueueUserWorkItem(_ =>
@@ -668,11 +708,19 @@ namespace FIPDisplayProfiler
                             });*/
                         }
                     }
+                    else if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        MusicPlayerForm dlg = new MusicPlayerForm()
+                        {
+                            MusicPlayer = ((FIPMusicPlayer)page).Properties as FIPMusicPlayerProperties
+                        };
+                        dlg.ShowDialog(this);
+                    }
                     else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
                     {
                         SpotifyControllerForm dlg = new SpotifyControllerForm()
                         {
-                            SpotifyController = page as FIPSpotifyPlayer
+                            SpotifyController = ((FIPSpotifyPlayer)page).Properties as FIPSpotifyPlayerProperties
                         };
                         dlg.ShowDialog(this);
                     }
@@ -680,14 +728,14 @@ namespace FIPDisplayProfiler
                     {
                         ScreenMirrorForm dlg = new ScreenMirrorForm()
                         {
-                            Page = page as FIPScreenMirror
+                            Page = ((FIPScreenMirror)page).Properties as FIPScreenMirrorProperties
                         };
                         int screenIndex = dlg.Page.ScreenIndex;
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
                             foreach (FIPPage fipPage in Device.Pages)
                             {
-                                if (fipPage.GetType() == typeof(FIPScreenMirror) && fipPage != page  && ((FIPScreenMirror)fipPage).ScreenIndex == dlg.Page.ScreenIndex)
+                                if (fipPage.GetType() == typeof(FIPScreenMirror) && fipPage != page  && ((FIPScreenMirrorProperties)fipPage.Properties).ScreenIndex == dlg.Page.ScreenIndex)
                                 {
                                     dlg.Page.ScreenIndex = screenIndex;
                                     MessageBox.Show(this, "You can only have one Screen Mirror per screen per device.", "Screen Mirror", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
@@ -700,7 +748,7 @@ namespace FIPDisplayProfiler
                     {
                         AltimeterForm dlg = new AltimeterForm()
                         {
-                            Altimeter = page as FIPFSUIPCAltimeter
+                            Altimeter = ((FIPFSUIPCAltimeter)page).Properties as FIPAltimeterProperties
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
@@ -713,7 +761,7 @@ namespace FIPDisplayProfiler
                     {
                         AltimeterForm dlg = new AltimeterForm()
                         {
-                            Altimeter = page as FIPSimConnectAltimeter
+                            Altimeter = ((FIPSimConnectAltimeter)page).Properties as FIPAltimeterProperties
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
@@ -726,31 +774,23 @@ namespace FIPDisplayProfiler
                     {
                         AirspeedForm dlg = new AirspeedForm()
                         {
-                            AirspeedGauge = page,
-                            AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
+                            AirspeedGauge = ((FIPSimConnectAirspeed)page).Properties as FIPAirspeedProperties
                         };
-                        if (dlg.ShowDialog(this) == DialogResult.OK)
-                        {
-                            ((FIPSimConnectAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
-                        }
+                        dlg.ShowDialog(this);
                     }
                     else if (typeof(FIPSimConnectAirspeed).IsAssignableFrom(page.GetType()))
                     {
                         AirspeedForm dlg = new AirspeedForm()
                         {
-                            AirspeedGauge = page,
-                            AutoSelectAircraft = ((FIPSimConnectAirspeed)page).AutoSelectAircraft
+                            AirspeedGauge = ((FIPSimConnectAirspeed)page).Properties as FIPAirspeedProperties
                         };
-                        if (dlg.ShowDialog(this) == DialogResult.OK)
-                        {
-                            ((FIPSimConnectAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
-                        }
+                        dlg.ShowDialog(this);
                     }
                     else if (typeof(FIPSimConnectAnalogGauge).IsAssignableFrom(page.GetType()))
                     {
                         AnalogGaugeForm dlg = new AnalogGaugeForm()
                         {
-                            AnalogGauge = page
+                            AnalogGauge = new FIPAnalogGaugeProperties()
                         };
                         dlg.ShowDialog(this);
                     }
@@ -758,19 +798,15 @@ namespace FIPDisplayProfiler
                     {
                         AirspeedForm dlg = new AirspeedForm()
                         {
-                            AirspeedGauge = page,
-                            AutoSelectAircraft = ((FIPFSUIPCAirspeed)page).AutoSelectAircraft
+                            AirspeedGauge = ((FIPFSUIPCAirspeed)page).Properties as FIPAirspeedProperties
                         };
-                        if(dlg.ShowDialog(this) == DialogResult.OK)
-                        {
-                            ((FIPFSUIPCAirspeed)dlg.AirspeedGauge).AutoSelectAircraft = dlg.AutoSelectAircraft;
-                        }
+                        dlg.ShowDialog(this);
                     }
                     else if (typeof(FIPFSUIPCAnalogGauge).IsAssignableFrom(page.GetType()))
                     {
                         AnalogGaugeForm dlg = new AnalogGaugeForm()
                         {
-                            AnalogGauge = page
+                            AnalogGauge = new FIPAnalogGaugeProperties()
                         };
                         dlg.ShowDialog(this);
                     }
@@ -778,7 +814,7 @@ namespace FIPDisplayProfiler
                     {
                         SimConnectMapForm dlg = new SimConnectMapForm()
                         {
-                            SimMap = page as FIPSimConnectMap
+                            SimMap = ((FIPSimConnectMap)page).Properties as FIPMapProperties
                         };
                         dlg.ShowDialog(this);
                     }
@@ -786,7 +822,7 @@ namespace FIPDisplayProfiler
                     {
                         FSUIPCMapForm dlg = new FSUIPCMapForm()
                         {
-                            FSUIPCMap = page as FIPFSUIPCMap
+                            FSUIPCMap = ((FIPFSUIPCMap)page).Properties as FIPMapProperties
                         };
                         dlg.ShowDialog(this);
                     }
@@ -805,12 +841,16 @@ namespace FIPDisplayProfiler
             {
                 if (SelectedPage != null)
                 {
-                    pbS1ButtonOn.Visible = SelectedPage.IsLEDOn(SoftButtons.Button1);
-                    pbS2ButtonOn.Visible = SelectedPage.IsLEDOn(SoftButtons.Button2);
-                    pbS3ButtonOn.Visible = SelectedPage.IsLEDOn(SoftButtons.Button3);
-                    pbS4ButtonOn.Visible = SelectedPage.IsLEDOn(SoftButtons.Button4);
-                    pbS5ButtonOn.Visible = SelectedPage.IsLEDOn(SoftButtons.Button5);
-                    pbS6ButtonOn.Visible = SelectedPage.IsLEDOn(SoftButtons.Button6);
+                    FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                    if (page != null)
+                    {
+                        pbS1ButtonOn.Visible = page.IsLEDOn(SoftButtons.Button1);
+                        pbS2ButtonOn.Visible = page.IsLEDOn(SoftButtons.Button2);
+                        pbS3ButtonOn.Visible = page.IsLEDOn(SoftButtons.Button3);
+                        pbS4ButtonOn.Visible = page.IsLEDOn(SoftButtons.Button4);
+                        pbS5ButtonOn.Visible = page.IsLEDOn(SoftButtons.Button5);
+                        pbS6ButtonOn.Visible = page.IsLEDOn(SoftButtons.Button6);
+                    }
                     pbS1ButtonOff.Visible = !pbS1ButtonOn.Visible;
                     pbS2ButtonOff.Visible = !pbS2ButtonOn.Visible;
                     pbS3ButtonOff.Visible = !pbS3ButtonOn.Visible;
@@ -820,8 +860,8 @@ namespace FIPDisplayProfiler
                 }
                 else
                 {
-                    pbS1ButtonOff.Visible = pbS2ButtonOff.Visible = pbS3ButtonOff.Visible = pbS4ButtonOff.Visible = pbS5ButtonOff.Visible = pbS6ButtonOff.Visible = true;
-                    pbS1ButtonOn.Visible = pbS2ButtonOn.Visible = pbS3ButtonOn.Visible = pbS4ButtonOn.Visible = pbS5ButtonOn.Visible = pbS6ButtonOn.Visible = false;
+                    //pbS1ButtonOff.Visible = pbS2ButtonOff.Visible = pbS3ButtonOff.Visible = pbS4ButtonOff.Visible = pbS5ButtonOff.Visible = pbS6ButtonOff.Visible = true;
+                    //pbS1ButtonOn.Visible = pbS2ButtonOn.Visible = pbS3ButtonOn.Visible = pbS4ButtonOn.Visible = pbS5ButtonOn.Visible = pbS6ButtonOn.Visible = false;
                 }
                 pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
             }
@@ -965,16 +1005,20 @@ namespace FIPDisplayProfiler
             if (SelectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
-                if (button != null)
+                FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (page != null)
                 {
-                    colorDialog1.CustomColors = Properties.Settings.Default.CustomColors;
-                    colorDialog1.Color = button.Color;
-                    if (colorDialog1.ShowDialog(this) == DialogResult.OK)
+                    FIPButton button = page.GetButton((SoftButtons)item.Tag);
+                    if (button != null)
                     {
-                        button.Color = colorDialog1.Color;
-                        Properties.Settings.Default.CustomColors = colorDialog1.CustomColors;
-                        Properties.Settings.Default.Save();
+                        colorDialog1.CustomColors = Properties.Settings.Default.CustomColors;
+                        colorDialog1.Color = button.Color;
+                        if (colorDialog1.ShowDialog(this) == DialogResult.OK)
+                        {
+                            button.Color = colorDialog1.Color;
+                            Properties.Settings.Default.CustomColors = colorDialog1.CustomColors;
+                            Properties.Settings.Default.Save();
+                        }
                     }
                 }
             }
@@ -985,18 +1029,22 @@ namespace FIPDisplayProfiler
             if (SelectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
-                if(button != null)
+                FIPPage page = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (page != null)
                 {
-                    SelectedPage.RemoveButton(button);
-                    UpdateLeds();
+                    FIPButton button = page.GetButton((SoftButtons)item.Tag);
+                    if (button != null)
+                    {
+                        page.RemoveButton(button);
+                        UpdateLeds();
+                    }
                 }
             }
         }
 
         private void oSCommandToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPPage selectedPage = SelectedPage;
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
             if(selectedPage != null)
             {
                 bool newButton = false;
@@ -1006,8 +1054,8 @@ namespace FIPDisplayProfiler
                 {
                     button = new FIPOSCommandButton()
                     {
-                        Font = selectedPage.Font,
-                        Color = selectedPage.FontColor,
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
                         SoftButton = (SoftButtons)item.Tag,
                         Page = selectedPage
                     };
@@ -1030,7 +1078,7 @@ namespace FIPDisplayProfiler
 
         private void keyPressToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPPage selectedPage = SelectedPage;
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
             if (selectedPage != null)
             {
                 bool newButton = false;
@@ -1040,8 +1088,8 @@ namespace FIPDisplayProfiler
                 {
                     button = new FIPKeyPressButton()
                     {
-                        Font = selectedPage.Font,
-                        Color = selectedPage.FontColor,
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
                         SoftButton = (SoftButtons)item.Tag,
                         Page = selectedPage
                     };
@@ -1064,7 +1112,7 @@ namespace FIPDisplayProfiler
 
         private void keySequenceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPPage selectedPage = SelectedPage;
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
             if (selectedPage != null)
             {
                 bool newButton = false;
@@ -1074,8 +1122,8 @@ namespace FIPDisplayProfiler
                 {
                     button = new FIPKeySequenceButton()
                     {
-                        Font = selectedPage.Font,
-                        Color = selectedPage.FontColor,
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
                         SoftButton = (SoftButtons)item.Tag,
                         Page = selectedPage
                     };
@@ -1098,7 +1146,7 @@ namespace FIPDisplayProfiler
 
         private void FSUIPCCommandToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPPage selectedPage = SelectedPage;
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
             if (selectedPage != null)
             {
                 bool newButton = false;
@@ -1108,8 +1156,8 @@ namespace FIPDisplayProfiler
                 {
                     button = new FIPFSUIPCCommandButton()
                     {
-                        Font = selectedPage.Font,
-                        Color = selectedPage.FontColor,
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
                         SoftButton = (SoftButtons)item.Tag,
                         Page = selectedPage
                     };
@@ -1132,7 +1180,7 @@ namespace FIPDisplayProfiler
 
         private void FSUIPCCommandSequenceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FIPPage selectedPage = SelectedPage;
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
             if (selectedPage != null)
             {
                 bool newButton = false;
@@ -1142,8 +1190,8 @@ namespace FIPDisplayProfiler
                 {
                     button = new FIPFSUIPCCommandSequenceButton()
                     {
-                        Font = selectedPage.Font,
-                        Color = selectedPage.FontColor,
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
                         SoftButton = (SoftButtons)item.Tag,
                         Page = selectedPage
                     };
@@ -1166,12 +1214,13 @@ namespace FIPDisplayProfiler
 
         private void pbKnobLeft_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Left) && SelectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Right))
+                if (selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Left) && selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Right))
                 {
-                    FIPButton leftButton = SelectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Left);
-                    FIPButton rightButton = SelectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Right);
+                    FIPButton leftButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Left);
+                    FIPButton rightButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Right);
                     volumeControlToolStripMenuItem.Checked = ((leftButton != null && leftButton.GetType() == typeof(FIPWindowsCommandButton) && ((FIPWindowsCommandButton)leftButton).Command.WindowsCommand == FIPWindowsCommands.VolumeDown) && (rightButton != null && rightButton.GetType() == typeof(FIPWindowsCommandButton) && ((FIPWindowsCommandButton)rightButton).Command.WindowsCommand == FIPWindowsCommands.VolumeUp));
                     volumeControlToolStripMenuItem.Visible = (volumeControlToolStripMenuItem.Checked || (leftButton == null && rightButton == null));
                     leftToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
@@ -1184,11 +1233,11 @@ namespace FIPDisplayProfiler
                     Point p = pbKnobLeft.PointToClient(Cursor.Position);
                     if (p.X < pbKnobLeft.Width / 2)
                     {
-                        SelectedPage.ExecuteSoftButton(SoftButtons.Left);
+                        selectedPage.ExecuteSoftButton(SoftButtons.Left);
                     }
                     else
                     {
-                        SelectedPage.ExecuteSoftButton(SoftButtons.Right);
+                        selectedPage.ExecuteSoftButton(SoftButtons.Right);
                     }
                 }
             }
@@ -1196,12 +1245,13 @@ namespace FIPDisplayProfiler
 
         private void pbKnobRight_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Up) && SelectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Down))
+                if (selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Up) && selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Down))
                 {
-                    FIPButton upButton = SelectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Up);
-                    FIPButton downButton = SelectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Down);
+                    FIPButton upButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Up);
+                    FIPButton downButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Down);
                     volumeControlToolStripMenuItem.Checked = ((upButton != null && upButton.GetType() == typeof(FIPWindowsCommandButton) && ((FIPWindowsCommandButton)upButton).Command.WindowsCommand == FIPWindowsCommands.VolumeUp) && (downButton != null && downButton.GetType() == typeof(FIPWindowsCommandButton) && ((FIPWindowsCommandButton)downButton).Command.WindowsCommand == FIPWindowsCommands.VolumeDown));
                     volumeControlToolStripMenuItem.Visible = (volumeControlToolStripMenuItem.Checked || (upButton == null && downButton == null));
                     leftToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
@@ -1214,11 +1264,11 @@ namespace FIPDisplayProfiler
                     Point p = pbKnobRight.PointToClient(Cursor.Position);
                     if(p.X < pbKnobRight.Width / 2)
                     {
-                        SelectedPage.ExecuteSoftButton(SoftButtons.Down);
+                        selectedPage.ExecuteSoftButton(SoftButtons.Down);
                     }
                     else
                     {
-                        SelectedPage.ExecuteSoftButton(SoftButtons.Up);
+                        selectedPage.ExecuteSoftButton(SoftButtons.Up);
                     }
                 }
             }
@@ -1247,7 +1297,11 @@ namespace FIPDisplayProfiler
                 {
                     item.Tag = SoftButtons.Left;
                 }
-                HideContextMenuBindings(SelectedPage.GetButton(SoftButtons.Left));
+                FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (selectedPage != null)
+                {
+                    HideContextMenuBindings(selectedPage.GetButton(SoftButtons.Left));
+                }
             }
             else
             {
@@ -1256,7 +1310,11 @@ namespace FIPDisplayProfiler
                 {
                     item.Tag = SoftButtons.Down;
                 }
-                HideContextMenuBindings(SelectedPage.GetButton(SoftButtons.Down));
+                FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (selectedPage != null)
+                {
+                    HideContextMenuBindings(selectedPage.GetButton(SoftButtons.Down));
+                }
             }
             colorToolStripMenuItem.Visible = false;
         }
@@ -1284,7 +1342,11 @@ namespace FIPDisplayProfiler
                 {
                     item.Tag = SoftButtons.Right;
                 }
-                HideContextMenuBindings(SelectedPage.GetButton(SoftButtons.Right));
+                FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (selectedPage != null)
+                {
+                    HideContextMenuBindings(selectedPage.GetButton(SoftButtons.Right));
+                }
             }
             else
             {
@@ -1293,30 +1355,35 @@ namespace FIPDisplayProfiler
                 {
                     item.Tag = SoftButtons.Up;
                 }
-                HideContextMenuBindings(SelectedPage.GetButton(SoftButtons.Up));
+                FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                if (selectedPage != null)
+                {
+                    HideContextMenuBindings(selectedPage.GetButton(SoftButtons.Up));
+                }
             }
             colorToolStripMenuItem.Visible = false;
         }
 
         private void volumeControlToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 if (contextMenuKnob.Tag == pbKnobLeft)
                 {
                     if (volumeControlToolStripMenuItem.Checked)
                     {
-                        SelectedPage.RemoveButton(SelectedPage.GetButton(SoftButtons.Left));
-                        SelectedPage.RemoveButton(SelectedPage.GetButton(SoftButtons.Right));
+                        selectedPage.RemoveButton(selectedPage.GetButton(SoftButtons.Left));
+                        selectedPage.RemoveButton(selectedPage.GetButton(SoftButtons.Right));
                     }
                     else
                     {
-                        SelectedPage.AddButton(new FIPWindowsCommandButton()
+                        selectedPage.AddButton(new FIPWindowsCommandButton()
                         {
                             Command = FIPWindowsCommandButton.FIPWindowsCommandVolumeDown,
                             SoftButton = Saitek.DirectOutput.SoftButtons.Left
                         });
-                        SelectedPage.AddButton(new FIPWindowsCommandButton()
+                        selectedPage.AddButton(new FIPWindowsCommandButton()
                         {
                             Command = FIPWindowsCommandButton.FIPWindowsCommandVolumeUp,
                             SoftButton = Saitek.DirectOutput.SoftButtons.Right
@@ -1327,17 +1394,17 @@ namespace FIPDisplayProfiler
                 {
                     if (volumeControlToolStripMenuItem.Checked)
                     {
-                        SelectedPage.RemoveButton(SelectedPage.GetButton(SoftButtons.Down));
-                        SelectedPage.RemoveButton(SelectedPage.GetButton(SoftButtons.Up));
+                        selectedPage.RemoveButton(selectedPage.GetButton(SoftButtons.Down));
+                        selectedPage.RemoveButton(selectedPage.GetButton(SoftButtons.Up));
                     }
                     else
                     {
-                        SelectedPage.AddButton(new FIPWindowsCommandButton()
+                        selectedPage.AddButton(new FIPWindowsCommandButton()
                         {
                             Command = FIPWindowsCommandButton.FIPWindowsCommandVolumeDown,
                             SoftButton = Saitek.DirectOutput.SoftButtons.Down
                         });
-                        SelectedPage.AddButton(new FIPWindowsCommandButton()
+                        selectedPage.AddButton(new FIPWindowsCommandButton()
                         {
                             Command = FIPWindowsCommandButton.FIPWindowsCommandVolumeUp,
                             SoftButton = Saitek.DirectOutput.SoftButtons.Up
@@ -1349,13 +1416,14 @@ namespace FIPDisplayProfiler
 
         private void muteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandMute,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1371,13 +1439,14 @@ namespace FIPDisplayProfiler
 
         private void volumeUpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandVolumeUp,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1393,13 +1462,14 @@ namespace FIPDisplayProfiler
 
         private void volumeDownToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandVolumeDown,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1415,13 +1485,14 @@ namespace FIPDisplayProfiler
 
         private void playPauseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandPlayPause,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1437,13 +1508,14 @@ namespace FIPDisplayProfiler
 
         private void stopToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandStop,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1459,13 +1531,14 @@ namespace FIPDisplayProfiler
 
         private void nextTrackToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandNextTrack,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1481,13 +1554,14 @@ namespace FIPDisplayProfiler
 
         private void previousTrackToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandPreviousTrack,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1503,13 +1577,14 @@ namespace FIPDisplayProfiler
 
         private void homeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandHome,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1525,13 +1600,14 @@ namespace FIPDisplayProfiler
 
         private void emailToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandEmail,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1547,13 +1623,14 @@ namespace FIPDisplayProfiler
 
         private void calculatorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
-                FIPButton button = SelectedPage.GetButton((SoftButtons)item.Tag);
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null)
                 {
-                    SelectedPage.AddButton(new FIPWindowsCommandButton()
+                    selectedPage.AddButton(new FIPWindowsCommandButton()
                     {
                         Command = FIPWindowsCommandButton.FIPWindowsCommandCalculator,
                         SoftButton = ((SoftButtons)item.Tag)
@@ -1569,19 +1646,20 @@ namespace FIPDisplayProfiler
 
         private void pbS1Button_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(SoftButtons.Button1))
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button1))
                 {
                     ShowContextMenuBinding();
-                    FIPButton button = SelectedPage.GetButton(SoftButtons.Button1);
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button1);
                     HideContextMenuBindings(button);
                     contextMenuBindType.Tag = SoftButtons.Button1;
                     contextMenuBindType.Show(Cursor.Position);
                 }
                 else
                 {
-                    SelectedPage.ExecuteSoftButton(SoftButtons.Button1);
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button1);
                     UpdateLeds();
                 }
             }
@@ -1589,19 +1667,20 @@ namespace FIPDisplayProfiler
 
         private void pbS2Button_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(SoftButtons.Button2))
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button2))
                 {
                     ShowContextMenuBinding();
-                    FIPButton button = SelectedPage.GetButton(SoftButtons.Button2);
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button2);
                     HideContextMenuBindings(button);
                     contextMenuBindType.Tag = SoftButtons.Button2;
                     contextMenuBindType.Show(Cursor.Position);
                 }
                 else
                 {
-                    SelectedPage.ExecuteSoftButton(SoftButtons.Button2);
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button2);
                     UpdateLeds();
                 }
             }
@@ -1609,19 +1688,20 @@ namespace FIPDisplayProfiler
 
         private void pbS3Button_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(SoftButtons.Button3))
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button3))
                 {
                     ShowContextMenuBinding();
-                    FIPButton button = SelectedPage.GetButton(SoftButtons.Button3);
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button3);
                     HideContextMenuBindings(button);
                     contextMenuBindType.Tag = SoftButtons.Button3;
                     contextMenuBindType.Show(Cursor.Position);
                 }
                 else
                 {
-                    SelectedPage.ExecuteSoftButton(SoftButtons.Button3);
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button3);
                     UpdateLeds();
                 }
             }
@@ -1629,19 +1709,20 @@ namespace FIPDisplayProfiler
 
         private void pbS4Button_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(SoftButtons.Button4))
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button4))
                 {
                     ShowContextMenuBinding();
-                    FIPButton button = SelectedPage.GetButton(SoftButtons.Button4);
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button4);
                     HideContextMenuBindings(button);
                     contextMenuBindType.Tag = SoftButtons.Button4;
                     contextMenuBindType.Show(Cursor.Position);
                 }
                 else
                 {
-                    SelectedPage.ExecuteSoftButton(SoftButtons.Button4);
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button4);
                     UpdateLeds();
                 }
             }
@@ -1649,19 +1730,20 @@ namespace FIPDisplayProfiler
 
         private void pbS5Button_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(SoftButtons.Button5))
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button5))
                 {
                     ShowContextMenuBinding();
-                    FIPButton button = SelectedPage.GetButton(SoftButtons.Button5);
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button5);
                     HideContextMenuBindings(button);
                     contextMenuBindType.Tag = SoftButtons.Button5;
                     contextMenuBindType.Show(Cursor.Position);
                 }
                 else
                 {
-                    SelectedPage.ExecuteSoftButton(SoftButtons.Button5);
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button5);
                     UpdateLeds();
                 }
             }
@@ -1669,19 +1751,20 @@ namespace FIPDisplayProfiler
 
         private void pbS6Button_Click(object sender, EventArgs e)
         {
-            if (SelectedPage != null)
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
             {
-                if (SelectedPage.IsButtonAssignable(SoftButtons.Button6))
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button6))
                 {
                     ShowContextMenuBinding();
-                    FIPButton button = SelectedPage.GetButton(SoftButtons.Button6);
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button6);
                     HideContextMenuBindings(button);
                     contextMenuBindType.Tag = SoftButtons.Button6;
                     contextMenuBindType.Show(Cursor.Position);
                 }
                 else
                 {
-                    SelectedPage.ExecuteSoftButton(SoftButtons.Button6);
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button6);
                     UpdateLeds();
                 }
             }
@@ -1731,21 +1814,25 @@ namespace FIPDisplayProfiler
                 {
                     selectedIndex = lbPages.Items.Count - 1;
                 }
-                uint index = ((FIPPage)lbPages.Items[selectedIndex]).Page;
+                uint index = ((FIPPageProperties)lbPages.Items[selectedIndex]).Page;
                 if (Device != null && Device.ActivePage != index)
                 {
                     lbPages.SelectedIndex = selectedIndex;
-                    FIPPage page = lbPages.SelectedItem as FIPPage;
-                    //Trick the FIP display
-                    Device.DeviceClient.RemovePage(page.Page);
-                    //Re-add the page but don't re-add it to lbPages
-                    Device.DeviceClient.AddPage(page.Page, PageFlags.SetAsActive);
-                    //DirectOutput doesn't fire a page change notification when PageFlags.SetAsActive, so...
-                    Device.CurrentPage = page;
-                    page.Active();
+                    FIPPageProperties properties = lbPages.SelectedItem as FIPPageProperties;
+                    FIPPage page = Device.Pages.FirstOrDefault(p2 => p2.Properties == properties);
+                    if (page != null)
+                    {
+                        //Trick the FIP display
+                        Device.DeviceClient.RemovePage(page.Properties.Page);
+                        //Re-add the page but don't re-add it to lbPages
+                        Device.DeviceClient.AddPage(page.Properties.Page, PageFlags.SetAsActive);
+                        //DirectOutput doesn't fire a page change notification when PageFlags.SetAsActive, so...
+                        Device.CurrentPage = page;
+                        page.Active();
+                    }
                     foreach (FIPPage pg in Device.Pages)
                     {
-                        if (pg != SelectedPage)
+                        if (pg.Properties != SelectedPage)
                         {
                             pg.Inactive();
                         }
@@ -1754,7 +1841,7 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private async void DeviceControl_Load(object sender, EventArgs e)
+        private void DeviceControl_Load(object sender, EventArgs e)
         {
             UpdateLeds();
         }
@@ -1821,14 +1908,6 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void DeviceControl_OnBeginAuthentication(object sender, FIPPageEventArgs e)
-        {
-        }
-
-        private void DeviceControl_OnEndAuthentication(object sender, FIPPageEventArgs e)
-        {
-        }
-
         public void UpdatePreviewVideo()
         {
             if (SelectedPage.GetType() == typeof(FIPVideoPlayer))
@@ -1839,7 +1918,11 @@ namespace FIPDisplayProfiler
                 }
                 else
                 {
-                    SetFIPImage(SelectedPage.Image);
+                    FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+                    if (selectedPage != null)
+                    {
+                        SetFIPImage(selectedPage.Image);
+                    }
                 }
             }
         }
@@ -1852,6 +1935,66 @@ namespace FIPDisplayProfiler
                 {
                     ((FIPSpotifyPlayer)fipPage).CancelAuthenticate();
                     break;
+                }
+            }
+        }
+
+        private void Page_OnInactive(object sender, FIPVideoPlayerEventArgs e)
+        {
+            OnVideoPlayerInactive?.Invoke(sender, e);
+        }
+
+        private void Page_OnActive(object sender, FIPVideoPlayerEventArgs e)
+        {
+            OnVideoPlayerActive?.Invoke(sender, e);
+        }
+
+        private void DeviceControl_OnCanPlay(object sender, FIPCanPlayEventArgs e)
+        {
+            OnPlayerCanPlay?.Invoke(sender, e);
+        }
+
+        public void ResumeOtherMedia()
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    ((FIPSpotifyPlayer)fipPage).ExternalResume();
+                }
+                else if (fipPage.GetType() == typeof(FIPMusicPlayer))
+                {
+                    ((FIPMusicPlayer)fipPage).ExternalResume();
+                }
+            }
+        }
+
+        public void PauseOtherMedia()
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
+                {
+                    ((FIPSpotifyPlayer)fipPage).ExternalPause();
+                }
+                else if (fipPage.GetType() == typeof(FIPMusicPlayer))
+                {
+                    ((FIPMusicPlayer)fipPage).ExternalPause();
+                }
+            }
+        }
+
+        public void CanPlayOther(FIPCanPlayEventArgs e)
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPVideoPlayer))
+                {
+                    e.CanPlay = ((FIPVideoPlayer)fipPage).CanPlayOther;
+                    if (!e.CanPlay)
+                    {
+                        break;
+                    }
                 }
             }
         }

@@ -13,7 +13,7 @@ namespace FIPDisplayProfiler
 {
     public partial class DefaultForm : Form
     {
-        public FIPPage Page { get; set; }
+        public FIPPageProperties Page { get; set; }
         
         private Font _fontHolder;
 

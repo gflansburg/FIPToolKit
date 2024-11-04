@@ -22,13 +22,21 @@ namespace FIPToolKit.Models
         [JsonIgnore]
         public List<NonLinearSetting> NonLinearSettings { get; set; }
 
-        public FIPFSUIPCNonLinearAnalogGauge() : base()
+        public FIPFSUIPCNonLinearAnalogGauge(FIPAnalogGaugeProperties properties) : base(properties)
         {
+            Properties.ControlType = GetType().FullName;
             NonLinearSettings = new List<NonLinearSetting>();
-            IsDirty = false;
             OnConnected += FIPCessnaAirspeedLinear_OnConnected;
             OnQuit += FIPCessnaAirspeedLinear_OnQuit;
             OnReadyToFly += FIPCessnaAirspeedLinear_OnReadyToFly;
+        }
+
+        private FIPAnalogGaugeProperties AnalogGaugeProperties
+        {
+            get
+            {
+                return Properties as FIPAnalogGaugeProperties;
+            }
         }
 
         private void FIPCessnaAirspeedLinear_OnConnected()
@@ -40,14 +48,14 @@ namespace FIPToolKit.Models
         {
             if (readyToFly != ReadyToFly.Ready)
             {
-                Value = 0;
+                AnalogGaugeProperties.Value = 0;
             }
             SetLEDs();
         }
 
         private void FIPCessnaAirspeedLinear_OnQuit()
         {
-            Value = 0;
+            AnalogGaugeProperties.Value = 0;
             SetLEDs();
         }
 
@@ -59,11 +67,11 @@ namespace FIPToolKit.Models
             {
                 foreach (NonLinearSetting setting in NonLinearSettings)
                 {
-                    if (Value > setting.Value)
+                    if (AnalogGaugeProperties.Value > setting.Value)
                     {
                         minSetting = setting;
                     }
-                    else if (Value <= setting.Value)
+                    else if (AnalogGaugeProperties.Value <= setting.Value)
                     {
                         maxSetting = setting;
                         break;
@@ -73,7 +81,7 @@ namespace FIPToolKit.Models
                 {
                     double degreeRange = maxSetting.Degrees - minSetting.Degrees;
                     double valueRange = maxSetting.Value - minSetting.Value;
-                    double value = Value - minSetting.Value;
+                    double value = AnalogGaugeProperties.Value - minSetting.Value;
                     double angle = ((value * degreeRange) / valueRange) + minSetting.Degrees;
                     return angle;
                 }
@@ -85,7 +93,7 @@ namespace FIPToolKit.Models
         {
             try
             {
-                hasDrawnTheNeedle = true;
+                AnalogGaugeProperties.HasDrawnTheNeedle = true;
                 if (gauge == null)
                 {
                     CreateGauge();
@@ -112,10 +120,10 @@ namespace FIPToolKit.Models
                         g.DrawImage(gauge, 0, 0);
                         float midx = rect.X + (rect.Width / 2);
                         float midy = rect.Y + (rect.Height / 2);
-                        using (Pen pen = new Pen(NeedleColor, 4))
+                        using (Pen pen = new Pen(AnalogGaugeProperties.NeedleColor, 4))
                         {
                             g.TranslateTransform(midx, midy);
-                            g.FillEllipse(new SolidBrush(NeedleColor), -6, -6, 13, 13);
+                            g.FillEllipse(new SolidBrush(AnalogGaugeProperties.NeedleColor), -6, -6, 13, 13);
                             pen.Width = (int)Math.Round(radius / 18f);
                             double radians = ((GetAngle() * Math.PI) / 180d);
                             //pen.EndCap = LineCap.ArrowAnchor;

@@ -46,13 +46,14 @@ namespace FIPDisplayProfiler
             this.chkPortraitMode = new System.Windows.Forms.CheckBox();
             this.chkShowControls = new System.Windows.Forms.CheckBox();
             this.chkResumePlayback = new System.Windows.Forms.CheckBox();
+            this.cbPauseOtherMedia = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(313, 103);
+            this.btnCancel.Location = new System.Drawing.Point(313, 133);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 6;
@@ -62,7 +63,7 @@ namespace FIPDisplayProfiler
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(394, 103);
+            this.btnOK.Location = new System.Drawing.Point(394, 133);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -170,7 +171,7 @@ namespace FIPDisplayProfiler
             // chkPortraitMode
             // 
             this.chkPortraitMode.AutoSize = true;
-            this.chkPortraitMode.Location = new System.Drawing.Point(380, 72);
+            this.chkPortraitMode.Location = new System.Drawing.Point(376, 72);
             this.chkPortraitMode.Name = "chkPortraitMode";
             this.chkPortraitMode.Size = new System.Drawing.Size(89, 17);
             this.chkPortraitMode.TabIndex = 52;
@@ -180,7 +181,7 @@ namespace FIPDisplayProfiler
             // chkShowControls
             // 
             this.chkShowControls.AutoSize = true;
-            this.chkShowControls.Location = new System.Drawing.Point(213, 106);
+            this.chkShowControls.Location = new System.Drawing.Point(376, 106);
             this.chkShowControls.Name = "chkShowControls";
             this.chkShowControls.Size = new System.Drawing.Size(94, 17);
             this.chkShowControls.TabIndex = 53;
@@ -197,13 +198,24 @@ namespace FIPDisplayProfiler
             this.chkResumePlayback.Text = "Resume Playback";
             this.chkResumePlayback.UseVisualStyleBackColor = true;
             // 
+            // cbPauseOtherMedia
+            // 
+            this.cbPauseOtherMedia.AutoSize = true;
+            this.cbPauseOtherMedia.Location = new System.Drawing.Point(213, 106);
+            this.cbPauseOtherMedia.Name = "cbPauseOtherMedia";
+            this.cbPauseOtherMedia.Size = new System.Drawing.Size(117, 17);
+            this.cbPauseOtherMedia.TabIndex = 55;
+            this.cbPauseOtherMedia.Text = "Pause Other Media";
+            this.cbPauseOtherMedia.UseVisualStyleBackColor = true;
+            // 
             // VideoPlayerForm
             // 
             this.AcceptButton = this.btnOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(482, 135);
+            this.ClientSize = new System.Drawing.Size(482, 165);
+            this.Controls.Add(this.cbPauseOtherMedia);
             this.Controls.Add(this.chkResumePlayback);
             this.Controls.Add(this.chkShowControls);
             this.Controls.Add(this.chkPortraitMode);
@@ -249,5 +261,6 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.CheckBox chkPortraitMode;
         private System.Windows.Forms.CheckBox chkShowControls;
         private System.Windows.Forms.CheckBox chkResumePlayback;
+        private System.Windows.Forms.CheckBox cbPauseOtherMedia;
     }
 }

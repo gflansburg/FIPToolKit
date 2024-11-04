@@ -16,7 +16,6 @@ using FIPToolKit.FlightSim;
 
 namespace FIPToolKit.Models
 {
-    [Serializable]
     public abstract class FIPFSUIPCPage : FIPPage
     {
         private static int _aircraftId = 0;
@@ -1073,10 +1072,9 @@ namespace FIPToolKit.Models
         public delegate void FSUIPCAircraftChangeEventHandler(int aircraftId);
         public static event FSUIPCAircraftChangeEventHandler OnAircraftChange;
 
-        public FIPFSUIPCPage() : base()
+        public FIPFSUIPCPage(FIPPageProperties properties) : base(properties)
         {
             Initialize();
-            IsDirty = false;
         }
 
         public static void Initialize()

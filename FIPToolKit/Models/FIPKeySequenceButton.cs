@@ -110,9 +110,12 @@ namespace FIPToolKit.Models
             }
         }
 
-        public override bool IsButtonEnabled()
+        public override bool ButtonEnabled
         {
-            return !String.IsNullOrEmpty(Label) && Sequence.Count > 0;
+            get
+            {
+                return (!string.IsNullOrEmpty(Label) && Sequence.Count > 0);
+            }
         }
 
         public override void Dispose()

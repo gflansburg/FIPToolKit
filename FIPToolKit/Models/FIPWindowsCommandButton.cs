@@ -255,9 +255,12 @@ namespace FIPToolKit.Models
             }
         }
 
-        public override bool IsButtonEnabled()
+        public override bool ButtonEnabled
         {
-            return !String.IsNullOrEmpty(Label) && Command.WindowsCommand != FIPWindowsCommands.None;
+            get
+            {
+                return (!string.IsNullOrEmpty(Label) && Command.WindowsCommand != FIPWindowsCommands.None);
+            }
         }
     }
 }

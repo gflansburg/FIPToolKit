@@ -1,6 +1,9 @@
-﻿using System;
+﻿using LibVLCSharp.Shared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +12,145 @@ namespace FIPToolKit.Tools
 {
     public static class StringExtensions
     {
+        static public string MakeKey(this string key)
+        {
+            if (!string.IsNullOrEmpty(key))
+            {
+                key = key.ToCamelCase().Replace(" ", string.Empty).Replace("M3u", "M3U");
+            }
+            return key;
+        }
+
+        public static IEnumerable<KeyValuePair<string, string>> ParseKeyValuePairs(this string attrs, char delimeter = ';')
+        {
+            List<KeyValuePair<string, string>> attributes = new List<KeyValuePair<string, string>>();
+            IEnumerable<string> keyvaluepairs = (attrs.Replace(" =", "=").Replace("= ", "=")).ParseText(delimeter, new char[] { '\"',  '\'' });
+            foreach(string keyvaluepair in keyvaluepairs)
+            {
+                string[] parts = keyvaluepair.Split('=');
+                string key = parts[0].Trim();
+                string value = parts[1].Trim();
+                attributes.Add(new KeyValuePair<string, string>(key, value));
+            }
+            return attributes;
+        }
+
+        public static IEnumerable<string> ParseText(this string line, char delimiter, char[] textQualifiers)
+        {
+
+            if (line == null)
+            {
+                yield break;
+            }
+            else
+            {
+                char prevChar = '\0';
+                char nextChar = '\0';
+                char currentChar = '\0';
+                char currentTextQualifier = '\0';
+                bool inString = false;
+                StringBuilder token = new StringBuilder();
+
+                for (int i = 0; i < line.Length; i++)
+                {
+                    currentChar = line[i];
+                    if (i > 0)
+                    {
+                        prevChar = line[i - 1];
+                    }
+                    else
+                    {
+                        prevChar = '\0';
+                    }
+                    if (i + 1 < line.Length)
+                    {
+                        nextChar = line[i + 1];
+                    }
+                    else
+                    {
+                        nextChar = '\0';
+                    }   
+                    if (textQualifiers.Contains(currentChar) && !inString)
+                    {
+                        currentTextQualifier = currentChar;
+                        inString = true;
+                        continue;
+                    }
+                    if (currentChar == currentTextQualifier && inString)
+                    {
+                        currentTextQualifier = '\0';
+                        inString = false;
+                        continue;
+                    }
+                    if (currentChar == delimiter && !inString)
+                    {
+                        yield return token.ToString();
+                        token = token.Remove(0, token.Length);
+                        continue;
+                    }
+                    token = token.Append(currentChar);
+                }
+                yield return token.ToString();
+            }
+        }
+
+        public static IEnumerable<string> ParseAdornments(this string text, ref string title)
+        {
+            List<string> adornments = new List<string>();
+            int index = text.IndexOf("[");
+            while (index != -1)
+            {
+                int begin = text.IndexOf("[", index);
+                int end = text.IndexOf("]", begin);
+                if (end != -1)
+                {
+                    string adornment = text.Substring(begin + 1, (end - 1) - begin).Trim();
+                    if (adornment.Contains('['))
+                    {
+                        end = text.IndexOf("[", begin + 1);
+                        adornment = text.Substring(begin + 1, (end - 1) - begin).Trim();
+                        end--;
+                    }
+                    int space = adornment.IndexOf(' ');
+                    string tag = adornment;
+                    if (space != -1)
+                    {
+                        tag = adornment.Substring(0, space);
+                    }
+                    end++;
+                    if (!adornment.StartsWith("/") && text.Contains(string.Format("[/{0}]", tag)))
+                    {
+                        adornments.Add(adornment);
+                        text = text.Substring(0, begin).Trim() + text.Substring(end).Trim();
+                        end -= (end - begin);
+                    }
+                    else if (adornment.StartsWith("/"))
+                    {
+                        text = text.Substring(0, begin).Trim() + text.Substring(end).Trim();
+                        end -= (end - begin);
+                    }
+                }
+                else
+                {
+                    end = begin + 1;
+                }
+                index = text.IndexOf("[", end);
+            }
+            title = text;
+            return adornments;
+        }
+
+        public static string ToCamelCase(this string s, string language = "en-US")
+        {
+            string str = s.Replace("_", " ").Replace("-", " ");
+            if (str.Length == 0)
+            {
+                return string.Empty;
+            }
+            TextInfo tInfo = new CultureInfo(string.IsNullOrEmpty(language) ? "en-US" : language.Split(',')[0], false).TextInfo;
+            return tInfo.ToTitleCase(str);
+        }
+
         /// <summary>
         /// Returns a new string in which all occurrences of a specified string in the current instance are replaced with another 
         /// specified string according the type of search to use for the specified string.
@@ -142,6 +284,34 @@ namespace FIPToolKit.Tools
         public static TimeSpan Sum<TSource>(this IEnumerable<TSource> source, Func<TSource, TimeSpan> selector)
         {
             return source.Select(selector).Aggregate(TimeSpan.Zero, (t1, t2) => t1 + t2);
+        }
+
+        /// <summary>
+        /// Determines a text file's encoding by analyzing its byte order mark (BOM).
+        /// Defaults to ASCII when detection of the text file's endianness fails.
+        /// </summary>
+        /// <param name="filename">The text file to analyze.</param>
+        /// <returns>The detected encoding.</returns>
+        public static Encoding GetEncoding(this string filename)
+        {
+            // Read the BOM
+            var bom = new byte[4];
+            using (var file = new FileStream(filename, FileMode.Open, FileAccess.Read))
+            {
+                file.Read(bom, 0, 4);
+            }
+
+            // Analyze the BOM
+            if (bom[0] == 0x2b && bom[1] == 0x2f && bom[2] == 0x76) return Encoding.UTF7;
+            if (bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) return Encoding.UTF8;
+            if (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0) return Encoding.UTF32; //UTF-32LE
+            if (bom[0] == 0xff && bom[1] == 0xfe) return Encoding.Unicode; //UTF-16LE
+            if (bom[0] == 0xfe && bom[1] == 0xff) return Encoding.BigEndianUnicode; //UTF-16BE
+            if (bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff) return new UTF32Encoding(true, true);  //UTF-32BE
+
+            // We actually have no idea what the encoding is if we reach this point, so
+            // you may wish to return null instead of defaulting to ASCII
+            return Encoding.ASCII;
         }
     }
 }

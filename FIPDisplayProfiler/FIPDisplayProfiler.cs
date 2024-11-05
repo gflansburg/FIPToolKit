@@ -19,6 +19,8 @@ using System.Diagnostics;
 using SpotifyAPI.Web.Models;
 using Microsoft.Web.WebView2.Core;
 using ProtoBuf.Meta;
+using ProtoBuf.WellKnownTypes;
+using System.Text.RegularExpressions;
 
 namespace FIPDisplayProfiler
 {

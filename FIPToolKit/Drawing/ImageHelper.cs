@@ -8,14 +8,74 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FIPToolKit.Drawing
 {
     public static class ImageHelper
     {
+        public static int TimeoutMs = 60000;
+
+        public static Image FromBase64String(this string base64String)
+        {
+            if (base64String.StartsWith("data:image/"))
+            {
+                base64String = base64String.Substring(base64String.IndexOf("base64,") + 7);
+            }
+            byte[] data = Convert.FromBase64String(base64String);
+            using (var stream = new MemoryStream(data, 0, data.Length))
+            {
+                return Image.FromStream(stream);
+            }
+        }
+
+        public static Image DownloadImageFromUrl(this string imageUrl)
+        {
+            Image image = null;
+            try
+            {
+                if (imageUrl.StartsWith("data:image/"))
+                {
+                    string base64String = imageUrl.Substring(imageUrl.IndexOf("base64,") + 7);
+                    image = base64String.FromBase64String();
+                }
+                else
+                {
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls | SecurityProtocolType.Ssl3;
+                    HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(imageUrl);
+                    webRequest.AllowWriteStreamBuffering = true;
+                    webRequest.Timeout = TimeoutMs;
+                    using (WebResponse webResponse = webRequest.GetResponse())
+                    {
+                        using (Stream stream = webResponse.GetResponseStream())
+                        {
+                            if (imageUrl.ToLower().Contains(".webp") || imageUrl.ToLower().EndsWith("webp") || imageUrl.ToLower().Contains("=webp"))
+                            {
+                                using (WebP webp = new WebP())
+                                {
+                                    image = webp.Load(stream);
+                                }
+                            }
+                            else
+                            {
+                                image = Image.FromStream(stream);
+                            }
+                        }
+                        webResponse.Close();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+            return image;
+        }
+
         public static bool IsImageTransparent(this Bitmap image, string optionalBgColorGhost = null)
         {
             for (int i = 0; i < image.Width; i++)

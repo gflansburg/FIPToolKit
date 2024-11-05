@@ -172,6 +172,7 @@
   <ItemGroup>
     <Compile Include="Drawing\GraphicsHelper.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
+    <Compile Include="Drawing\WebP.cs" />
     <Compile Include="FlightSim\CompassMode.cs" />
     <Compile Include="FlightSim\GearType.cs" />
     <Compile Include="FlightSim\InternationalUnits.cs" />
@@ -181,12 +182,8 @@
     <Compile Include="FlightSim\TemperatureUnit.cs" />
     <Compile Include="FlightSim\VorToFromFlag.cs" />
     <Compile Include="FlightSim\VSpeed.cs" />
-    <Compile Include="M3UParser\M3U.cs" />
-    <Compile Include="M3UParser\Model\Attributes.cs" />
-    <Compile Include="M3UParser\Model\Extm3u.cs" />
-    <Compile Include="M3UParser\Model\Media.cs" />
-    <Compile Include="M3UParser\Model\Title.cs" />
-    <Compile Include="M3UParser\ParseSpecification.cs" />
+    <Compile Include="M3UParser\Media\M3UAdornments.cs" />
+    <Compile Include="M3UParser\Media\M3UAttributes.cs" />
     <Compile Include="Models\FIPAnalogClockProperties.cs" />
     <Compile Include="Models\FIPPageProperties.cs" />
     <Compile Include="Models\FIPSaveType.cs" />
@@ -253,10 +250,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SimpleM3U8Parser\Exceptions\ParserException.cs" />
-    <Compile Include="SimpleM3U8Parser\M3U8Parser.cs" />
-    <Compile Include="SimpleM3U8Parser\Media\M3u8Media.cs" />
-    <Compile Include="SimpleM3U8Parser\Media\M3u8MediaContainer.cs" />
+    <Compile Include="M3UParser\M3UParser.cs" />
+    <Compile Include="M3UParser\Media\M3UMedia.cs" />
+    <Compile Include="M3UParser\Media\M3UMediaContainer.cs" />
     <Compile Include="SpotifyAPI.Web.Auth\AuthorizationCodeAuth.cs" />
     <Compile Include="SpotifyAPI.Web.Auth\AuthUtil.cs" />
     <Compile Include="SpotifyAPI.Web.Auth\CredentialsAuth.cs" />

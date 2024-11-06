@@ -20,6 +20,15 @@ namespace FIPToolKit.Models
         Song
     }
 
+    public enum RadioDistance
+    {
+        Any,
+        NM50,
+        NM100,
+        NM250,
+        NM500
+    }
+
     [Serializable]
     public class FIPMusicPlayerProperties : FIPPageProperties
     {
@@ -27,6 +36,7 @@ namespace FIPToolKit.Models
         public event EventHandler OnShuffleChanged;
         public event EventHandler OnRepeatChanged;
         public event EventHandler OnPathChanged;
+        public event EventHandler OnRadioDistanceChanged;
 
         public FIPMusicPlayerProperties() : base() 
         {
@@ -180,6 +190,24 @@ namespace FIPToolKit.Models
                     _shuffle = value;
                     IsDirty = true;
                     OnShuffleChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        private RadioDistance _radioDistance = RadioDistance.Any;
+        public RadioDistance RadioDistance
+        {
+            get
+            {
+                return _radioDistance;
+            }
+            set
+            {
+                if (_radioDistance != value)
+                {
+                    _radioDistance = value;
+                    IsDirty = true;
+                    OnRadioDistanceChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }

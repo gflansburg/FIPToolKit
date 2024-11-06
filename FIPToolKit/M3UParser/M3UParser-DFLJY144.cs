@@ -39,8 +39,8 @@ namespace M3U
                             string duration = path.Substring(8, path.IndexOf(',') - 8).Trim();
                             if (duration.Contains("="))
                             {
-                                IEnumerable<KeyValuePair<string, string>> attrs = duration.Substring(duration.IndexOf(" ") + 1).ParseKeyValuePairs(' ');
-                                if (attrs != null)
+                                IEnumerable<KeyValuePair<string, string>> attrs = duration.Substring(duration.IndexOf(" ") + 1).ParseKeyValuePairs();
+                                if (attributes != null)
                                 {
                                     attributes = new List<KeyValuePair<string, string>>();
                                     attributes.AddRange(attrs);
@@ -83,7 +83,7 @@ namespace M3U
                             if (title.Contains("="))
                             {
                                 int comma = title.IndexOf(',');
-                                IEnumerable<KeyValuePair<string, string>> attrs = title.Substring(0, comma != -1 ? comma : title.Length).ParseKeyValuePairs(' ');
+                                IEnumerable<KeyValuePair<string, string>> attrs = title.Substring(0, comma != -1 ? comma : title.Length).ParseKeyValuePairs();
                                 if (attrs != null)
                                 {
                                     if (attributes == null)

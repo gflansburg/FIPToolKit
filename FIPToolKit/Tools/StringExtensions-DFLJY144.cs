@@ -29,8 +29,8 @@ namespace FIPToolKit.Tools
             {
                 string[] parts = keyvaluepair.Split('=');
                 string key = parts[0].Trim();
-                string value = string.Join("=", parts.Skip(1)).Trim();
-                attributes.Add(new KeyValuePair<string, string>(key.MakeKey(), value));
+                string value = parts[1].Trim();
+                attributes.Add(new KeyValuePair<string, string>(key, value));
             }
             return attributes;
         }
@@ -118,7 +118,7 @@ namespace FIPToolKit.Tools
                         tag = adornment.Substring(0, space);
                     }
                     end++;
-                    if (!adornment.StartsWith("/") && (text.Contains(string.Format("[/{0}]", tag), StringComparison.OrdinalIgnoreCase) || text.Contains(string.Format("[/ {0}]", tag), StringComparison.OrdinalIgnoreCase)))
+                    if (!adornment.StartsWith("/") && text.Contains(string.Format("[/{0}]", tag)))
                     {
                         adornments.Add(adornment);
                         text = text.Substring(0, begin).Trim() + text.Substring(end).Trim();

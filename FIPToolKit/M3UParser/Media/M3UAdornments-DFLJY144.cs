@@ -12,41 +12,56 @@ namespace M3U.Media
         internal M3UAdornments(IEnumerable<string> adornments)
         {
             Adornments = adornments;
-            string color = Adornments.FirstOrDefault(o => o.StartsWith("COLOR ", StringComparison.OrdinalIgnoreCase) || o.StartsWith("FORECOLOR ", StringComparison.OrdinalIgnoreCase));
+            string color = Adornments.FirstOrDefault(o => o.StartsWith("COLOR ", StringComparison.OrdinalIgnoreCase));
             if (!string.IsNullOrEmpty(color))
             {
                 try
                 {
-                    Color = System.Drawing.Color.FromName(color.Substring(color.IndexOf(' ') + 1).ToCamelCase());
+                    Color = System.Drawing.Color.FromName(color.Substring(6).ToCamelCase());
                 }
                 catch(Exception)
                 {
                 }
             }
-            string backColor = Adornments.FirstOrDefault(o => o.StartsWith("BACKCOLOR ", StringComparison.OrdinalIgnoreCase) || o.StartsWith("BACKGROUNDCOLOR ", StringComparison.OrdinalIgnoreCase));
+            string backColor = Adornments.FirstOrDefault(o => o.StartsWith("BACKCOLOR ", StringComparison.OrdinalIgnoreCase));
             if (!string.IsNullOrEmpty(backColor))
             {
                 try
                 {
-                    BackgroundColor = System.Drawing.Color.FromName(backColor.Substring(backColor.IndexOf(' ') + 1).ToCamelCase());
+                    BackgroundColor = System.Drawing.Color.FromName(backColor.Substring(10).ToCamelCase());
                 }
                 catch (Exception)
                 {
                 }
             }
-            if (Adornments.Count(o => o.Equals("UNDERLINE", StringComparison.OrdinalIgnoreCase)) > 0)
+            else
+            {
+                backColor = Adornments.FirstOrDefault(o => o.StartsWith("BACKGROUNDCOLOR ", StringComparison.OrdinalIgnoreCase));
+                if (!string.IsNullOrEmpty(backColor))
+                {
+                    try
+                    {
+                        BackgroundColor = System.Drawing.Color.FromName(backColor.Substring(16).ToCamelCase());
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+            if (!string.IsNullOrEmpty(Adornments.FirstOrDefault(o => o.Equals("UNDERLINE", StringComparison.OrdinalIgnoreCase))))
             {
                 Underline = true;
             }
-            if (Adornments.Count(o => o.Equals("STRIKEOUT", StringComparison.OrdinalIgnoreCase)) > 0)
+            if (!string.IsNullOrEmpty(Adornments.FirstOrDefault(o => o.Equals("STRIKEOUT", StringComparison.OrdinalIgnoreCase))))
             {
                 Strikeout = true;
             }
-            if (Adornments.Count(o => o.Equals("BOLD", StringComparison.OrdinalIgnoreCase)) > 0)
+            if (!string.IsNullOrEmpty(Adornments.FirstOrDefault(o => o.Equals("BOLD", StringComparison.OrdinalIgnoreCase))))
             {
                 Bold = true;
             }
-            if (adornments.Count(o => o.Equals("ITALIC", StringComparison.OrdinalIgnoreCase) || o.Equals("EM", StringComparison.OrdinalIgnoreCase)) > 0)
+            string em = Adornments.FirstOrDefault(o => o.Equals("ITALIC", StringComparison.OrdinalIgnoreCase) || o.Equals("EM", StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrEmpty(em))
             {
                 Italic = true;
             }

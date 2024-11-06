@@ -103,13 +103,7 @@ namespace FIPToolKit.Drawing
             {
                 _font.Dispose();
             }
-            try
-            {
-                _font = new Font(_fontFamily, _size, Style, _unit, _gdiCharSet);
-            }
-            catch(Exception)
-            {
-            }
+            _font = new Font(_fontFamily, _size, Style, _unit, _gdiCharSet);
         }
 
         private System.Drawing.FontFamily _fontFamily;

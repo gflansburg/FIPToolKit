@@ -176,6 +176,7 @@
     <Compile Include="FlightSim\CompassMode.cs" />
     <Compile Include="FlightSim\GearType.cs" />
     <Compile Include="FlightSim\InternationalUnits.cs" />
+    <Compile Include="FlightSim\IP2Location.cs" />
     <Compile Include="FlightSim\MapType.cs" />
     <Compile Include="FlightSim\NonLinearSetting.cs" />
     <Compile Include="FlightSim\ReadyToFly.cs" />

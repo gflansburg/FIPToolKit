@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RestSharp;
+using SpotifyAPI.Web;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,6 +15,77 @@ namespace FIPToolKit.Tools
 {
     public static class Net
     {
+        public static double Double(this Models.RadioDistance radioDistance)
+        {
+            switch(radioDistance)
+            {
+                case Models.RadioDistance.NM50:
+                    return 50f;
+                case Models.RadioDistance.NM100:
+                    return 100f;
+                case Models.RadioDistance.NM250:
+                    return 250f;
+                case Models.RadioDistance.NM500:
+                    return 500f;
+                default:
+                    return -1f;
+            }
+        }
+
+        public static double DistanceBetween(double lat1, double lon1, double lat2, double lon2)
+        {
+            double rlat1 = Math.PI * lat1 / 180;
+            double rlat2 = Math.PI * lat2 / 180;
+            double theta = lon1 - lon2;
+            double rtheta = Math.PI * theta / 180;
+            double dist = Math.Sin(rlat1) * Math.Sin(rlat2) + Math.Cos(rlat1) * Math.Cos(rlat2) * Math.Cos(rtheta);
+
+            dist = Math.Acos(dist);
+            dist = dist * 180 / Math.PI;
+            dist = dist * 60 * 1.1515;
+            return dist * 0.8684; // NM
+        }
+
+        static public FlightSim.IP2Location GetLocation(string ipAddress)
+        {
+            RestClient client = new RestClient("https://cloud.gafware.com/Home");
+            RestRequest request = new RestRequest("GetLocation", Method.Get);
+            request.AddParameter("ipAddress", ipAddress);
+            RestResponse response = client.Execute(request);
+            if (response.IsSuccessful)
+            {
+                return JsonConvert.DeserializeObject<FlightSim.IP2Location>(response.Content);
+            }
+            return null;
+        }
+
+        static public string GetIPAddress()
+        {
+            string address = "0.0.0.0";
+            try
+            {
+                using (WebClient webClient = new WebClient())
+                {
+                    address = webClient.DownloadString("https://api.ipify.org");
+                }
+            }
+            catch (Exception)
+            {
+                WebRequest request = WebRequest.Create("http://checkip.dyndns.org/");
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (StreamReader stream = new StreamReader(response.GetResponseStream()))
+                    {
+                        address = stream.ReadToEnd();
+                    }
+                }
+                int first = address.IndexOf("Address: ") + 9;
+                int last = address.LastIndexOf("</body>");
+                address = address.Substring(first, last - first);
+            }
+            return address;
+        }
+
         public static string GetURL(string url, ref HttpStatusCode statusCode)
         {
             //CookieCollection cookies = null;

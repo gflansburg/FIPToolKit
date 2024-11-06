@@ -31,6 +31,7 @@ namespace FIPDisplayProfiler
             MusicPlayer.Path = tbPath.Text;
             MusicPlayer.AutoPlay = cbAutoPlay.Checked;
             MusicPlayer.Resume = cbResume.Checked;
+            MusicPlayer.RadioDistance = rbAny.Checked ? RadioDistance.Any : rb50.Checked ? RadioDistance.NM50 : rb100.Checked ? RadioDistance.NM100 : rb250.Checked ? RadioDistance.NM500 : RadioDistance.NM500;
             MusicPlayer.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
@@ -67,6 +68,11 @@ namespace FIPDisplayProfiler
             tbTitleFont.Text = MusicPlayer.Font.FontFamily.Name;
             tbArtistFont.Font = new Font(MusicPlayer.ArtistFont.FontFamily, tbArtistFont.Font.Size, MusicPlayer.ArtistFont.Style, MusicPlayer.ArtistFont.Unit, MusicPlayer.ArtistFont.GdiCharSet);
             tbArtistFont.Text = MusicPlayer.ArtistFont.FontFamily.Name;
+            rbAny.Checked = MusicPlayer.RadioDistance == RadioDistance.Any;
+            rb50.Checked = MusicPlayer.RadioDistance == RadioDistance.NM50;
+            rb100.Checked = MusicPlayer.RadioDistance == RadioDistance.NM100;
+            rb250.Checked = MusicPlayer.RadioDistance == RadioDistance.NM250;
+            rb500.Checked = MusicPlayer.RadioDistance == RadioDistance.NM500;
             tbPath.Text = MusicPlayer.Path;
             cbAutoPlay.Checked = MusicPlayer.AutoPlay;
             cbResume.Checked = MusicPlayer.Resume;

@@ -80,6 +80,9 @@ namespace M3U.Media
             Deinterlace = ConvertIntOrNull(GetOrNull(nameof(Deinterlace)));
             Refresh = ConvertIntOrNull(GetOrNull(nameof(Refresh)));
             ChannelNumber = ConvertIntOrNull(GetOrNull(nameof(ChannelNumber)));
+
+            FipLatitude = ConvertDoubleOrNull(GetOrNull(nameof(FipLatitude)));
+            FipLongitude = ConvertDoubleOrNull(GetOrNull(nameof (FipLongitude)));
         }
 
         string GetOrNull(string name)
@@ -91,6 +94,16 @@ namespace M3U.Media
         {
             int num;
             if (int.TryParse(value, out num))
+            {
+                return num;
+            }
+            return null;
+        }
+
+        double? ConvertDoubleOrNull(string value)
+        {
+            double num;
+            if (double.TryParse(value, out num))
             {
                 return num;
             }
@@ -363,5 +376,15 @@ namespace M3U.Media
         /// 
         /// </summary>
         public int? ChannelNumber { get; private set; }
+
+        /// <summary>
+        /// The latitude of the radio station.
+        /// </summary>
+        public double? FipLatitude { get; private set; }
+
+        /// <summary>
+        /// The longitude of the radio station.
+        /// </summary>
+        public double? FipLongitude { get; private set; }
     }
 }

@@ -30,6 +30,9 @@ namespace FIPDisplayProfiler
         private void InitializeComponent()
         {
             this.pnlPageType = new System.Windows.Forms.Panel();
+            this.rbSimConnectRadio = new System.Windows.Forms.RadioButton();
+            this.rbFSUIPCRadio = new System.Windows.Forms.RadioButton();
+            this.rbMusicPlayer = new System.Windows.Forms.RadioButton();
             this.rbScreenMirror = new System.Windows.Forms.RadioButton();
             this.rbFSUIPCAltimeter = new System.Windows.Forms.RadioButton();
             this.rbSimConnectAltimeter = new System.Windows.Forms.RadioButton();
@@ -45,7 +48,6 @@ namespace FIPDisplayProfiler
             this.rbAnalogClock = new System.Windows.Forms.RadioButton();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.rbMusicPlayer = new System.Windows.Forms.RadioButton();
             this.pnlPageType.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -54,6 +56,8 @@ namespace FIPDisplayProfiler
             this.pnlPageType.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlPageType.Controls.Add(this.rbSimConnectRadio);
+            this.pnlPageType.Controls.Add(this.rbFSUIPCRadio);
             this.pnlPageType.Controls.Add(this.rbMusicPlayer);
             this.pnlPageType.Controls.Add(this.rbScreenMirror);
             this.pnlPageType.Controls.Add(this.rbFSUIPCAltimeter);
@@ -70,8 +74,43 @@ namespace FIPDisplayProfiler
             this.pnlPageType.Controls.Add(this.rbAnalogClock);
             this.pnlPageType.Location = new System.Drawing.Point(13, 12);
             this.pnlPageType.Name = "pnlPageType";
-            this.pnlPageType.Size = new System.Drawing.Size(190, 326);
+            this.pnlPageType.Size = new System.Drawing.Size(190, 370);
             this.pnlPageType.TabIndex = 4;
+            // 
+            // rbSimConnectRadio
+            // 
+            this.rbSimConnectRadio.AutoSize = true;
+            this.rbSimConnectRadio.Location = new System.Drawing.Point(3, 256);
+            this.rbSimConnectRadio.Name = "rbSimConnectRadio";
+            this.rbSimConnectRadio.Size = new System.Drawing.Size(116, 17);
+            this.rbSimConnectRadio.TabIndex = 16;
+            this.rbSimConnectRadio.TabStop = true;
+            this.rbSimConnectRadio.Text = "Sim Connect Radio";
+            this.rbSimConnectRadio.UseVisualStyleBackColor = true;
+            this.rbSimConnectRadio.CheckedChanged += new System.EventHandler(this.rbSimConnectRadio_CheckedChanged);
+            // 
+            // rbFSUIPCRadio
+            // 
+            this.rbFSUIPCRadio.AutoSize = true;
+            this.rbFSUIPCRadio.Location = new System.Drawing.Point(3, 349);
+            this.rbFSUIPCRadio.Name = "rbFSUIPCRadio";
+            this.rbFSUIPCRadio.Size = new System.Drawing.Size(94, 17);
+            this.rbFSUIPCRadio.TabIndex = 15;
+            this.rbFSUIPCRadio.TabStop = true;
+            this.rbFSUIPCRadio.Text = "FSUIPC Radio";
+            this.rbFSUIPCRadio.UseVisualStyleBackColor = true;
+            this.rbFSUIPCRadio.CheckedChanged += new System.EventHandler(this.rbFSUIPCRadio_CheckedChanged);
+            // 
+            // rbMusicPlayer
+            // 
+            this.rbMusicPlayer.AutoSize = true;
+            this.rbMusicPlayer.Location = new System.Drawing.Point(3, 96);
+            this.rbMusicPlayer.Name = "rbMusicPlayer";
+            this.rbMusicPlayer.Size = new System.Drawing.Size(85, 17);
+            this.rbMusicPlayer.TabIndex = 14;
+            this.rbMusicPlayer.Text = "Music Player";
+            this.rbMusicPlayer.UseVisualStyleBackColor = true;
+            this.rbMusicPlayer.CheckedChanged += new System.EventHandler(this.rbMusicPlayer_CheckedChanged);
             // 
             // rbScreenMirror
             // 
@@ -87,7 +126,7 @@ namespace FIPDisplayProfiler
             // rbFSUIPCAltimeter
             // 
             this.rbFSUIPCAltimeter.AutoSize = true;
-            this.rbFSUIPCAltimeter.Location = new System.Drawing.Point(3, 302);
+            this.rbFSUIPCAltimeter.Location = new System.Drawing.Point(3, 325);
             this.rbFSUIPCAltimeter.Name = "rbFSUIPCAltimeter";
             this.rbFSUIPCAltimeter.Size = new System.Drawing.Size(106, 17);
             this.rbFSUIPCAltimeter.TabIndex = 13;
@@ -120,7 +159,7 @@ namespace FIPDisplayProfiler
             // rbFSUIPCMap
             // 
             this.rbFSUIPCMap.AutoSize = true;
-            this.rbFSUIPCMap.Location = new System.Drawing.Point(3, 256);
+            this.rbFSUIPCMap.Location = new System.Drawing.Point(3, 279);
             this.rbFSUIPCMap.Name = "rbFSUIPCMap";
             this.rbFSUIPCMap.Size = new System.Drawing.Size(87, 17);
             this.rbFSUIPCMap.TabIndex = 11;
@@ -131,7 +170,7 @@ namespace FIPDisplayProfiler
             // rbFSUIPCAirspeed
             // 
             this.rbFSUIPCAirspeed.AutoSize = true;
-            this.rbFSUIPCAirspeed.Location = new System.Drawing.Point(3, 279);
+            this.rbFSUIPCAirspeed.Location = new System.Drawing.Point(3, 302);
             this.rbFSUIPCAirspeed.Name = "rbFSUIPCAirspeed";
             this.rbFSUIPCAirspeed.Size = new System.Drawing.Size(107, 17);
             this.rbFSUIPCAirspeed.TabIndex = 12;
@@ -220,7 +259,7 @@ namespace FIPDisplayProfiler
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.Enabled = false;
-            this.btnOK.Location = new System.Drawing.Point(128, 344);
+            this.btnOK.Location = new System.Drawing.Point(128, 388);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -232,23 +271,12 @@ namespace FIPDisplayProfiler
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(47, 344);
+            this.btnCancel.Location = new System.Drawing.Point(47, 388);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 14;
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
-            // 
-            // rbMusicPlayer
-            // 
-            this.rbMusicPlayer.AutoSize = true;
-            this.rbMusicPlayer.Location = new System.Drawing.Point(3, 96);
-            this.rbMusicPlayer.Name = "rbMusicPlayer";
-            this.rbMusicPlayer.Size = new System.Drawing.Size(85, 17);
-            this.rbMusicPlayer.TabIndex = 14;
-            this.rbMusicPlayer.Text = "Music Player";
-            this.rbMusicPlayer.UseVisualStyleBackColor = true;
-            this.rbMusicPlayer.CheckedChanged += new System.EventHandler(this.rbMusicPlayer_CheckedChanged);
             // 
             // AddPageDialog
             // 
@@ -256,7 +284,7 @@ namespace FIPDisplayProfiler
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(215, 379);
+            this.ClientSize = new System.Drawing.Size(215, 423);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.pnlPageType);
@@ -292,5 +320,7 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.RadioButton rbSimConnectAltimeter;
         private System.Windows.Forms.RadioButton rbScreenMirror;
         private System.Windows.Forms.RadioButton rbMusicPlayer;
+        private System.Windows.Forms.RadioButton rbSimConnectRadio;
+        private System.Windows.Forms.RadioButton rbFSUIPCRadio;
     }
 }

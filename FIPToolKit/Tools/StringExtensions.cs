@@ -12,6 +12,37 @@ namespace FIPToolKit.Tools
 {
     public static class StringExtensions
     {
+        public static string Escape(this string s)
+        {
+            if (s.Contains(QUOTE))
+            {
+                s = s.Replace(QUOTE, ESCAPED_QUOTE);
+            }
+            if (s.IndexOfAny(CHARACTERS_THAT_MUST_BE_QUOTED) > -1)
+            {
+                s = QUOTE + s + QUOTE;
+            }
+            return s;
+        }
+
+        public static string Unescape(this string s)
+        {
+            if (s.StartsWith(QUOTE) && s.EndsWith(QUOTE))
+            {
+                s = s.Substring(1, s.Length - 2);
+                if (s.Contains(ESCAPED_QUOTE))
+                {
+                    s = s.Replace(ESCAPED_QUOTE, QUOTE);
+                }
+            }
+            return s;
+        }
+
+
+        private const string QUOTE = "\"";
+        private const string ESCAPED_QUOTE = "\"\"";
+        private static char[] CHARACTERS_THAT_MUST_BE_QUOTED = { ',', '"', '\n' };
+        
         static public string MakeKey(this string key)
         {
             if (!string.IsNullOrEmpty(key))
@@ -29,7 +60,7 @@ namespace FIPToolKit.Tools
             {
                 string[] parts = keyvaluepair.Split('=');
                 string key = parts[0].Trim();
-                string value = string.Join("=", parts.Skip(1)).Trim();
+                string value = string.Join("=", parts.Skip(1)).Replace("\\\"", "\"").Trim();
                 attributes.Add(new KeyValuePair<string, string>(key.MakeKey(), value));
             }
             return attributes;

@@ -29,7 +29,7 @@ namespace FIPToolKit.Models
             Properties.ControlType = GetType().FullName;
             AltimeterProperties.Name = "FSUIPC Altimeter";
             AltimeterProperties.IsDirty = false;
-			OnFlightDataReceived += FIPFSUIPCAltimeter_OnFlightDataReceived;
+            FIPFSUIPC.OnFlightDataReceived += FIPFSUIPCAltimeter_OnFlightDataReceived;
 		}
 
         private FIPAltimeterProperties AltimeterProperties
@@ -42,7 +42,7 @@ namespace FIPToolKit.Models
 
         private void FIPFSUIPCAltimeter_OnFlightDataReceived()
 		{
-            AltimeterProperties.Value = AltitudeFeet;
+            AltimeterProperties.Value = FIPFSUIPC.AltitudeFeet;
 			UpdateGauge();
 		}
 
@@ -116,7 +116,7 @@ namespace FIPToolKit.Models
 										string text = "29.92";
 										SizeF size = grfx.MeasureString(text, AltimeterProperties.Font);
 										Rectangle rectKollsman = new Rectangle((int)(midx + 18), (int)(midy - ((size.Height) / 2) + 2), (int)size.Width + 2, (int)size.Height);
-										grfx.DrawString(string.Format("{0:00.00}", KollsmanInchesMercury), AltimeterProperties.Font, brush, rectKollsman, format);
+										grfx.DrawString(string.Format("{0:00.00}", FIPFSUIPC.KollsmanInchesMercury), AltimeterProperties.Font, brush, rectKollsman, format);
 									}
 								}
 							}

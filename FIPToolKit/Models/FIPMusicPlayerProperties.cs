@@ -42,7 +42,7 @@ namespace FIPToolKit.Models
         {
             Name = "Music Player";
             Font = new Font("Arial", 12.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
-            _artistFont = new Font("Arial", 10.0F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+            _artistFont = new Font("Arial", 10.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
             FontColor = Color.White;
             IsDirty = false;
         }
@@ -229,5 +229,7 @@ namespace FIPToolKit.Models
                 }
             }
         }
+
+        public bool Mute { get; set; } = false;
     }
 }

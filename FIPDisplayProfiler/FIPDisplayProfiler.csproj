@@ -127,6 +127,12 @@
     <Compile Include="AddFSUIPCCommandDlg.Designer.cs">
       <DependentUpon>AddFSUIPCCommandDlg.cs</DependentUpon>
     </Compile>
+    <Compile Include="RadioForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RadioForm.Designer.cs">
+      <DependentUpon>RadioForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ScreenMirrorForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -272,6 +278,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddPageDialog.resx">
       <DependentUpon>AddPageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RadioForm.resx">
+      <DependentUpon>RadioForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ScreenMirrorForm.resx">
       <DependentUpon>ScreenMirrorForm.cs</DependentUpon>

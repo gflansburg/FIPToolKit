@@ -62,7 +62,7 @@ namespace FIPDisplayProfiler
                 Close();
                 return;
             }
-            FIPSimConnectPage.MainWindowHandle = this.Handle;
+            FIPSimConnect.MainWindowHandle = this.Handle;
         }
 
         private void Engine_OnPageChanged(object sender, FIPDeviceActivePage page)
@@ -252,8 +252,8 @@ namespace FIPDisplayProfiler
                 }
                 Engine.Dispose();
                 Engine = null;
-                FIPSimConnectPage.Deinitialize();
-                FIPFSUIPCPage.Deinitialize();
+                FIPSimConnect.Deinitialize();
+                FIPFSUIPC.Deinitialize();
             }
             if (Properties.Settings.Default.CloseFlightShareOnExit)
             {
@@ -521,7 +521,7 @@ namespace FIPDisplayProfiler
         {
             if (m.Msg == FIPToolKit.FlightSim.SimConnect.WM_USER_SIMCONNECT)
             {
-                FIPSimConnectPage.ReceiveMessage();
+                FIPSimConnect.ReceiveMessage();
                 return;
             }
             else if (m.Msg == NativeMethods.WM_SYSCOMMAND)

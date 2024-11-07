@@ -31,7 +31,8 @@ namespace FIPToolKit.Models
             properties.OnValueChanged += Properties_OnValueChanged;
             properties.OnSelectedVSpeedChanged += Properties_OnSelectedVSpeedChanged;
             vSpeeds = VSpeed.LoadVSpeeds();
-            OnAircraftChange += FIPSimConnectAirspeed_OnAircraftChange;
+            FIPSimConnect.OnAircraftChange += SimConnectAirspeed_OnAircraftChange;
+            FIPSimConnect.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
         }
 
         private void Properties_OnSelectedVSpeedChanged(object sender, EventArgs e)
@@ -70,7 +71,7 @@ namespace FIPToolKit.Models
             AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
         }
 
-        private void FIPSimConnectAirspeed_OnAircraftChange(int aircraftId)
+        private void SimConnectAirspeed_OnAircraftChange(int aircraftId)
         {
             if (AirspeedProperties.AutoSelectAircraft && aircraftId > 0)
             {
@@ -78,7 +79,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        protected override void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
+        protected void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
         {
             AirspeedProperties.Value = (Convert.ToBoolean(data.SIM_ON_GROUND) ? data.GROUND_VELOCITY : data.AIRSPEED_INDICATED);
         }

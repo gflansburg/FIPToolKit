@@ -1,5 +1,8 @@
 ﻿using FIPToolKit.Tools;
+using LibVLCSharp.Shared;
 using M3U.Media;
+using Newtonsoft.Json.Linq;
+using SixLabors.ImageSharp.ColorSpaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -36,7 +39,12 @@ namespace M3U
                         TimeSpan? dur = null;
                         if (path.StartsWith("#EXTINF"))
                         {
-                            string duration = path.Substring(8, path.IndexOf(',') - 8).Trim();
+                            string[] parts = Regex.Split(path, "[,]{1}(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
+                            for (int i1 = 0; i1 < parts.Length; i1++)
+                            {
+                                parts[i1] = parts[i1].Unescape();
+                            }
+                            string duration = parts[0].Substring(8, path.IndexOf(',') - 8).Trim();
                             if (duration.Contains("="))
                             {
                                 IEnumerable<KeyValuePair<string, string>> attrs = duration.Substring(duration.IndexOf(" ") + 1).ParseKeyValuePairs(' ');
@@ -79,25 +87,32 @@ namespace M3U
                                     dur = new TimeSpan(0, hours, minutes, seconds, milliseconds);
                                 }
                             }
-                            string title = path.IndexOf(',') != -1 ? path.Substring(path.IndexOf(',') + 1).Trim() : string.Empty;
-                            if (title.Contains("="))
+                            string title = string.Empty;
+                            if (parts.Length > 1)
                             {
-                                int comma = title.IndexOf(',');
-                                IEnumerable<KeyValuePair<string, string>> attrs = title.Substring(0, comma != -1 ? comma : title.Length).ParseKeyValuePairs(' ');
-                                if (attrs != null)
+                                string attribs = title = parts[1];
+                                if (attribs.Contains("="))
                                 {
-                                    if (attributes == null)
+                                    IEnumerable<KeyValuePair<string, string>> attrs = attribs.ParseKeyValuePairs(' ');
+                                    if (attrs != null)
                                     {
-                                        attributes = new List<KeyValuePair<string, string>>();
+                                        if (attributes == null)
+                                        {
+                                            attributes = new List<KeyValuePair<string, string>>();
+                                        }
+                                        attributes.AddRange(attrs);
                                     }
-                                    attributes.AddRange(attrs);
+                                    title = string.Empty;
+                                    if (parts.Length > 2)
+                                    {
+                                        title = parts[2];
+                                    }
                                 }
-                                title = comma != -1 ? title.Substring(comma + 1) : string.Empty;
+                                adornments = title.ParseAdornments(ref title);
                             }
-                            adornments = title.ParseAdornments(ref title);
                             i++;
                             path = medias[i].Trim();
-                            mediaList.Add(new M3UMedia(title, dur, path, isStream, attributes, adornments));
+                            mediaList.Add(new M3UMedia(string.IsNullOrEmpty(title) ? System.IO.Path.GetFileNameWithoutExtension(path) : title, dur, path, isStream, attributes, adornments));
                         }
                         else if (!string.IsNullOrEmpty(path) && !path.StartsWith("#"))
                         {

@@ -33,7 +33,7 @@ namespace FIPToolKit.Models
         }
     }
 
-    public class FIPSimConnectMap : FIPSimConnectPage
+    public class FIPSimConnectMap : FIPPage, IFIPSimConnect
     {
         public enum GPSPage
         {
@@ -131,6 +131,7 @@ namespace FIPToolKit.Models
 
         public FIPSimConnectMap(FIPMapProperties properties) : base(properties)
         {
+            FIPSimConnect = new FIPSimConnect();
             Properties.ControlType = GetType().FullName;
             MapProperties.Name = "Sim Map";
             MapProperties.IsDirty = false;
@@ -153,6 +154,13 @@ namespace FIPToolKit.Models
             {
                 Colors.Add(color);
             }
+            FIPSimConnect.OnAirportListReceived += SimConnect_OnAirportListReceived;
+            FIPSimConnect.OnTrafficReceived += SimConnect_OnTrafficReceived;
+            FIPSimConnect.OnSim += SimConnect_OnSim;
+            FIPSimConnect.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
+            FIPSimConnect.OnFlightDataReceived += SimConnect_OnFlightDataReceived;
+            FIPSimConnect.OnQuit += SimConnect_OnQuit;
+            FIPSimConnect.OnConnected += SimConnect_OnConnected;
         }
 
         private void Properties_OnShowTrackChanged(object sender, EventArgs e)
@@ -195,6 +203,8 @@ namespace FIPToolKit.Models
                 return Properties as FIPMapProperties;
             }
         }
+
+        public FIPSimConnect FIPSimConnect { get; set; }
 
         private void Properties_OnUpdateMap(object sender, EventArgs e)
         {
@@ -442,11 +452,11 @@ namespace FIPToolKit.Models
                     if (Map.Zoom > 9)
                     {
                         List<Airport> filteredAirports = FlightSim.Tools.Airports.Values.Where(a => a.IsInRect(Map.ViewArea)).ToList();
-                        if (EngineType != EngineType.Helo)
+                        if (FIPSimConnect.EngineType != EngineType.Helo)
                         {
                             filteredAirports = filteredAirports.Where(a => a.AirportType.Equals("heliport") == false).ToList();
                         }
-                        if (!IsFloatPlane)
+                        if (!FIPSimConnect.IsFloatPlane)
                         {
                             filteredAirports = filteredAirports.Where(a => a.AirportType.Equals("seaplane_base") == false).ToList();
                         }
@@ -624,7 +634,7 @@ namespace FIPToolKit.Models
                     airplaneMarker.AmbientWindDirection = SimConnect.CurrentWeather.WindDirection;
                     airplaneMarker.AmbientWindVelocity = SimConnect.CurrentWeather.WindVelocity;
                     airplaneMarker.KollsmanInchesMercury = SimConnect.CurrentWeather.KollsmanHG;
-                    airplaneMarker.IsRunning = IsRunning;
+                    airplaneMarker.IsRunning = FIPSimConnect.IsRunning;
                     route.Stroke = new Pen(MapProperties.TrackColor, 1);
                     UpdateMap();
                 }
@@ -709,20 +719,18 @@ namespace FIPToolKit.Models
             UpdateMap();
         }
 
-        protected override void SimConnect_OnAirportListReceived(Dictionary<string, Airport> airportList)
+        protected void SimConnect_OnAirportListReceived(Dictionary<string, Airport> airports)
         {
-            base.SimConnect_OnAirportListReceived(airportList);
             UpdateMap();
         }
 
-        protected override void SimConnect_OnTrafficReceived(uint objectId, Aircraft aircraft, TrafficEvent eventType)
+        protected void SimConnect_OnTrafficReceived(uint objectId, Aircraft aircraft, TrafficEvent eventType)
         {
-            base.SimConnect_OnTrafficReceived(objectId, aircraft, eventType);
             UpdateMap();
         }
 
 
-        protected override void SimConnect_OnSim(bool isRunning)
+        protected void SimConnect_OnSim(bool isRunning)
         {
             if (Map != null && Map.InvokeRequired)
             {
@@ -730,7 +738,6 @@ namespace FIPToolKit.Models
             }
             else
             {
-                base.SimConnect_OnSim(isRunning);
                 if (Map != null)
                 {
                     route.Points.Clear();
@@ -756,7 +763,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        protected override void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
+        protected void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
         {
             if (Map != null && Map.InvokeRequired)
             {
@@ -764,7 +771,6 @@ namespace FIPToolKit.Models
             }
             else
             {
-                base.SimConnect_OnFlightDataByTypeReceived(data);
                 if (Map != null)
                 {
                     try
@@ -799,7 +805,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        protected override void SimConnect_OnFlightDataReceived(SimConnect.FULL_DATA data)
+        protected void SimConnect_OnFlightDataReceived(SimConnect.FULL_DATA data)
         {
             if (Map != null && Map.InvokeRequired)
             {
@@ -807,7 +813,6 @@ namespace FIPToolKit.Models
             }
             else
             {
-                base.SimConnect_OnFlightDataReceived(data);
                 if (Map != null)
                 {
                     try
@@ -816,8 +821,8 @@ namespace FIPToolKit.Models
                         airplaneMarker.ATCIdentifier = SimConnect.CurrentAircraft.ATCIdentifier;
                         airplaneMarker.ATCType = SimConnect.CurrentAircraft.Type;
                         airplaneMarker.ATCModel = SimConnect.CurrentAircraft.Model;
-                        airplaneMarker.IsHeavy = IsHeavy;
-                        airplaneMarker.EngineType = EngineType;
+                        airplaneMarker.IsHeavy = FIPSimConnect.IsHeavy;
+                        airplaneMarker.EngineType = FIPSimConnect.EngineType;
                         airplaneMarker.Heading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? data.PLANE_HEADING_DEGREES_MAGNETIC : data.PLANE_HEADING_DEGREES_TRUE);
                         airplaneMarker.Position = new PointLatLng(data.PLANE_LATITUDE, data.PLANE_LONGITUDE);
                         airplaneMarker.Airspeed = (int)data.AIRSPEED_INDICATED;
@@ -840,7 +845,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        protected override void SimConnect_OnQuit()
+        protected void SimConnect_OnQuit()
         {
             if (Map != null && Map.InvokeRequired)
             {
@@ -848,7 +853,6 @@ namespace FIPToolKit.Models
             }
             else
             {
-                base.SimConnect_OnQuit();
                 if (Map != null)
                 {
                     try
@@ -876,9 +880,8 @@ namespace FIPToolKit.Models
             }
         }
 
-        protected override void SimConnect_OnConnected()
+        protected void SimConnect_OnConnected()
         {
-            base.SimConnect_OnConnected();
             _centerOnPlane = true;
             InvalidateMap();
         }
@@ -956,7 +959,7 @@ namespace FIPToolKit.Models
                     KollsmanInchesMercury = SimConnect.CurrentWeather.KollsmanHG,
                     TemperatureUnit = MapProperties.TemperatureUnit,
                     Font = MapProperties.Font,
-                    IsRunning = IsRunning
+                    IsRunning = FIPSimConnect.IsRunning
                 };
                 route.Stroke = new Pen(MapProperties.TrackColor, 1);
                 overlay.Markers.Add(airplaneMarker);
@@ -1274,13 +1277,13 @@ namespace FIPToolKit.Models
                             CurrentPage = GPSPage.Map;
                             break;
                         case SoftButtons.Button2:
-                            if (IsConnected)
+                            if (FIPSimConnect.IsConnected)
                             {
                                 CurrentPage = GPSPage.Data;
                             }
                             break;
                         case SoftButtons.Button3:
-                            if (IsConnected)
+                            if (FIPSimConnect.IsConnected)
                             {
                                 CurrentPage = GPSPage.Track;
                             }
@@ -1340,25 +1343,25 @@ namespace FIPToolKit.Models
                         switch(softButton)
                         {
                             case SoftButtons.Button2:
-                                if (IsConnected)
+                                if (FIPSimConnect.IsConnected)
                                 {
                                     MapProperties.ShowNav1 = !MapProperties.ShowNav1;
                                 }
                                 break;
                             case SoftButtons.Button3:
-                                if (IsConnected)
+                                if (FIPSimConnect.IsConnected)
                                 {
                                     MapProperties.ShowNav2 = !MapProperties.ShowNav2;
                                 }
                                 break;
                             case SoftButtons.Button4:
-                                if (IsConnected)
+                                if (FIPSimConnect.IsConnected)
                                 {
                                     MapProperties.ShowGPS = !MapProperties.ShowGPS;
                                 }
                                 break;
                             case SoftButtons.Button5:
-                                if (IsConnected)
+                                if (FIPSimConnect.IsConnected)
                                 {
                                     MapProperties.ShowTraffic = !MapProperties.ShowTraffic;
                                 }
@@ -1374,13 +1377,13 @@ namespace FIPToolKit.Models
                         switch(softButton)
                         {
                             case SoftButtons.Button3:
-                                if (IsConnected)
+                                if (FIPSimConnect.IsConnected)
                                 {
                                     MapProperties.ShowTrack = !MapProperties.ShowTrack;
                                 }
                                 break;
                             case SoftButtons.Button4:
-                                if (IsConnected && MapProperties.ShowTrack)
+                                if (FIPSimConnect.IsConnected && MapProperties.ShowTrack)
                                 {
                                     int colorIndex = FindColor(MapProperties.TrackColor);
                                     colorIndex++;
@@ -1589,13 +1592,13 @@ namespace FIPToolKit.Models
                         switch (CurrentPage)
                         {
                             case GPSPage.Normal:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Map:
                                 return Map != null;
                             case GPSPage.Track:
                                 return false;
                             case GPSPage.Data:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Settings:
                                 return false;
                         }
@@ -1606,15 +1609,15 @@ namespace FIPToolKit.Models
                         switch (CurrentPage)
                         {
                             case GPSPage.Normal:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Map:
                                 return Map != null;
                             case GPSPage.Track:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Data:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Settings:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                         }
                     }
                     break;
@@ -1627,9 +1630,9 @@ namespace FIPToolKit.Models
                             case GPSPage.Map:
                                 return Map != null;
                             case GPSPage.Track:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Data:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Settings:
                                 return Map != null;
                         }
@@ -1646,7 +1649,7 @@ namespace FIPToolKit.Models
                             case GPSPage.Track:
                                 return false;
                             case GPSPage.Data:
-                                return IsConnected && Map != null;
+                                return FIPSimConnect.IsConnected && Map != null;
                             case GPSPage.Settings:
                                 return Map != null;
                         }

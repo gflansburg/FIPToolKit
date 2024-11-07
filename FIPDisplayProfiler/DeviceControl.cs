@@ -49,7 +49,10 @@ namespace FIPDisplayProfiler
         private void Device_OnPageRemoved(object sender, FIPDeviceEventArgs e)
         {
             lbPages.Items.Remove(e.Page.Properties);
-            lbPages.SelectedItem = Device.CurrentPage.Properties;
+            if (Device.CurrentPage != null)
+            {
+                lbPages.SelectedItem = Device.CurrentPage.Properties;
+            }
             pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
             btnDelete.Enabled = lbPages.SelectedIndex != -1;
             btnMoveUp.Enabled = lbPages.SelectedIndex > 0;
@@ -99,6 +102,16 @@ namespace FIPDisplayProfiler
                 ((FIPSpotifyPlayer)e.Page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
                 ((FIPSpotifyPlayer)e.Page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
                 ((FIPSpotifyPlayer)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
+            }
+            else if (e.Page.GetType() == typeof(FIPSimConnectRadio))
+            {
+                ((FIPSimConnectRadio)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPSimConnectRadio)e.Page).Init();
+            }
+            else if (e.Page.GetType() == typeof(FIPFSUIPCRadio))
+            {
+                ((FIPFSUIPCRadio)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPFSUIPCRadio)e.Page).Init();
             }
             else if (e.Page.GetType() == typeof(FIPMusicPlayer))
             {
@@ -182,9 +195,9 @@ namespace FIPDisplayProfiler
             SimConnect.OnConnected += SimConnect_OnConnected;
             SimConnect.OnQuit += SimConnect_OnQuit;
             SimConnect.OnSim += SimConnect_OnSim;
-            FIPFSUIPCPage.OnConnected += FIPFSUIPCPage_OnConnected;
-            FIPFSUIPCPage.OnQuit += FIPFSUIPCPage_OnQuit;
-            FIPFSUIPCPage.OnReadyToFly += FIPFSUIPCPage_OnReadyToFly;
+            FIPFSUIPC.OnConnected += FIPFSUIPCPage_OnConnected;
+            FIPFSUIPC.OnQuit += FIPFSUIPCPage_OnQuit;
+            FIPFSUIPC.OnReadyToFly += FIPFSUIPCPage_OnReadyToFly;
         }
 
         private void SimConnect_OnSim(bool isRunning)
@@ -229,6 +242,16 @@ namespace FIPDisplayProfiler
                 ((FIPSpotifyPlayer)page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
                 ((FIPSpotifyPlayer)page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
                 ((FIPSpotifyPlayer)page).OnCanPlay += DeviceControl_OnCanPlay;
+            }
+            else if (page.GetType() == typeof(FIPSimConnectRadio))
+            {
+                ((FIPSimConnectRadio)page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPSimConnectRadio)page).Init();
+            }
+            else if (page.GetType() == typeof(FIPFSUIPCRadio))
+            {
+                ((FIPFSUIPCRadio)page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPFSUIPCRadio)page).Init();
             }
             else if (page.GetType() == typeof(FIPMusicPlayer))
             {
@@ -467,6 +490,26 @@ namespace FIPDisplayProfiler
                             }
                         }
                         break;
+                    case PageType.SimConnectRadio:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (fipPage.GetType() == typeof(FIPSimConnectRadio))
+                                {
+                                    MessageBox.Show(this, "You can only have one SimConnect Radio per device.", "SimConnect Radio", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            RadioForm form = new RadioForm()
+                            {
+                                Radio = new FIPRadioProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                Device.AddPage(new FIPSimConnectRadio(form.Radio), true);
+                            }
+                        }
+                        break;
                     case PageType.SimConnectAirspeed:
                         {
                             foreach (FIPPage fipPage in Device.Pages)
@@ -497,6 +540,26 @@ namespace FIPDisplayProfiler
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
                                 Device.AddPage(new FIPSimConnectAltimeter(form.Altimeter), true);
+                            }
+                        }
+                        break;
+                    case PageType.FSUIPCRadio:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (fipPage.GetType() == typeof(FIPFSUIPCRadio))
+                                {
+                                    MessageBox.Show(this, "You can only have one FSUIPC Radio per device.", "FSUIPC Radio", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            RadioForm form = new RadioForm()
+                            {
+                                Radio = new FIPRadioProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                Device.AddPage(new FIPFSUIPCRadio(form.Radio), true);
                             }
                         }
                         break;
@@ -707,6 +770,22 @@ namespace FIPDisplayProfiler
                                 ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback);
                             });*/
                         }
+                    }
+                    else if (typeof(FIPSimConnectRadio).IsAssignableFrom(page.GetType()))
+                    {
+                        RadioForm dlg = new RadioForm()
+                        {
+                            Radio = ((FIPSimConnectRadio)page).Properties as FIPRadioProperties
+                        };
+                        dlg.ShowDialog(this);
+                    }
+                    else if (typeof(FIPFSUIPCRadio).IsAssignableFrom(page.GetType()))
+                    {
+                        RadioForm dlg = new RadioForm()
+                        {
+                            Radio = ((FIPFSUIPCRadio)page).Properties as FIPRadioProperties
+                        };
+                        dlg.ShowDialog(this);
                     }
                     else if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
                     {
@@ -1962,6 +2041,18 @@ namespace FIPDisplayProfiler
                 {
                     ((FIPSpotifyPlayer)fipPage).ExternalResume();
                 }
+                else if (fipPage.GetType() == typeof(FIPSimConnectRadio))
+                {
+                    ((FIPSimConnectRadio)fipPage).ExternalResume();
+                }
+                else if (fipPage.GetType() == typeof(FIPFSUIPCRadio))
+                {
+                    ((FIPFSUIPCRadio)fipPage).ExternalResume();
+                }
+                else if (fipPage.GetType() == typeof(FIPMusicPlayer))
+                {
+                    ((FIPMusicPlayer)fipPage).ExternalResume();
+                }
                 else if (fipPage.GetType() == typeof(FIPMusicPlayer))
                 {
                     ((FIPMusicPlayer)fipPage).ExternalResume();
@@ -1976,6 +2067,14 @@ namespace FIPDisplayProfiler
                 if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
                 {
                     ((FIPSpotifyPlayer)fipPage).ExternalPause();
+                }
+                else if (fipPage.GetType() == typeof(FIPSimConnectRadio))
+                {
+                    ((FIPSimConnectRadio)fipPage).ExternalPause();
+                }
+                else if (fipPage.GetType() == typeof(FIPFSUIPCRadio))
+                {
+                    ((FIPFSUIPCRadio)fipPage).ExternalPause();
                 }
                 else if (fipPage.GetType() == typeof(FIPMusicPlayer))
                 {

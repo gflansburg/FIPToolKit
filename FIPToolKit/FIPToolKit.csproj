@@ -16,6 +16,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <PlatformTarget>x64</PlatformTarget>
@@ -186,6 +187,7 @@
     <Compile Include="M3UParser\Media\M3UAdornments.cs" />
     <Compile Include="M3UParser\Media\M3UAttributes.cs" />
     <Compile Include="Models\FIPAnalogClockProperties.cs" />
+    <Compile Include="Models\FIPRadioProperties.cs" />
     <Compile Include="Models\FIPPageProperties.cs" />
     <Compile Include="Models\FIPSaveType.cs" />
     <Compile Include="Models\FIPScreenMirror.cs" />
@@ -209,12 +211,14 @@
     <Compile Include="Models\FIPKeyPressButton.cs" />
     <Compile Include="Models\FIPFlightShare.cs" />
     <Compile Include="Models\FIPSettableAnalogClock.cs" />
-    <Compile Include="Models\FIPFSUIPCPage.cs" />
+    <Compile Include="Models\FIPFSUIPC.cs" />
     <Compile Include="Models\FIPFSUIPCMap.cs" />
     <Compile Include="Models\FIPAnalogGaugeProperties.cs" />
     <Compile Include="Models\FIPSimConnectMap.cs" />
     <Compile Include="Models\FIPMapProperties.cs" />
     <Compile Include="Models\FIPSimConnectNonLinearAnalogGauge.cs" />
+    <Compile Include="Models\FIPFSUIPCRadio.cs" />
+    <Compile Include="Models\FIPSimConnectRadio.cs" />
     <Compile Include="Models\FIPSlideShowProperties.cs" />
     <Compile Include="Models\FIPSpotifyPlayer.cs" />
     <Compile Include="Models\FIPSpotifyPlayerProperties.cs" />
@@ -228,7 +232,10 @@
     <Compile Include="Models\FIPPage.cs" />
     <Compile Include="Models\FIPSlideShow.cs" />
     <Compile Include="Models\FIPVideoPlayer.cs" />
-    <Compile Include="Models\FIPSimConnectPage.cs" />
+    <Compile Include="Models\FIPSimConnect.cs" />
+    <Compile Include="Models\IFIPFSUIPC.cs" />
+    <Compile Include="Models\IFIPSimConnect.cs" />
+    <Compile Include="Models\FIPRadioStation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FlightSim\Aircraft.cs" />
     <Compile Include="FlightSim\AircraftData.cs" />

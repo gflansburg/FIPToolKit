@@ -22,7 +22,7 @@ namespace FIPDisplayProfiler
         [STAThread]
         static void Main()
         {
-            try
+            //try
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
@@ -40,12 +40,12 @@ namespace FIPDisplayProfiler
                 }
                 Application.Run(new FIPDisplayProfiler());
             }
-            catch (Exception ex)
+            //catch (Exception ex)
             {
 #if DEBUG
-                Logger.Error(ex);
+                //Logger.Error(ex);
 #endif
-                MessageBox.Show(string.Format("An error as occured starting FIP Display Profiler.\n\n{0}", ex.Message), "FIP Toolkit Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                //MessageBox.Show(string.Format("An error as occured starting FIP Display Profiler.\n\n{0}", ex.Message), "FIP Toolkit Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
     }

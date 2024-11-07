@@ -31,6 +31,7 @@ namespace FIPToolKit.Models
             Properties.ControlType = GetType().FullName;
             AltimeterProperties.Name = "SimConnect Altimeter";
 			AltimeterProperties.IsDirty = false;
+			FIPSimConnect.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
         }
 
         private FIPAltimeterProperties AltimeterProperties
@@ -41,9 +42,8 @@ namespace FIPToolKit.Models
 			}
 		}
 
-        protected override void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
+        protected void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
         {
-            base.SimConnect_OnFlightDataByTypeReceived(data);
             AltimeterProperties.Value = data.PRESSURE_ALTITUDE;
 			UpdateGauge();
 		}

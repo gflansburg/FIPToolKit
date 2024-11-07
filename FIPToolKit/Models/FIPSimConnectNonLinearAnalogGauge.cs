@@ -26,6 +26,8 @@ namespace FIPToolKit.Models
         {
             Properties.ControlType = GetType().FullName;
             NonLinearSettings = new List<NonLinearSetting>();
+            FIPSimConnect.OnSim += SimConnect_OnSim;
+            FIPSimConnect.OnQuit += SimConnect_OnQuit;
         }
 
         private FIPAnalogGaugeProperties AnalogGaugeProperties
@@ -38,8 +40,7 @@ namespace FIPToolKit.Models
 
         protected override void SimConnect_OnSim(bool isRunning)
         {
-            base.SimConnect_OnSim(isRunning);
-            if (!IsRunning)
+            if (!FIPSimConnect.IsRunning)
             {
                 AnalogGaugeProperties.Value = 0;
             }
@@ -47,7 +48,6 @@ namespace FIPToolKit.Models
 
         protected override void SimConnect_OnQuit()
         {
-            base.SimConnect_OnQuit();
             AnalogGaugeProperties.Value = 0;
         }
 

@@ -20,6 +20,7 @@ namespace FIPToolKit.Models
     [XmlInclude(typeof(FIPAirspeedProperties))]
     [XmlInclude(typeof(FIPAltimeterProperties))]
     [XmlInclude(typeof(FIPScreenMirrorProperties))]
+    [XmlInclude(typeof(FIPRadioProperties))]
     public class FIPPageProperties
     {
         public event EventHandler OnSettingsChange;

@@ -22,9 +22,11 @@ namespace FIPDisplayProfiler
         SimConnectMap,
         SimConnectAirspeed,
         SimConnectAltimeter,
+        SimConnectRadio,
         FSUIPCMap,
         FSUIPCAirspeed,
-        FSUIPCAltimeter
+        FSUIPCAltimeter,
+        FSUIPCRadio
     }
 
     public partial class AddPageDialog : Form
@@ -141,6 +143,20 @@ namespace FIPDisplayProfiler
         private void rbMusicPlayer_CheckedChanged(object sender, EventArgs e)
         {
             PageType = PageType.MusicPlayer;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbSimConnectRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.SimConnectRadio;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbFSUIPCRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType= PageType.FSUIPCRadio;
             btnOK.Enabled = true;
             cbSettable.Enabled = false;
         }

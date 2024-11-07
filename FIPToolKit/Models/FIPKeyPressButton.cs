@@ -134,7 +134,7 @@ namespace FIPToolKit.Models
                         KeyPress.SendKeys(KeyPressBreak, VirtualKeyCodes.ToArray(), KeyPressLength);
                         break;
                     case KeyAPIModes.FSUIPC:
-                        if (FIPFSUIPCPage.IsConnected && FIPFSUIPCPage.ReadyToFly == FlightSim.ReadyToFly.Ready)
+                        if (FIPFSUIPC.IsConnected && FIPFSUIPC.ReadyToFly == FlightSim.ReadyToFly.Ready)
                         {
                             KeyPress.SendKeyToFS(KeyPressBreak, VirtualKeyCodes.ToArray());
                         }

@@ -17,15 +17,36 @@ using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-    public abstract class FIPSimConnectAnalogGauge : FIPSimConnectPage
+    public abstract class FIPSimConnectAnalogGauge : FIPPage, IFIPSimConnect
     {
         protected Bitmap gauge;
         protected AsyncLock _lock = new AsyncLock();
 
         public FIPSimConnectAnalogGauge(FIPAnalogGaugeProperties properties) : base(properties)
         {
+            FIPSimConnect = new FIPSimConnect();
+            FIPSimConnect.OnSim += SimConnect_OnSim;
+            FIPSimConnect.OnQuit += SimConnect_OnQuit;
+            FIPSimConnect.OnSetLeds += SimConnect_OnSetLeds;
+            FIPSimConnect.OnStopTimer += SimConnect_OnStopTimer;
+            FIPSimConnect.OnUdatePage += SimConnect_OnUdatePage;
             Properties.ControlType = GetType().FullName;
             properties.OnUpdateGauge += Properties_OnUpdateGauge;
+        }
+
+        private void SimConnect_OnUdatePage(object sender, EventArgs e)
+        {
+            UpdatePage();
+        }
+
+        private void SimConnect_OnStopTimer(object sender, EventArgs e)
+        {
+            StopTimer();
+        }
+
+        private void SimConnect_OnSetLeds(object sender, EventArgs e)
+        {
+            SetLEDs();
         }
 
         private FIPAnalogGaugeProperties AnalogGaugeProperties
@@ -36,23 +57,23 @@ namespace FIPToolKit.Models
             }
         }
 
+        public FIPSimConnect FIPSimConnect { get; set; }
+
         private void Properties_OnUpdateGauge(object sender, EventArgs e)
         {
             UpdateGauge();
         }
 
-        protected override void SimConnect_OnSim(bool isRunning)
+        protected virtual void SimConnect_OnSim(bool isRunning)
         {
-            base.SimConnect_OnSim(isRunning);
             if (!isRunning)
             {
                 AnalogGaugeProperties.Value = 0;
             }
         }
 
-        protected override void SimConnect_OnQuit()
+        protected virtual void SimConnect_OnQuit()
         {
-            base.SimConnect_OnQuit();
             AnalogGaugeProperties.Value = 0;
         }
 

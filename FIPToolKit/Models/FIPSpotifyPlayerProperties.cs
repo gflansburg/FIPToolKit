@@ -23,7 +23,7 @@ namespace FIPToolKit.Models
         {
             Name = "Spotify Player";
             Font = new Font("Arial", 12.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
-            _artistFont = new Font("Arial", 10.0F, FontStyle.Regular, GraphicsUnit.Point, ((System.Byte)(0)));
+            _artistFont = new Font("Arial", 10.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
             FontColor = Color.White;
             _playList = new FIPPlayList();
             IsDirty = false;

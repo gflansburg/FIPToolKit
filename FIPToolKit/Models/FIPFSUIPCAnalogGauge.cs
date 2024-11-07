@@ -16,18 +16,19 @@ using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
-    public abstract class FIPFSUIPCAnalogGauge : FIPFSUIPCPage
+    public abstract class FIPFSUIPCAnalogGauge : FIPPage, IFIPFSUIPC
     {
         protected Bitmap gauge;
         protected AsyncLock _lock = new AsyncLock();
 
         public FIPFSUIPCAnalogGauge(FIPAnalogGaugeProperties properties) : base(properties)
         {
+            FIPFSUIPC = new FIPFSUIPC();
             Properties.ControlType = GetType().FullName;
             properties.OnUpdateGauge += Properties_OnUpdateGauge;
-            OnConnected += FIPCessnaAirspeedLinear_OnConnected;
-            OnQuit += FIPCessnaAirspeedLinear_OnQuit;
-            OnReadyToFly += FIPCessnaAirspeedLinear_OnReadyToFly;
+            FIPFSUIPC.OnConnected += FIPCessnaAirspeedLinear_OnConnected;
+            FIPFSUIPC.OnQuit += FIPCessnaAirspeedLinear_OnQuit;
+            FIPFSUIPC.OnReadyToFly += FIPCessnaAirspeedLinear_OnReadyToFly;
         }
 
         private FIPAnalogGaugeProperties AnalogGaugeProperties
@@ -37,6 +38,8 @@ namespace FIPToolKit.Models
                 return Properties as FIPAnalogGaugeProperties;
             }
         }
+
+        public FIPFSUIPC FIPFSUIPC { get; set; }
 
         private void Properties_OnUpdateGauge(object sender, EventArgs e)
         {

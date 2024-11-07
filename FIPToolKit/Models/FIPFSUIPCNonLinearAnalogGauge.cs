@@ -26,9 +26,9 @@ namespace FIPToolKit.Models
         {
             Properties.ControlType = GetType().FullName;
             NonLinearSettings = new List<NonLinearSetting>();
-            OnConnected += FIPCessnaAirspeedLinear_OnConnected;
-            OnQuit += FIPCessnaAirspeedLinear_OnQuit;
-            OnReadyToFly += FIPCessnaAirspeedLinear_OnReadyToFly;
+            FIPFSUIPC.OnConnected += FIPCessnaAirspeedLinear_OnConnected;
+            FIPFSUIPC.OnQuit += FIPCessnaAirspeedLinear_OnQuit;
+            FIPFSUIPC.OnReadyToFly += FIPCessnaAirspeedLinear_OnReadyToFly;
         }
 
         private FIPAnalogGaugeProperties AnalogGaugeProperties

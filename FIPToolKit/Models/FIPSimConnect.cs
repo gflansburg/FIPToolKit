@@ -5,6 +5,7 @@ using FIPToolKit.Tools;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Drawing;
 using System.Linq;
@@ -12,10 +13,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using static FIPToolKit.FlightSim.SimConnect;
 
 namespace FIPToolKit.Models
 {
-    public abstract class FIPSimConnectPage : FIPPage
+    public class FIPSimConnect
     {
         private static IntPtr _mainWindowHandle;
         [XmlIgnore]
@@ -79,7 +81,19 @@ namespace FIPToolKit.Models
         public delegate void SimConnectAircraftChangeEventHandler(int aircraftId);
         public static event SimConnectAircraftChangeEventHandler OnAircraftChange;
 
-        public FIPSimConnectPage(FIPPageProperties properties) : base(properties)
+        public static event EventHandler OnSetLeds;
+        public static event EventHandler OnStopTimer;
+        public static event EventHandler OnUdatePage;
+        public static event SimConnectEventHandler OnSim;
+        public static event SimConnectQuitEventHandler OnQuit;
+        public static event SimConnectConnectEventHandler OnConnected;
+        public static event SimConnectErrorEventHandler OnError;
+        public static event SimConnectFlightDataEventHandler OnFlightDataReceived;
+        public static event SimConnectTrafficEventHandler OnTrafficReceived;
+        public static event SimConnectAirportListEventHandler OnAirportListReceived;
+        public static event SimConnectFlightDataByTypeEventHandler OnFlightDataByTypeReceived;
+
+        public FIPSimConnect()
         {
             Initialize();
             SimConnect.OnError += SimConnect_OnError;
@@ -94,6 +108,7 @@ namespace FIPToolKit.Models
 
         protected virtual void SimConnect_OnTrafficReceived(uint objectId, Aircraft aircraft, TrafficEvent eventType)
         {
+            OnTrafficReceived?.Invoke(objectId, aircraft, eventType);
         }
 
         protected virtual void SimConnect_OnAirportListReceived(Dictionary<string, Airport> airports)
@@ -106,12 +121,7 @@ namespace FIPToolKit.Models
                     FlightSim.Tools.Airports.Add(airport.ICAO, airport);
                 }
             }
-        }
-
-        protected virtual void SimConnect_OnSim(bool isRunning)
-        {
-            IsRunning = isRunning;
-            SetLEDs();
+            OnAirportListReceived?.Invoke(airports);
         }
 
         private static void ConnectionTimer_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -132,33 +142,43 @@ namespace FIPToolKit.Models
             }
         }
 
+        protected virtual void SimConnect_OnSim(bool isRunning)
+        {
+            IsRunning = isRunning;
+            OnSetLeds?.Invoke(this, new EventArgs());
+            OnSim?.Invoke(isRunning);
+        }
+
         protected virtual void SimConnect_OnQuit()
         {
             IsConnected = false;
-            StopTimer();
+            OnStopTimer?.Invoke(this, new EventArgs());
             if(_timer != null)
             {
                 _timer.RunWorkerAsync();
             }
-            SetLEDs();
+            OnSetLeds?.Invoke(this, new EventArgs());
+            OnQuit?.Invoke();
         }
 
         protected virtual void SimConnect_OnConnected()
         {
             IsConnected = true;
-            UpdatePage();
-            SetLEDs();
+            OnUdatePage?.Invoke(this, new EventArgs());
+            OnSetLeds?.Invoke(this, new EventArgs());
+            OnConnected?.Invoke();
         }
 
         protected virtual void SimConnect_OnError(string error)
         {
             IsConnected = false;
-            StopTimer();
+            OnStopTimer.Invoke(this, new EventArgs());
             SimConnect.Deinitialize();
             if (_timer != null && !_timer.IsBusy)
             {
                 _timer.RunWorkerAsync();
             }
+            OnError?.Invoke(error);
         }
 
         protected virtual void SimConnect_OnFlightDataReceived(SimConnect.FULL_DATA data)
@@ -179,10 +199,12 @@ namespace FIPToolKit.Models
             {
                 IsFloatPlane = Convert.ToBoolean(data.IS_GEAR_FLOATS);
             }
+            OnFlightDataReceived?.Invoke(data);
         }
 
         protected virtual void SimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
         {
+            OnFlightDataByTypeReceived?.Invoke(data);
         }
 
         public static void ReceiveMessage()

@@ -30,8 +30,8 @@ namespace FIPToolKit.Models
             properties.OnValueChanged += Properties_OnValueChanged;
             properties.OnSelectedVSpeedChanged += Properties_OnSelectedVSpeedChanged;
             vSpeeds = VSpeed.LoadVSpeeds();
-            OnFlightDataReceived += FIPCessnaAirspeedLinear_OnFlightDataReceived;
-            OnAircraftChange += FIPFSUIPCAirspeed_OnAircraftChange;
+            FIPFSUIPC.OnFlightDataReceived += FIPCessnaAirspeedLinear_OnFlightDataReceived;
+            FIPFSUIPC.OnAircraftChange += FIPFSUIPCAirspeed_OnAircraftChange;
         }
 
         private void Properties_OnValueChanged(object sender, FIPValueChangedEventArgs e)
@@ -80,7 +80,7 @@ namespace FIPToolKit.Models
 
         private void FIPCessnaAirspeedLinear_OnFlightDataReceived()
         {
-            AirspeedProperties.Value = OnGround ? GroundSpeedKnots : AirSpeedIndicatedKnots;
+            AirspeedProperties.Value = FIPFSUIPC.OnGround ? FIPFSUIPC.GroundSpeedKnots : FIPFSUIPC.AirSpeedIndicatedKnots;
         }
 
         public override void StartTimer()

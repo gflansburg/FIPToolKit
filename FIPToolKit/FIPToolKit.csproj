@@ -356,6 +356,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ffmpeg.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\Cessna.Clock1.png" />
     <None Include="Resources\Cessna.Clock2.png" />
     <None Include="Resources\Cessna.Altimeter.png" />
@@ -462,9 +465,9 @@
     <None Include="Resources\upfolderlevel.png" />
     <None Include="Resources\radio.png" />
     <None Include="Resources\music.png" />
-    <Content Include="SimConnect.dll">
+    <None Include="SimConnect.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
     <Content Include="SpotifyAPI.Web.Auth\Resources\AuthorizationCodeAuth\css\bulma.min.css" />
     <Content Include="SpotifyAPI.Web.Auth\Resources\AuthorizationCodeAuth\images\1.png" />
     <Content Include="SpotifyAPI.Web.Auth\Resources\AuthorizationCodeAuth\images\2.png" />
@@ -475,6 +478,10 @@
     <ProjectReference Include="..\DirectOutputNet\DirectOutputNet.vcxproj">
       <Project>{85d24812-9c8d-4ca4-a56d-15539faca9b2}</Project>
       <Name>DirectOutputNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
+      <Project>{124ab335-eeac-416f-b06b-80ad3cf56e38}</Project>
+      <Name>MediaToolkit</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

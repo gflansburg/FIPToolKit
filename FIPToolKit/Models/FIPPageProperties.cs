@@ -23,7 +23,8 @@ namespace FIPToolKit.Models
     [XmlInclude(typeof(FIPRadioProperties))]
     public class FIPPageProperties
     {
-        public event EventHandler OnSettingsChange;
+        public event EventHandler OnSettingsChanged;
+        public event EventHandler OnNameChanged;
 
         public FIPPageProperties()
         {
@@ -63,7 +64,7 @@ namespace FIPToolKit.Models
             }
             set
             {
-                if (!_font.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _font.Size != value.Size || _font.Style != value.Style || _font.Strikeout != value.Strikeout || _font.Underline != value.Underline || _font.Unit != value.Unit || _font.GdiCharSet != value.GdiCharSet)
+                if (!_font.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _font.Size != value.Size || _font.Bold != value.Bold || _font.Italic != value.Italic || _font.Strikeout != value.Strikeout || _font.Underline != value.Underline || _font.Unit != value.Unit || _font.GdiCharSet != value.GdiCharSet)
                 {
                     _font = value;
                     IsDirty = true;
@@ -130,7 +131,7 @@ namespace FIPToolKit.Models
                 _isDirty = value;
                 if (_isDirty == true)
                 {
-                    OnSettingsChange?.Invoke(this, EventArgs.Empty);
+                    OnSettingsChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -151,6 +152,7 @@ namespace FIPToolKit.Models
                 {
                     _name = value;
                     IsDirty = true;
+                    OnNameChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }

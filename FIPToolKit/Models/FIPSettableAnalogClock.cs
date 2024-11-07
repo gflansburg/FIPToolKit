@@ -34,7 +34,7 @@ namespace FIPToolKit.Models
         public FIPSettableAnalogClock(FIPSettableAnalogClockProperties properties) : base(properties)
         {
             Properties.ControlType = GetType().FullName;
-            Properties.OnSettingsChange += Properties_OnSettingsChange;
+            Properties.OnSettingsChanged += Properties_OnSettingsChanged;
             Mode = Modes.Normal;
             _alarmTimer = new AbortableBackgroundWorker();
             _alarmTimer.DoWork += AlarmTimer;
@@ -44,7 +44,7 @@ namespace FIPToolKit.Models
         {
             PropertyCopier<FIPSettableAnalogClockProperties, FIPSettableAnalogClockProperties>.Copy(template.Properties as FIPSettableAnalogClockProperties, SettableAnalogClockProperties);
             Properties.ControlType = GetType().FullName;
-            Properties.OnSettingsChange += Properties_OnSettingsChange;
+            Properties.OnSettingsChanged += Properties_OnSettingsChange;
             Mode = Modes.Normal;
             _alarmTimer = new AbortableBackgroundWorker();
             _alarmTimer.DoWork += AlarmTimer;
@@ -58,7 +58,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private void Properties_OnSettingsChange(object sender, EventArgs e)
+        private void Properties_OnSettingsChanged(object sender, EventArgs e)
         {
             if (!SettableAnalogClockProperties.AlarmOn)
             {

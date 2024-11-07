@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Unosquare.Swan;
 
 namespace FIPToolKit.Models
 {
@@ -134,7 +135,7 @@ namespace FIPToolKit.Models
             }
             set
             {
-                if (!_artistFont.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _artistFont.Size != value.Size || _artistFont.Style != value.Style || _artistFont.Strikeout != value.Strikeout || _artistFont.Underline != value.Underline || _artistFont.Unit != value.Unit || _artistFont.GdiCharSet != value.GdiCharSet)
+                if (!_artistFont.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _artistFont.Size != value.Size || _artistFont.Bold != value.Bold || _artistFont.Italic != value.Italic || _artistFont.Strikeout != value.Strikeout || _artistFont.Underline != value.Underline || _artistFont.Unit != value.Unit || _artistFont.GdiCharSet != value.GdiCharSet)
                 {
                     _artistFont = value;
                     IsDirty = true;
@@ -230,6 +231,21 @@ namespace FIPToolKit.Models
             }
         }
 
-        public bool Mute { get; set; } = false;
+        private bool _mute = false;
+        public bool Mute
+        {
+            get
+            {
+                return _mute;
+            }
+            set
+            {
+                if (_mute != value)
+                {
+                    _mute = value;
+                    IsDirty = true;
+                }
+            }
+        }
     }
 }

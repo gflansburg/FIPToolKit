@@ -7,6 +7,7 @@ using Saitek.DirectOutput;
 using System;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -122,6 +123,7 @@ namespace FIPDisplayProfiler
             {
                 ((FIPVideoPlayer)e.Page).OnActive += Page_OnActive;
                 ((FIPVideoPlayer)e.Page).OnInactive += Page_OnInactive;
+                ((FIPVideoPlayer)e.Page).OnNameChanged += Page_OnNameChanged;
             }
             if (e.IsActive)
             {
@@ -135,6 +137,17 @@ namespace FIPDisplayProfiler
             {
                 SetFIPImage(Device.GetDefaultPageImage);
             }
+        }
+
+        private void Page_OnNameChanged(object sender, FIPVideoPlayerEventArgs e)
+        {
+            lbPages.Invoke((Action)(() =>
+            {
+                int index = lbPages.SelectedIndex;
+                lbPages.DrawMode = DrawMode.OwnerDrawFixed;
+                lbPages.DrawMode = DrawMode.Normal;
+                lbPages.SelectedIndex = index;
+            }));
         }
 
         private void Page_OnStateChange(object sender, FIPPageEventArgs e)
@@ -262,6 +275,7 @@ namespace FIPDisplayProfiler
             {
                 ((FIPVideoPlayer)page).OnActive += Page_OnActive;
                 ((FIPVideoPlayer)page).OnInactive += Page_OnInactive;
+                ((FIPVideoPlayer)page).OnNameChanged += Page_OnNameChanged;
             }
             return index;
         }
@@ -389,7 +403,7 @@ namespace FIPDisplayProfiler
                             if(form.ShowDialog(this) == DialogResult.OK)
                             {
                                 FIPVideoPlayer page = new FIPVideoPlayer(form.VideoPlayer);
-                                page.OnSettingsUpdated += Page_OnSettingsUpdated;
+                                page.OnNameChanged += Page_OnNameChanged;
                                 page.OnActive += Page_OnActive;
                                 page.OnInactive += Page_OnInactive;
                                 Device.AddPage(page, true);
@@ -762,13 +776,8 @@ namespace FIPDisplayProfiler
                             ((FIPVideoPlayer)page).OnSettingsUpdated += Page_OnSettingsUpdated;
                             this.Invoke((Action)(() =>
                             {
-                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback, dlg.PauseOtherMedia);
+                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.SubtitleFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback, dlg.PauseOtherMedia);
                             }));
-
-                            /*ThreadPool.QueueUserWorkItem(_ =>
-                            {
-                                ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback);
-                            });*/
                         }
                     }
                     else if (typeof(FIPSimConnectRadio).IsAssignableFrom(page.GetType()))

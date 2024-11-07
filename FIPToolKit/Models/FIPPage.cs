@@ -149,20 +149,20 @@ namespace FIPToolKit.Models
         public event FIPPageEventHandler OnImageChange;
         public event FIPPageEventHandler OnStateChange;
         public event FIPPageEventHandler OnSoftButton;
-        public event FIPPageEventHandler OnSettingsChange;
+        public event FIPPageEventHandler OnSettingsChanged;
 
         public FIPPage(FIPPageProperties properties)
         {
             Properties = properties;
-            Properties.OnSettingsChange += Properties_OnSettingsChange;
+            Properties.OnSettingsChanged += Properties_OnSettingsChange;
             ShowKnobIcons = false;
         }
 
-        private void Properties_OnSettingsChange(object sender, EventArgs e)
+        public virtual void Properties_OnSettingsChange(object sender, EventArgs e)
         {
             UpdatePage();
             Reload = true;
-            OnSettingsChange?.Invoke(this, new FIPPageEventArgs(this));
+            OnSettingsChanged?.Invoke(this, new FIPPageEventArgs(this));
         }
 
         public virtual void UpdatePage()

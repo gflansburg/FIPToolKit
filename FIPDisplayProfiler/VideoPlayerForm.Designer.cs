@@ -47,13 +47,16 @@ namespace FIPDisplayProfiler
             this.chkShowControls = new System.Windows.Forms.CheckBox();
             this.chkResumePlayback = new System.Windows.Forms.CheckBox();
             this.cbPauseOtherMedia = new System.Windows.Forms.CheckBox();
+            this.btnSubtitleFont = new System.Windows.Forms.Button();
+            this.tbSubtitleFont = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(313, 133);
+            this.btnCancel.Location = new System.Drawing.Point(313, 164);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 6;
@@ -63,7 +66,7 @@ namespace FIPDisplayProfiler
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(394, 133);
+            this.btnOK.Location = new System.Drawing.Point(394, 164);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -75,7 +78,9 @@ namespace FIPDisplayProfiler
             // 
             this.openFileDialog1.DefaultExt = "mp4";
             this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "Video Files|*.avi;*.mpg;*.mp4;*.mpeg;*.mpv;*.m4v;*.wmv;*.flv,*.mov";
+            this.openFileDialog1.Filter = "All Video Files|*.avi;*.mpg;*.mp4;*.mpeg;*.mpv;*.m4v;*.wmv;*.flv,*.mov;*.m3u;*.m3" +
+    "u8|Video Files|*.avi;*.mpg;*.mp4;*.mpeg;*.mpv;*.m4v;*.wmv;*.flv,*.mov|Playlists|" +
+    "*.m3u;*.m3u8";
             // 
             // btnFont
             // 
@@ -93,26 +98,26 @@ namespace FIPDisplayProfiler
             this.tbFont.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbFont.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tbFont.Location = new System.Drawing.Point(68, 41);
+            this.tbFont.Location = new System.Drawing.Point(83, 41);
             this.tbFont.Name = "tbFont";
             this.tbFont.ReadOnly = true;
-            this.tbFont.Size = new System.Drawing.Size(320, 20);
+            this.tbFont.Size = new System.Drawing.Size(305, 20);
             this.tbFont.TabIndex = 3;
             this.tbFont.TabStop = false;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(31, 44);
+            this.label4.Location = new System.Drawing.Point(23, 44);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(31, 13);
+            this.label4.Size = new System.Drawing.Size(54, 13);
             this.label4.TabIndex = 38;
-            this.label4.Text = "Font:";
+            this.label4.Text = "Title Font:";
             // 
             // btnFontColor
             // 
             this.btnFontColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFontColor.Location = new System.Drawing.Point(68, 69);
+            this.btnFontColor.Location = new System.Drawing.Point(83, 99);
             this.btnFontColor.Name = "btnFontColor";
             this.btnFontColor.Size = new System.Drawing.Size(100, 21);
             this.btnFontColor.TabIndex = 5;
@@ -122,7 +127,7 @@ namespace FIPDisplayProfiler
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(27, 74);
+            this.label18.Location = new System.Drawing.Point(42, 104);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(34, 13);
             this.label18.TabIndex = 48;
@@ -131,7 +136,7 @@ namespace FIPDisplayProfiler
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(10, 15);
+            this.label5.Location = new System.Drawing.Point(12, 15);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(52, 13);
             this.label5.TabIndex = 49;
@@ -141,10 +146,10 @@ namespace FIPDisplayProfiler
             // 
             this.tbFilename.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbFilename.Location = new System.Drawing.Point(68, 12);
+            this.tbFilename.Location = new System.Drawing.Point(83, 12);
             this.tbFilename.Name = "tbFilename";
             this.tbFilename.ReadOnly = true;
-            this.tbFilename.Size = new System.Drawing.Size(320, 20);
+            this.tbFilename.Size = new System.Drawing.Size(305, 20);
             this.tbFilename.TabIndex = 1;
             // 
             // btnBrowse
@@ -161,7 +166,7 @@ namespace FIPDisplayProfiler
             // chkMaintainAspectRadio
             // 
             this.chkMaintainAspectRadio.AutoSize = true;
-            this.chkMaintainAspectRadio.Location = new System.Drawing.Point(68, 106);
+            this.chkMaintainAspectRadio.Location = new System.Drawing.Point(83, 136);
             this.chkMaintainAspectRadio.Name = "chkMaintainAspectRadio";
             this.chkMaintainAspectRadio.Size = new System.Drawing.Size(130, 17);
             this.chkMaintainAspectRadio.TabIndex = 51;
@@ -171,7 +176,7 @@ namespace FIPDisplayProfiler
             // chkPortraitMode
             // 
             this.chkPortraitMode.AutoSize = true;
-            this.chkPortraitMode.Location = new System.Drawing.Point(376, 72);
+            this.chkPortraitMode.Location = new System.Drawing.Point(376, 102);
             this.chkPortraitMode.Name = "chkPortraitMode";
             this.chkPortraitMode.Size = new System.Drawing.Size(89, 17);
             this.chkPortraitMode.TabIndex = 52;
@@ -181,7 +186,7 @@ namespace FIPDisplayProfiler
             // chkShowControls
             // 
             this.chkShowControls.AutoSize = true;
-            this.chkShowControls.Location = new System.Drawing.Point(376, 106);
+            this.chkShowControls.Location = new System.Drawing.Point(376, 136);
             this.chkShowControls.Name = "chkShowControls";
             this.chkShowControls.Size = new System.Drawing.Size(94, 17);
             this.chkShowControls.TabIndex = 53;
@@ -191,7 +196,7 @@ namespace FIPDisplayProfiler
             // chkResumePlayback
             // 
             this.chkResumePlayback.AutoSize = true;
-            this.chkResumePlayback.Location = new System.Drawing.Point(213, 72);
+            this.chkResumePlayback.Location = new System.Drawing.Point(228, 102);
             this.chkResumePlayback.Name = "chkResumePlayback";
             this.chkResumePlayback.Size = new System.Drawing.Size(112, 17);
             this.chkResumePlayback.TabIndex = 54;
@@ -201,12 +206,44 @@ namespace FIPDisplayProfiler
             // cbPauseOtherMedia
             // 
             this.cbPauseOtherMedia.AutoSize = true;
-            this.cbPauseOtherMedia.Location = new System.Drawing.Point(213, 106);
+            this.cbPauseOtherMedia.Location = new System.Drawing.Point(228, 136);
             this.cbPauseOtherMedia.Name = "cbPauseOtherMedia";
             this.cbPauseOtherMedia.Size = new System.Drawing.Size(117, 17);
             this.cbPauseOtherMedia.TabIndex = 55;
             this.cbPauseOtherMedia.Text = "Pause Other Media";
             this.cbPauseOtherMedia.UseVisualStyleBackColor = true;
+            // 
+            // btnSubtitleFont
+            // 
+            this.btnSubtitleFont.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnSubtitleFont.Location = new System.Drawing.Point(394, 68);
+            this.btnSubtitleFont.Name = "btnSubtitleFont";
+            this.btnSubtitleFont.Size = new System.Drawing.Size(75, 23);
+            this.btnSubtitleFont.TabIndex = 57;
+            this.btnSubtitleFont.Text = "Select &Font";
+            this.btnSubtitleFont.UseVisualStyleBackColor = true;
+            this.btnSubtitleFont.Click += new System.EventHandler(this.btnSubtitleFont_Click);
+            // 
+            // tbSubtitleFont
+            // 
+            this.tbSubtitleFont.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbSubtitleFont.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.tbSubtitleFont.Location = new System.Drawing.Point(83, 70);
+            this.tbSubtitleFont.Name = "tbSubtitleFont";
+            this.tbSubtitleFont.ReadOnly = true;
+            this.tbSubtitleFont.Size = new System.Drawing.Size(305, 20);
+            this.tbSubtitleFont.TabIndex = 56;
+            this.tbSubtitleFont.TabStop = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(8, 73);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(69, 13);
+            this.label1.TabIndex = 58;
+            this.label1.Text = "Subtitle Font:";
             // 
             // VideoPlayerForm
             // 
@@ -214,7 +251,10 @@ namespace FIPDisplayProfiler
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(482, 165);
+            this.ClientSize = new System.Drawing.Size(482, 196);
+            this.Controls.Add(this.btnSubtitleFont);
+            this.Controls.Add(this.tbSubtitleFont);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.cbPauseOtherMedia);
             this.Controls.Add(this.chkResumePlayback);
             this.Controls.Add(this.chkShowControls);
@@ -262,5 +302,8 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.CheckBox chkShowControls;
         private System.Windows.Forms.CheckBox chkResumePlayback;
         private System.Windows.Forms.CheckBox cbPauseOtherMedia;
+        private System.Windows.Forms.Button btnSubtitleFont;
+        private System.Windows.Forms.TextBox tbSubtitleFont;
+        private System.Windows.Forms.Label label1;
     }
 }

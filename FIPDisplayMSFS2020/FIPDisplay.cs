@@ -414,7 +414,7 @@ namespace FIPDisplayMSFS2020
 
         private void Device_OnPageAdded(object sender, FIPDeviceEventArgs e)
         {
-            e.Page.OnSettingsChange += Page_OnSettingsChange;
+            e.Page.OnSettingsChanged += Page_OnSettingsChanged;
             if (e.Page.GetType() == typeof(FIPSpotifyPlayer))
             {
                 ((FIPSpotifyPlayer)e.Page).OnBeginAuthentication += SpotifyPlayer_OnBeginAuthentication;
@@ -486,7 +486,7 @@ namespace FIPDisplayMSFS2020
             }
         }
 
-        private void Page_OnSettingsChange(object sender, FIPPageEventArgs e)
+        private void Page_OnSettingsChanged(object sender, FIPPageEventArgs e)
         {
             if (!string.IsNullOrEmpty(Options.Settings) && File.Exists(Options.Settings))
             {

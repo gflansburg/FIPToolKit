@@ -328,7 +328,7 @@ namespace FIPToolKit.Models
                     case SoftButtons.Left:
                         if (Player != null && Library != null && Playlist != null)
                         {
-                            PlayPreviousSong();
+                            PlayPreviousTrack();
                         }
                         else if (Player != null && Library == null && !string.IsNullOrEmpty(RadioProperties.Path))
                         {
@@ -341,7 +341,7 @@ namespace FIPToolKit.Models
                     case SoftButtons.Right:
                         if (Player != null && Library != null && Playlist != null)
                         {
-                            PlayNextSong();
+                            PlayNextTrack();
                         }
                         else if (Player != null && Library == null && !string.IsNullOrEmpty(RadioProperties.Path))
                         {
@@ -482,7 +482,7 @@ namespace FIPToolKit.Models
                     }
                     if (CurrentSong.Filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || CurrentSong.Filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (CurrentSong.Title.Equals(Path.GetFileNameWithoutExtension(CurrentSong.Filename)))
+                        if (CurrentSong.Title.Equals(HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(CurrentSong.Filename))))
                         {
                             if (!string.IsNullOrEmpty(meta))
                             {

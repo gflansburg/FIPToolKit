@@ -26,11 +26,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return _artists.Where(a => a.AlbumCount > 0);
-            }
-            set
-            {
-                _artists = value.ToList();
+                lock (_artists)
+                {
+                    return _artists.Where(a => a.AlbumCount > 0);
+                }
             }
         }
 
@@ -38,15 +37,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                List<FIPMusicSong> songs = new List<FIPMusicSong>();
-                foreach (FIPMusicArtist artist in Artists)
+                lock (_artists)
                 {
-                    foreach (FIPMusicAlbum album in artist.Albums)
-                    {
-                        songs.AddRange(album.Songs);
-                    }
+                    return _artists.Where(a => a.AlbumCount > 0).SelectMany(a => a.Songs).ToList();
                 }
-                return songs;
             }
         }
 
@@ -54,11 +48,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                if (ArtistCount > 0)
+                lock (_artists)
                 {
-                    return Artists.First();
+                    return _artists.Where(a => a.AlbumCount > 0).FirstOrDefault();
                 }
-                return null;
             }
         }
 
@@ -66,9 +59,9 @@ namespace FIPToolKit.Models
         {
             get
             {
-                if (FirstArtist != null && FirstArtist.AlbumCount > 0)
+                if (FirstArtist != null)
                 {
-                    return FirstArtist.Albums.First();
+                    return FirstArtist.Albums.FirstOrDefault();
                 }
                 return null;
             }
@@ -78,9 +71,9 @@ namespace FIPToolKit.Models
         {
             get
             {
-                if (FirstAlbum != null && FirstAlbum.SongCount > 0)
+                if (FirstAlbum != null)
                 {
-                    return FirstAlbum.Songs.First();
+                    return FirstAlbum.Songs.FirstOrDefault();
                 }
                 return null;
             }
@@ -90,7 +83,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return Artists.Count();
+                lock (_artists)
+                {
+                    return _artists.Where(a => a.AlbumCount > 0).Count();
+                }
             }
         }
 
@@ -98,7 +94,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return Artists.Sum(a =>  a.AlbumCount);
+                lock (_artists)
+                {
+                    return _artists.Where(a => a.AlbumCount > 0).Sum(a => a.AlbumCount);
+                }
             }
         }
 
@@ -106,48 +105,60 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return Artists.Sum(a => a.SongCount);
+                lock (_artists)
+                {
+                    return _artists.Where(a => a.AlbumCount > 0).Sum(a => a.SongCount);
+                }
             }
         }
 
         public void UpdateSongLocation(LatLong location)
         {
-            foreach(FIPMusicArtist artist in _artists)
+            lock (_artists)
             {
-                artist.UpdateSongLocation(location);
+                foreach (FIPMusicArtist artist in _artists)
+                {
+                    artist.UpdateSongLocation(location);
+                }
             }
         }
 
         public void UpdateRadioDistance(Models.RadioDistance radioDistance)
         {
-            foreach (FIPMusicArtist artist in _artists)
+            lock (_artists)
             {
-                artist.UpdateRadioDistance(radioDistance);
+                foreach (FIPMusicArtist artist in _artists)
+                {
+                    artist.UpdateRadioDistance(radioDistance);
+                }
             }
         }
 
         public FIPMusicAlbum GetAlbum(string artistName, string albumName, Models.RadioDistance radioDistance)
         {
-            FIPMusicArtist artist = _artists.FirstOrDefault(a => a.ArtistName.Equals(artistName, StringComparison.OrdinalIgnoreCase));
-            if (artist == null)
+            lock (_artists)
             {
-                artist = new FIPMusicArtist()
+                FIPMusicArtist artist = _artists.FirstOrDefault(a => a.ArtistName.Equals(artistName, StringComparison.OrdinalIgnoreCase));
+                if (artist == null)
                 {
-                    ArtistName = artistName
-                };
-                _artists.Add(artist);
-            }
-            FIPMusicAlbum album = artist.FindAlbum(albumName);
-            if (album == null)
-            {
-                album = new FIPMusicAlbum()
+                    artist = new FIPMusicArtist()
+                    {
+                        ArtistName = artistName
+                    };
+                    _artists.Add(artist);
+                }
+                FIPMusicAlbum album = artist.FindAlbum(albumName);
+                if (album == null)
                 {
-                    AlbumName = albumName,
-                    RadioDistance = radioDistance
-                };
-                artist.AddAlbum(album);
+                    album = new FIPMusicAlbum()
+                    {
+                        AlbumName = albumName,
+                        RadioDistance = radioDistance
+                    };
+                    artist.AddAlbum(album);
+                }
+                return album;
             }
-            return album;
         }
 
         public void Sort()
@@ -157,9 +168,12 @@ namespace FIPToolKit.Models
 
         public void Dispose()
         {
-            foreach (var artist in Artists)
+            lock (_artists)
             {
-                artist.Dispose();
+                foreach (var artist in _artists)
+                {
+                    artist.Dispose();
+                }
             }
         }
     }
@@ -172,28 +186,40 @@ namespace FIPToolKit.Models
         { 
             get
             {
-                return _albums.Where(a => a.SongCount > 0);
-            }
-            set
-            {
-                _albums = value.ToList();
+                lock (_albums)
+                {
+                    return _albums.Where(a => a.SongCount > 0);
+                }
             }
         }
 
         public void AddAlbum(FIPMusicAlbum album)
         {
-            _albums.Add(album);
+            lock (_albums)
+            {
+                _albums.Add(album);
+            }
         }
 
         public FIPMusicAlbum FirstAlbum
         {
             get
             {
-                if (AlbumCount > 0)
+                lock (_albums)
                 {
-                    return Albums.First();
+                    return _albums.Where(a => a.SongCount > 0).FirstOrDefault();
                 }
-                return null;
+            }
+        }
+
+        public List<FIPMusicSong> Songs
+        {
+            get
+            {
+                lock (_albums)
+                {
+                    return _albums.Where(a => a.SongCount > 0).SelectMany(a => a.Songs).ToList();
+                }
             }
         }
 
@@ -213,7 +239,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return Albums.Count();
+                lock (_albums)
+                {
+                    return _albums.Where(a => a.SongCount > 0).Count();
+                }
             }
         }
 
@@ -221,7 +250,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return Albums.Sum(s => s.SongCount);
+                lock (_albums)
+                {
+                    return _albums.Where(a => a.SongCount > 0).Sum(s => s.SongCount);
+                }
             }
         }
 
@@ -239,35 +271,50 @@ namespace FIPToolKit.Models
 
         public void Sort()
         {
-            _albums.Sort((x, y) => x.AlbumName.CompareTo(y.AlbumName));
+            lock (_albums)
+            {
+                _albums.Sort((x, y) => x.AlbumName.CompareTo(y.AlbumName));
+            }
         }
 
         public void UpdateSongLocation(LatLong location)
         {
-            foreach (FIPMusicAlbum album in _albums)
+            lock (_albums)
             {
-                album.UpdateSongLocation(location);
+                foreach (FIPMusicAlbum album in _albums)
+                {
+                    album.UpdateSongLocation(location);
+                }
             }
         }
 
         public void UpdateRadioDistance(Models.RadioDistance radioDistance)
         {
-            foreach (FIPMusicAlbum album in _albums)
+            lock (_albums)
             {
-                album.RadioDistance = radioDistance;
+                foreach (FIPMusicAlbum album in _albums)
+                {
+                    album.RadioDistance = radioDistance;
+                }
             }
         }
 
         public FIPMusicAlbum FindAlbum(string album)
         {
-            return _albums.FirstOrDefault(a => a.AlbumName.Equals(album, StringComparison.OrdinalIgnoreCase));
+            lock (_albums)
+            {
+                return _albums.FirstOrDefault(a => a.AlbumName.Equals(album, StringComparison.OrdinalIgnoreCase));
+            }
         }
 
         public void Dispose()
         {
-            foreach(var album in Albums)
+            lock (_albums)
             {
-                album.Dispose();
+                foreach (var album in _albums)
+                {
+                    album.Dispose();
+                }
             }
         }
     }
@@ -277,16 +324,16 @@ namespace FIPToolKit.Models
         private List<FIPMusicSong> _songs { get; set; } = new List<FIPMusicSong>();
         public string AlbumName { get; set; }
         public Models.RadioDistance RadioDistance { get; set; } = RadioDistance.Any;
+        public bool IsPlaylist { get; set; }
 
         public IEnumerable<FIPMusicSong> Songs 
         { 
             get
             {
-                return _songs.Where(s => RadioDistance == RadioDistance.Any || s.Distance <= RadioDistance.Double());
-            }
-            set
-            {
-                _songs = value.ToList();
+                lock (_songs)
+                {
+                    return _songs.Where(s => RadioDistance == RadioDistance.Any || s.Distance <= RadioDistance.Double());
+                }
             }
         }
 
@@ -294,7 +341,10 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return Songs.Count();
+                lock (_songs)
+                {
+                    return _songs.Where(s => RadioDistance == RadioDistance.Any || s.Distance <= RadioDistance.Double()).Count();
+                }
             }
         }
 
@@ -302,22 +352,20 @@ namespace FIPToolKit.Models
         {
             get
             {
-                if (SongCount > 0)
+                lock (_songs)
                 {
-                    return Songs.First();
+                    return _songs.Where(s => RadioDistance == RadioDistance.Any || s.Distance <= RadioDistance.Double()).FirstOrDefault();
                 }
-                return null;
             }
         }
 
-        public bool IsPlaylist { get; set; }
         public Bitmap Artwork
         {
             get
             {
                 if (SongCount > 0)
                 {
-                    return IsPlaylist ? Properties.Resources.playlist : Songs.First().Artwork;
+                    return IsPlaylist ? Properties.Resources.playlist : FirstSong != null ? FirstSong.Artwork : Properties.Resources.Music;
                 }
                 return null;
             }
@@ -325,28 +373,40 @@ namespace FIPToolKit.Models
 
         public void AddSong(FIPMusicSong song)
         {
-            _songs.Add(song);
+            lock (_songs)
+            {
+                _songs.Add(song);
+            }
         }
 
         public void Sort()
         {
-            _songs.Sort((x, y) => x.Title.CompareTo(y.Title));
-            _songs.Sort((x, y) => x.Track.CompareTo(y.Track));
+            lock (_songs)
+            {
+                _songs.Sort((x, y) => x.Title.CompareTo(y.Title));
+                _songs.Sort((x, y) => x.Track.CompareTo(y.Track));
+            }
         }
 
         public void UpdateSongLocation(LatLong location)
         {
-            foreach (FIPMusicSong song in _songs)
+            lock (_songs)
             {
-                song.ListenerLocation = location;
+                foreach (FIPMusicSong song in _songs)
+                {
+                    song.ListenerLocation = location;
+                }
             }
         }
 
         public void Dispose()
         {
-            foreach( var song in Songs)
+            lock (_songs)
             {
-                song.Dispose();
+                foreach (var song in _songs)
+                {
+                    song.Dispose();
+                }
             }
         }
     }
@@ -739,7 +799,7 @@ namespace FIPToolKit.Models
                 };
                 player.EndReached += (s, e) =>
                 {
-                    PlayNextSong(true);
+                    PlayNextTrack(true);
                 };
             }
         }
@@ -753,23 +813,9 @@ namespace FIPToolKit.Models
                     media.Dispose();
                     media = null;
                 }
-                try
-                {
-                    player.Stop();
-                    player.Dispose();
-                    player = null;
-                }
-                catch (Exception)
-                {
-                }
-                try
-                {
-                    libVLC.Dispose();
-                    libVLC = null;
-                }
-                catch (Exception)
-                {
-                }
+                Stop();
+                libVLC.Dispose();
+                libVLC = null;
             });
             if (Library != null)
             {
@@ -876,18 +922,6 @@ namespace FIPToolKit.Models
                                 LibrarySong = CurrentSong;
                                 LibraryAlbum = CurrentAlbum;
                                 LibraryArtist = CurrentArtist;
-                                /*if (CurrentArtist != null)
-                                {
-                                    LibraryArtist = Library.Artists.FirstOrDefault(a => a.ArtistName.Equals(CurrentArtist.ArtistName, StringComparison.OrdinalIgnoreCase));
-                                    if (LibraryArtist != null && CurrentAlbum != null)
-                                    {
-                                        LibraryAlbum = LibraryArtist.Albums.FirstOrDefault(a => a.AlbumName.Equals(CurrentAlbum.AlbumName, StringComparison.OrdinalIgnoreCase));
-                                        if (LibraryAlbum != null && CurrentSong != null)
-                                        {
-                                            LibrarySong = LibraryAlbum.Songs.FirstOrDefault(a => a.Filename.Equals(CurrentSong.Filename, StringComparison.OrdinalIgnoreCase));
-                                        }
-                                    }
-                                }*/
                                 LibraryPage = CurrentSong != null ? MusicLibraryPage.Songs : MusicLibraryPage.Artists;
                             }
                         }
@@ -916,7 +950,7 @@ namespace FIPToolKit.Models
                     case SoftButtons.Left:
                         if (player != null && Library != null && Playlist != null)
                         {
-                            PlayPreviousSong();
+                            PlayPreviousTrack();
                         }
                         else if (player != null && Library == null && !string.IsNullOrEmpty(MusicPlayerProperties.Path))
                         {
@@ -929,7 +963,7 @@ namespace FIPToolKit.Models
                     case SoftButtons.Right:
                         if (player != null && Library != null && Playlist != null)
                         {
-                            PlayNextSong();
+                            PlayNextTrack();
                         }
                         else if (player != null && Library == null && !string.IsNullOrEmpty(MusicPlayerProperties.Path))
                         {
@@ -1379,7 +1413,7 @@ namespace FIPToolKit.Models
                             {
                                 Duration = tag.Properties != null ? tag.Properties.Duration : new TimeSpan(),
                                 Filename = filename,
-                                Title = Path.GetFileNameWithoutExtension(filename),
+                                Title = HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(filename)),
                                 Album = "Unknown Album",
                                 Artist = "Unknown Artist",
                                 Genre = "Unknown Genre",
@@ -1395,7 +1429,7 @@ namespace FIPToolKit.Models
                     {
                         Duration = media != null && media.Duration.HasValue ? media.Duration.Value : (media != null && media.Attributes != null && media.Attributes.TvgDuration.HasValue ? media.Attributes.TvgDuration.Value : new TimeSpan()),
                         Filename = filename,
-                        Title = media != null && !string.IsNullOrEmpty(media.Title) ? media.Title : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgName) ? media.Attributes.TvgName : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgId) ? media.Attributes.TvgId : Path.GetFileNameWithoutExtension(filename))),
+                        Title = media != null && !string.IsNullOrEmpty(media.Title) ? media.Title : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgName) ? media.Attributes.TvgName : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgId) ? media.Attributes.TvgId : HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(filename)))),
                         Album = !string.IsNullOrEmpty(playlist) ? playlist : "Unknown Album",
                         Artist = filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "Stream" : "Unknown Artist",
                         Genre = media != null && media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgType) ? media.Attributes.TvgType : "Unknown Genre",
@@ -1428,7 +1462,7 @@ namespace FIPToolKit.Models
                 {
                     Duration = media != null && media.Duration.HasValue ? media.Duration.Value : (media != null && media.Attributes != null && media.Attributes.TvgDuration.HasValue ? media.Attributes.TvgDuration.Value : new TimeSpan()),
                     Filename = filename,
-                    Title = media != null && !string.IsNullOrEmpty(media.Title) ? media.Title : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgName) ? media.Attributes.TvgName : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgId) ? media.Attributes.TvgId : Path.GetFileNameWithoutExtension(filename))),
+                    Title = media != null && !string.IsNullOrEmpty(media.Title) ? media.Title : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgName) ? media.Attributes.TvgName : (media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgId) ? media.Attributes.TvgId : HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(filename)))),
                     Album = !string.IsNullOrEmpty(playlist) ? playlist : "Unknown Album",
                     Artist = filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "Stream" : "Unknown Artist",
                     Genre = media != null && media.Attributes != null && !string.IsNullOrEmpty(media.Attributes.TvgType) ? media.Attributes.TvgType : "Unknown Genre",
@@ -1526,9 +1560,9 @@ namespace FIPToolKit.Models
                                 if (song == null)
                                 {
                                     draw = true;
-                                    song = LoadSongFromFile(sqlConnection, media.Path, hash, media, Path.GetFileNameWithoutExtension(file));
+                                    song = LoadSongFromFile(sqlConnection, media.Path, hash, media, HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(file)));
                                 }
-                                song.Playlist = Path.GetFileNameWithoutExtension(file);
+                                song.Playlist = HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(file));
                                 if (itemCount % 10 == 0 || draw)
                                 {
                                     UpdateLoading(song.Artist, song.Title);
@@ -1786,7 +1820,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        public void PlayNextSong(bool endReached = false)
+        public void PlayNextTrack(bool endReached = false)
         {
             if (Library != null)
             {
@@ -1877,7 +1911,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        public void PlayPreviousSong()
+        public void PlayPreviousTrack()
         {
             if (Library != null)
             {
@@ -1958,6 +1992,10 @@ namespace FIPToolKit.Models
         public void Play(string filename, bool play = true)
         {
             Stop();
+            while (!_stopped)
+            {
+                Thread.Sleep(100);
+            }
             if (media != null)
             {
                 media.Dispose();
@@ -2111,7 +2149,7 @@ namespace FIPToolKit.Models
                     }
                     if (CurrentSong.Filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || CurrentSong.Filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (CurrentSong.Title.Equals(Path.GetFileNameWithoutExtension(CurrentSong.Filename)))
+                        if (CurrentSong.Title.Equals(HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(CurrentSong.Filename))))
                         {
                             if (!string.IsNullOrEmpty(meta))
                             {
@@ -2147,8 +2185,10 @@ namespace FIPToolKit.Models
             }
         }
 
+        private bool _stopped = false;
         private void Stop()
         {
+            _stopped = false;
             MediaPlayer oldPlayer = player;
             player = null;
             Error = null;
@@ -2160,6 +2200,7 @@ namespace FIPToolKit.Models
                     oldPlayer.Dispose();
                     oldPlayer = null;
                 }
+                _stopped = true;
             });
         }
 

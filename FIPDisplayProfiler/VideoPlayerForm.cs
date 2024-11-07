@@ -1,9 +1,11 @@
 ﻿using FIPToolKit.Models;
+using FIPToolKit.Tools;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +17,8 @@ namespace FIPDisplayProfiler
     {
         public FIPVideoPlayerProperties VideoPlayer { get; set; }
 
-        private Font _fontHolder;
+        private Font _fontHolderTitle;
+        private Font _fontHolderSubtitle;
 
         public VideoPlayerForm()
         {
@@ -42,7 +45,15 @@ namespace FIPDisplayProfiler
         {
             get
             {
-                return _fontHolder;
+                return _fontHolderTitle;
+            }
+        }
+
+        public Font SubtitleFont
+        {
+            get
+            {
+                return _fontHolderSubtitle;
             }
         }
 
@@ -99,6 +110,7 @@ namespace FIPDisplayProfiler
             VideoPlayer.Name = VideoName;
             VideoPlayer.Filename = Filename;
             VideoPlayer.Font = PlayerFont;
+            VideoPlayer.SubtitleFont = _fontHolderSubtitle;
             VideoPlayer.FontColor = FontColor;
             VideoPlayer.MaintainAspectRatio = MaintainAspectRatio;
             VideoPlayer.PauseOtherMedia = PauseOtherMedia;
@@ -109,10 +121,10 @@ namespace FIPDisplayProfiler
 
         private void btnFont_Click(object sender, EventArgs e)
         {
-            fontDialog1.Font = _fontHolder;
+            fontDialog1.Font = _fontHolderTitle;
             if (fontDialog1.ShowDialog() == DialogResult.OK)
             {
-                _fontHolder = fontDialog1.Font;
+                _fontHolderTitle = fontDialog1.Font;
                 tbFont.Font = new Font(fontDialog1.Font.FontFamily, tbFont.Font.Size, fontDialog1.Font.Style, fontDialog1.Font.Unit, fontDialog1.Font.GdiCharSet);
                 tbFont.Text = fontDialog1.Font.Name;
             }
@@ -132,7 +144,16 @@ namespace FIPDisplayProfiler
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
+            if (string.IsNullOrEmpty(btnBrowse.Text))
+            {
+                openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
+                openFileDialog1.FileName = string.Empty;
+            }
+            else
+            {
+                openFileDialog1.InitialDirectory = Path.GetDirectoryName(tbFilename.Text);
+                openFileDialog1.FileName = Path.GetFileName(tbFilename.Text);
+            }
             if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
             {
                 tbFilename.Text = openFileDialog1.FileName;
@@ -143,9 +164,12 @@ namespace FIPDisplayProfiler
         private void VideoPlayerForm_Load(object sender, EventArgs e)
         {
             tbFilename.Text = VideoPlayer.Filename;
-            _fontHolder = VideoPlayer.Font;
+            _fontHolderTitle = VideoPlayer.Font;
+            _fontHolderSubtitle = VideoPlayer.SubtitleFont;
             tbFont.Font = new Font(VideoPlayer.Font.FontFamily, tbFont.Font.Size, VideoPlayer.Font.Style, VideoPlayer.Font.Unit, VideoPlayer.Font.GdiCharSet);
             tbFont.Text = VideoPlayer.Font.FontFamily.Name;
+            tbSubtitleFont.Font = new Font(VideoPlayer.SubtitleFont.FontFamily, tbSubtitleFont.Font.Size, VideoPlayer.SubtitleFont.Style, VideoPlayer.SubtitleFont.Unit, VideoPlayer.SubtitleFont.GdiCharSet);
+            tbSubtitleFont.Text = VideoPlayer.SubtitleFont.FontFamily.Name;
             btnFontColor.BackColor = VideoPlayer.FontColor;
             chkMaintainAspectRadio.Checked = VideoPlayer.MaintainAspectRatio;
             chkPortraitMode.Checked = VideoPlayer.PortraitMode;
@@ -153,6 +177,17 @@ namespace FIPDisplayProfiler
             chkResumePlayback.Checked = VideoPlayer.ResumePlayback;
             cbPauseOtherMedia.Checked = VideoPlayer.PauseOtherMedia;
             btnOK.Enabled = !string.IsNullOrEmpty(tbFilename.Text);
+        }
+
+        private void btnSubtitleFont_Click(object sender, EventArgs e)
+        {
+            fontDialog1.Font = _fontHolderSubtitle;
+            if (fontDialog1.ShowDialog() == DialogResult.OK)
+            {
+                _fontHolderSubtitle = fontDialog1.Font;
+                tbSubtitleFont.Font = new Font(fontDialog1.Font.FontFamily, tbSubtitleFont.Font.Size, fontDialog1.Font.Style, fontDialog1.Font.Unit, fontDialog1.Font.GdiCharSet);
+                tbSubtitleFont.Text = fontDialog1.Font.Name;
+            }
         }
     }
 }

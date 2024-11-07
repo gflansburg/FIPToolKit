@@ -123,10 +123,10 @@ namespace FIPDisplayProfiler
 
         private void Device_OnPageAdded(object sender, FIPDeviceEventArgs e)
         {
-            e.Page.OnSettingsChange += Page_OnSettingsChange;
+            e.Page.OnSettingsChanged += Page_OnSettingsChanged;
         }
 
-        private void Page_OnSettingsChange(object sender, FIPPageEventArgs e)
+        private void Page_OnSettingsChanged(object sender, FIPPageEventArgs e)
         {
             if(Properties.Settings.Default.AutoSave && !_loading)
             {
@@ -416,7 +416,7 @@ namespace FIPDisplayProfiler
             Properties.Settings.Default.Save();
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.UpdatePreviewVideo();
@@ -691,7 +691,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.UpdateShowArtistImages();
@@ -703,7 +703,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.UpdateCacheSpotifyArtwork();
@@ -715,7 +715,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.UpdateLoadLastSpotifyPlaylist();
@@ -727,7 +727,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.ResumeOtherMedia();
@@ -739,7 +739,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.PauseOtherMedia();
@@ -751,7 +751,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.CanPlayOther(e);
@@ -809,7 +809,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.CancelSpotifyAuthenticate();
@@ -826,7 +826,7 @@ namespace FIPDisplayProfiler
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
-                if (tab.Controls[0].GetType() == typeof(DeviceControl))
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     foreach (FIPPage page in deviceControl.Device.Pages)

@@ -1,6 +1,8 @@
-﻿using LibVLCSharp.Shared;
+﻿using FIPToolKit.Drawing;
+using LibVLCSharp.Shared;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -16,11 +18,31 @@ namespace FIPToolKit.Models
         public event EventHandler OnVolumeChanged;
         public event EventHandler OnPositionChanged;
         public event EventHandler OnPortraitModeChanged;
+        public event EventHandler OnFilenameChanged;
 
         public FIPVideoPlayerProperties() : base() 
         {
             Name = "Video Player";
+            Font = new Font("Arial", 12.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
+            _subTitleFont = new Font("Arial", 10.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
             IsDirty = false;
+        }
+
+        private FontEx _subTitleFont;
+        public FontEx SubtitleFont
+        {
+            get
+            {
+                return _subTitleFont;
+            }
+            set
+            {
+                if (!_subTitleFont.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _subTitleFont.Size != value.Size || _subTitleFont.Bold != value.Bold || _subTitleFont.Italic != value.Italic || _subTitleFont.Strikeout != value.Strikeout || _subTitleFont.Underline != value.Underline || _subTitleFont.Unit != value.Unit || _subTitleFont.GdiCharSet != value.GdiCharSet)
+                {
+                    _subTitleFont = value;
+                    IsDirty = true;
+                }
+            }
         }
 
         private string _filename;
@@ -36,6 +58,7 @@ namespace FIPToolKit.Models
                 {
                     _filename = value;
                     IsDirty = true;
+                    OnFilenameChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -181,6 +204,39 @@ namespace FIPToolKit.Models
                 if (_pauseOtherMedia != value)
                 {
                     _pauseOtherMedia = value;
+                    IsDirty = true;
+                }
+            }
+        }
+        private bool _mute = false;
+        public bool Mute
+        {
+            get
+            {
+                return _mute;
+            }
+            set
+            {
+                if (_mute != value)
+                {
+                    _mute = value;
+                    IsDirty = true;
+                }
+            }
+        }
+
+        private string _lastTrack;
+        public string LastTrack
+        {
+            get
+            {
+                return (_lastTrack ?? string.Empty);
+            }
+            set
+            {
+                if (!(_lastTrack ?? string.Empty).Equals(value ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                {
+                    _lastTrack = value;
                     IsDirty = true;
                 }
             }

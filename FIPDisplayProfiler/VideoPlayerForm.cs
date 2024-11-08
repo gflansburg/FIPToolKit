@@ -151,7 +151,8 @@ namespace FIPDisplayProfiler
             }
             else
             {
-                openFileDialog1.InitialDirectory = Path.GetDirectoryName(tbFilename.Text);
+                string path = Path.GetDirectoryName(tbFilename.Text);
+                openFileDialog1.InitialDirectory = Directory.Exists(path) ? path : Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
                 openFileDialog1.FileName = Path.GetFileName(tbFilename.Text);
             }
             if (openFileDialog1.ShowDialog(this) == DialogResult.OK)

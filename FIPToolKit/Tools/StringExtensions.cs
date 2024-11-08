@@ -12,6 +12,21 @@ namespace FIPToolKit.Tools
 {
     public static class StringExtensions
     {
+        public static bool IsAudio(this string str)
+        {
+            if (str.Contains(".mp3", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".wma", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".m4a", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".wav", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".ogg", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".flac", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public static string Escape(this string s)
         {
             if (s.Contains(QUOTE))

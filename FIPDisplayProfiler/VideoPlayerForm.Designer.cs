@@ -148,7 +148,6 @@ namespace FIPDisplayProfiler
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbFilename.Location = new System.Drawing.Point(83, 12);
             this.tbFilename.Name = "tbFilename";
-            this.tbFilename.ReadOnly = true;
             this.tbFilename.Size = new System.Drawing.Size(305, 20);
             this.tbFilename.TabIndex = 1;
             // 

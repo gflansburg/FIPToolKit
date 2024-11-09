@@ -11,16 +11,9 @@ namespace FIPToolKit.FlightSim
 {
     public static class Tools
     {
-        public delegate void FSUIPCAirportListEventHandler(Dictionary<string, Airport> airports);
-        public static event FSUIPCAirportListEventHandler OnAirportListReceived;
-
         static Tools()
         {
-            Airports = new Dictionary<string, Airport>();
-            LoadAirports();
         }
-
-        public static Dictionary<string, Airport> Airports { get; private set; }
 
         public static string GetExeXmlPath()
         {
@@ -160,41 +153,6 @@ namespace FIPToolKit.FlightSim
                 }
             }
             return null;
-        }
-
-        internal static void LoadAirports()
-        {
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", GetExecutingDirectory());
-            if (System.IO.File.Exists(cs))
-            {
-                using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
-                {
-                    sqlConnection.Open();
-                    SQLiteCommand cmd = new SQLiteCommand("SELECT gps_code, elevation_ft, latitude_deg, longitude_deg, type, name FROM Airports WHERE gps_code IS NOT NULL AND elevation_ft IS NOT NULL AND latitude_deg IS NOT NULL AND longitude_deg IS NOT NULL AND type <> 'balloonport'", sqlConnection);
-                    using (SQLiteDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            string icao = reader.GetString(0);
-                            if (!Airports.ContainsKey(icao))
-                            {
-                                Airport airport = new Airport()
-                                {
-                                    ICAO = icao,
-                                    Altitude = reader.GetInt32(1),
-                                    Latitude = reader.GetDouble(2),
-                                    Longitude = reader.GetDouble(3),
-                                    AirportType = reader.GetString(4),
-                                    Name = reader.GetString(5)
-                                };
-                                Airports.Add(icao, airport);
-                            }
-                        }
-                    }
-                    sqlConnection.Close();
-                }
-                OnAirportListReceived?.Invoke(Airports);
-            }
         }
 
         internal static AircraftData LoadAircraft(string atcModel)

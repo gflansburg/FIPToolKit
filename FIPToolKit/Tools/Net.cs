@@ -1,8 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using GMap.NET;
+using Newtonsoft.Json;
 using RestSharp;
 using SpotifyAPI.Web;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SQLite;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,6 +18,12 @@ namespace FIPToolKit.Tools
 {
     public static class Net
     {
+        public static string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
+        public static int TimeoutMs = 60000;
+        static readonly string requestAccept = "*/*";
+        static readonly string responseContentType = "image";
+        private static bool Win7OrLater = IsRunningOnWin7OrLater();
+
         public static double Double(this Models.RadioDistance radioDistance)
         {
             switch(radioDistance)
@@ -264,6 +273,164 @@ namespace FIPToolKit.Tools
             {
             }
             return data;
+        }
+
+        private static object _lock = new object();
+        public static int DeleteTilesOlderThan(string connectionString, DateTime date, int? type)
+        {
+            int affectedRows = 0;
+            try
+            {
+                lock (_lock)
+                {
+                    using (var cn = new SQLiteConnection())
+                    {
+                        cn.ConnectionString = connectionString;
+                        cn.Open();
+                        using (DbTransaction tr = cn.BeginTransaction())
+                        {
+                            try
+                            {
+                                using (DbCommand com = cn.CreateCommand())
+                                {
+                                    com.CommandText = string.Format("DELETE FROM main.Tiles WHERE CacheTime is not NULL and CacheTime < datetime('{0}')", date.ToString("s"));
+                                    if (type.HasValue)
+                                    {
+                                        com.CommandText += " and Type = " + type;
+                                    }
+                                    affectedRows = com.ExecuteNonQuery();
+                                }
+                                tr.Commit();
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine("DeleteTilesOlderThan: " + ex.ToString());
+                                tr.Rollback();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("DeleteTilesOlderThan: " + ex);
+            }
+            return affectedRows;
+        }
+
+        public static long UnixTimeNow()
+        {
+            var timeSpan = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0));
+            return (long)timeSpan.TotalSeconds;
+        }
+
+        public static MemoryStream CopyStream(Stream inputStream, bool seekOriginBegin)
+        {
+            const int readSize = 32 * 1024;
+            byte[] buffer = new byte[readSize];
+            var ms = new MemoryStream();
+            {
+                int count;
+                while ((count = inputStream.Read(buffer, 0, readSize)) > 0)
+                {
+                    ms.Write(buffer, 0, count);
+                }
+            }
+            if (seekOriginBegin)
+            {
+                inputStream.Seek(0, SeekOrigin.Begin);
+            }
+            ms.Seek(0, SeekOrigin.Begin);
+            return ms;
+        }
+
+
+        public static bool IsRunningOnWin7OrLater()
+        {
+            var os = Environment.OSVersion;
+            if (os.Platform == PlatformID.Win32NT)
+            {
+                var vs = os.Version;
+                if (vs.Major >= 6 /* && vs.Minor > 0 */)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static PureImage GetTileImageUsingHttp(CacheManager provider, string url)
+        {
+            PureImage ret = null;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls | SecurityProtocolType.Ssl3;
+            var request = WebRequest.Create(url);
+            if (request is HttpWebRequest r)
+            {
+                r.UserAgent = UserAgent;
+                r.ReadWriteTimeout = TimeoutMs * 6;
+                r.Accept = requestAccept;
+                r.Timeout = TimeoutMs;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(UserAgent))
+                {
+                    request.Headers.Add("User-Agent", UserAgent);
+                }
+                if (!string.IsNullOrEmpty(requestAccept))
+                {
+                    request.Headers.Add("Accept", requestAccept);
+                }
+            }
+            provider.InitializeWebRequest2(request);
+            try
+            {
+                using (var response = request.GetResponse())
+                {
+                    if (response.ContentType.Contains(responseContentType))
+                    {
+                        using (var responseStream = response.GetResponseStream())
+                        {
+                            var data = CopyStream(responseStream, false);
+                            Debug.WriteLine("Response[" + data.Length + " bytes]: " + url);
+                            if (data.Length > 0)
+                            {
+                                try
+                                {
+                                    System.Drawing.Image m = System.Drawing.Image.FromStream(data, true, !Win7OrLater);
+                                    if (m != null)
+                                    {
+                                        ret = new GMap.NET.WindowsForms.GMapImage { Img = m };
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.WriteLine("FromStream: " + ex);
+                                }
+                                if (ret != null)
+                                {
+                                    ret.Data = data;
+                                    ret.Data.Position = 0;
+                                }
+                                else
+                                {
+                                    data.Dispose();
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine("CheckTileImageHttpResponse[false]: " + url);
+                    }
+                    response.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("CheckTileImageHttpResponse[false]: " + url + ": " + ex.Message);
+            }
+            return ret;
         }
     }
 }

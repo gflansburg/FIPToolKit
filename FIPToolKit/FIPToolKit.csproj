@@ -174,6 +174,8 @@
     <Compile Include="Drawing\GraphicsHelper.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\WebP.cs" />
+    <Compile Include="GMap\Google\GoogleHybridMapProvider.cs" />
+    <Compile Include="Models\FIPRadioPlayer.cs" />
     <Compile Include="FlightSim\CompassMode.cs" />
     <Compile Include="FlightSim\GearType.cs" />
     <Compile Include="FlightSim\InternationalUnits.cs" />
@@ -184,9 +186,17 @@
     <Compile Include="FlightSim\TemperatureUnit.cs" />
     <Compile Include="FlightSim\VorToFromFlag.cs" />
     <Compile Include="FlightSim\VSpeed.cs" />
+    <Compile Include="GMap\ArcGIS\ArcGIS_World_Imagery_MapProvider.cs" />
+    <Compile Include="GMap\CacheManager.cs" />
+    <Compile Include="GMap\GMapProviders.cs" />
+    <Compile Include="GMap\OpenAIP\OpenAIP_All_MapProvider.cs" />
+    <Compile Include="GMap\OpenStreetMap\OpenStreetMapProvider.cs" />
+    <Compile Include="GMap\OpenStreetMap\OpenTopoMapProvider.cs" />
+    <Compile Include="GMap\OverlayProvider.cs" />
     <Compile Include="M3UParser\Media\M3UAdornments.cs" />
     <Compile Include="M3UParser\Media\M3UAttributes.cs" />
     <Compile Include="Models\FIPAnalogClockProperties.cs" />
+    <Compile Include="Models\FIPMap.cs" />
     <Compile Include="Models\FIPRadioProperties.cs" />
     <Compile Include="Models\FIPPageProperties.cs" />
     <Compile Include="Models\FIPSaveType.cs" />

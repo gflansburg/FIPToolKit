@@ -30,6 +30,7 @@ namespace FIPDisplayProfiler
             SimMap.MaxAIAircraft = Convert.ToInt32(numMaxAIAircraft.Value);
             SimMap.MaxMPAircraft = Convert.ToInt32(numMaxMPAircraft.Value);
             SimMap.SearchRadius = Convert.ToUInt32(numRadius.Value) * 1000;
+            SimMap.AIPClientToken = tbAIPClientToken.Text;
             SimMap.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
@@ -68,6 +69,7 @@ namespace FIPDisplayProfiler
             numMaxAIAircraft.Value = SimMap.MaxAIAircraft;
             numMaxMPAircraft.Value = SimMap.MaxMPAircraft;
             numRadius.Value = SimMap.SearchRadius / 1000;
+            tbAIPClientToken.Text = SimMap.AIPClientToken;
         }
 
         private void tbVatSimId_KeyPress(object sender, KeyPressEventArgs e)

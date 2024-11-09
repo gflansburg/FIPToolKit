@@ -41,7 +41,7 @@ namespace FIPToolKit.FlightSim
             WindDirection = Convert.ToSingle(data.AMBIENT_WIND_DIRECTION);
             WindVelocity = Convert.ToInt32(data.AMBIENT_WIND_VELOCITY);
             Temperature = Convert.ToInt32(data.AMBIENT_TEMPERATURE);
-            KollsmanHG = data.Kollsman_SETTING_HG;
+            KollsmanHG = data.KOLLSMAN_SETTING_HG;
         }
 
         public void UpdateWeather(SimConnect.FULL_DATA data)
@@ -49,7 +49,7 @@ namespace FIPToolKit.FlightSim
             WindDirection = Convert.ToSingle(data.AMBIENT_WIND_DIRECTION);
             WindVelocity = Convert.ToInt32(data.AMBIENT_WIND_VELOCITY);
             Temperature = Convert.ToInt32(data.AMBIENT_TEMPERATURE);
-            KollsmanHG = data.Kollsman_SETTING_HG;
+            KollsmanHG = data.KOLLSMAN_SETTING_HG;
         }
     }
 }

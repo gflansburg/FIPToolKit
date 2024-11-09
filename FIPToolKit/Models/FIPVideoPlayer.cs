@@ -44,6 +44,13 @@ namespace FIPToolKit.Models
 
         public string Filename { get; set; }
         public M3U.Media.M3UMedia MetaData { get; set; }
+        public bool IsStream
+        {
+            get
+            {
+                return (!string.IsNullOrEmpty(Filename) && (Filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || Filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase)));
+            }
+        }
 
         private Bitmap _artwork = null;
         private bool _checked = false;
@@ -156,11 +163,13 @@ namespace FIPToolKit.Models
         private uint Lines;
 
         public delegate void FIPVideoPlayerEventHandler(object sender, FIPVideoPlayerEventArgs e);
-        public event FIPVideoPlayerEventHandler OnVideoLoop;
         public event FIPVideoPlayerEventHandler OnSettingsUpdated;
-        public event FIPVideoPlayerEventHandler OnActive;
-        public event FIPVideoPlayerEventHandler OnInactive;
-        public event FIPVideoPlayerEventHandler OnNameChanged;
+        public event FIPPageEventHandler OnVideoLoop;
+        public event FIPPageEventHandler OnActive;
+        public event FIPPageEventHandler OnInactive;
+        public event FIPPageEventHandler OnNameChanged;
+        public event FIPPageEventHandler OnMuteChanged;
+        public event FIPPageEventHandler OnVolumeChanged;
         private bool opening = false;
         private float start = 0;
 
@@ -172,15 +181,32 @@ namespace FIPToolKit.Models
             properties.OnPortraitModeChanged += Properties_OnPortraitModeChanged;
             properties.OnFilenameChanged += Properties_OnFilenameChanged;
             properties.OnNameChanged += Properties_OnNameChanged;
+            properties.OnMuteChanged += Properties_OnMuteChanged;
             Core.Initialize();
             libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-playlist-autostart", "--no-mouse-events", "--no-keyboard-events", "--quiet", "--no-sout-video", "--sout-transcode-scale=Auto", string.Format("--sout-transcode-width={0}", Width), string.Format("--sout-transcode-height={0}", Height), string.Format("--sout-transcode-maxwidth={0}", Width), string.Format("--sout-transcode-maxheight={0}", Height) });
-            CreatePlaylist();
             CreatePlayer();
+            CreatePlaylist();
+        }
+
+        private void Properties_OnMuteChanged(object sender, EventArgs e)
+        {
+            if (player != null && player.Mute != VideoPlayerProperties.Mute)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    player.Mute = VideoPlayerProperties.Mute;
+                    if (player.VideoTrack == -1)
+                    {
+                        DrawMusicArtwork();
+                    }
+                });
+            }
+            OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
         }
 
         private void Properties_OnNameChanged(object sender, EventArgs e)
         {
-            OnNameChanged?.Invoke(this, new FIPVideoPlayerEventArgs(this));    
+            OnNameChanged?.Invoke(this, new FIPPageEventArgs(this));    
         }
 
         private void Properties_OnFilenameChanged(object sender, EventArgs e)
@@ -258,13 +284,14 @@ namespace FIPToolKit.Models
 
         private void Properties_OnVolumeChanged(object sender, EventArgs e)
         {
-            ThreadPool.QueueUserWorkItem(_ =>
+            if (player != null && player.Volume != VideoPlayerProperties.Volume)
             {
-                if (player != null && player.Volume != VideoPlayerProperties.Volume)
+                ThreadPool.QueueUserWorkItem(_ =>
                 {
                     player.Volume = VideoPlayerProperties.Volume;
-                }
-            });
+                });
+            }
+            OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
         }
 
         private FIPVideoPlayerProperties VideoPlayerProperties
@@ -335,7 +362,8 @@ namespace FIPToolKit.Models
                 {
                     if (player != null)
                     {
-                        VideoPlayerProperties.Mute = player.Mute;
+                        VideoPlayerProperties.SetMute(player.Mute);
+                        OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
                     }
                 };
                 player.VolumeChanged += (s, e) =>
@@ -343,6 +371,7 @@ namespace FIPToolKit.Models
                     if (player != null)
                     {
                         VideoPlayerProperties.SetVolume(player.Volume);
+                        OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
                     }
                 };
                 player.Opening += (s, e) =>
@@ -378,7 +407,7 @@ namespace FIPToolKit.Models
                             }
                             if (VideoPlayerProperties.PauseOtherMedia)
                             {
-                                OnActive?.Invoke(this, new FIPVideoPlayerEventArgs(this));
+                                OnActive?.Invoke(this, new FIPPageEventArgs(this));
                             }
                             // May be an audio stream with no video.
                             if (player.VideoTrack == -1)
@@ -413,7 +442,7 @@ namespace FIPToolKit.Models
                 if (index > Playlist.Count - 1)
                 {
                     index = 0;
-                    OnVideoLoop?.Invoke(this, new FIPVideoPlayerEventArgs(this));
+                    OnVideoLoop?.Invoke(this, new FIPPageEventArgs(this));
                 }
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
@@ -633,9 +662,9 @@ namespace FIPToolKit.Models
 
                                             try
                                             {
-                                                int titleHeight = (int)graphics.MeasureString(VideoPlayerProperties.Name, VideoPlayerProperties.Font, 288, format).Height;
-                                                int subTitleHeight = (int)graphics.MeasureString(!string.IsNullOrEmpty(Error) ? Error : SubTitle, VideoPlayerProperties.SubtitleFont, 288, format).Height;
-                                                int maxImageWidth = 320 - 34;
+                                                int titleHeight = (int)graphics.MeasureString(VideoPlayerProperties.Name, VideoPlayerProperties.Font, 320, format).Height;
+                                                int subTitleHeight = (int)graphics.MeasureString(!string.IsNullOrEmpty(Error) ? Error : SubTitle, VideoPlayerProperties.SubtitleFont, 320, format).Height;
+                                                int maxImageWidth = 320;
                                                 int maxImageHeight = 240 - (titleHeight + subTitleHeight);
                                                 //Just in case the artwork isn't a square. I have seen landscape photos and cliped album artwork.
                                                 double ratioX = (double)maxImageWidth / artwork.Width;
@@ -643,24 +672,24 @@ namespace FIPToolKit.Models
                                                 double ratio = Math.Min(ratioX, ratioY);
                                                 int imageWidth = (int)(artwork.Width * ratio);
                                                 int imageHeight = (int)(artwork.Height * ratio);
-                                                System.Drawing.Rectangle destRect = new System.Drawing.Rectangle(17 + ((320 - imageWidth) / 2), (maxImageHeight - imageHeight) / 2, imageWidth, imageHeight);
+                                                System.Drawing.Rectangle destRect = new System.Drawing.Rectangle((maxImageWidth - imageWidth) / 2, (maxImageHeight - imageHeight) / 2, imageWidth, imageHeight);
                                                 graphics.DrawImage(artwork, destRect, 0, 0, artwork.Width, artwork.Height, GraphicsUnit.Pixel);
-                                                graphics.DrawString(VideoPlayerProperties.Name, font, brush, new System.Drawing.RectangleF(32, maxImageHeight, 288, titleHeight), format);
+                                                graphics.DrawString(VideoPlayerProperties.Name, font, brush, new System.Drawing.RectangleF(0, maxImageHeight, maxImageWidth, titleHeight), format);
                                                 using (SolidBrush subTitleBrush = new SolidBrush(VideoPlayerProperties.FontColor))
                                                 {
-                                                    graphics.DrawString(!string.IsNullOrEmpty(Error) ? Error : SubTitle, VideoPlayerProperties.SubtitleFont, subTitleBrush, new System.Drawing.RectangleF(32, maxImageHeight + titleHeight, 288, subTitleHeight), format);
+                                                    graphics.DrawString(!string.IsNullOrEmpty(Error) ? Error : SubTitle, VideoPlayerProperties.SubtitleFont, subTitleBrush, new System.Drawing.RectangleF(0, maxImageHeight + titleHeight, maxImageWidth, subTitleHeight), format);
                                                 }
                                             }
                                             catch (Exception)
                                             {
                                                 string text = string.Format("{0}\n{1}", VideoPlayerProperties.Name, !string.IsNullOrEmpty(Error) ? Error : SubTitle);
-                                                graphics.DrawString(text, VideoPlayerProperties.Font, brush, new System.Drawing.RectangleF(32, 0, 288, 240), format);
+                                                graphics.DrawString(text, VideoPlayerProperties.Font, brush, new System.Drawing.RectangleF(0, 0, 320, 240), format);
                                             }
                                         }
                                         else
                                         {
                                             string text = string.Format("{0}\n{1}", VideoPlayerProperties.Name, !string.IsNullOrEmpty(Error) ? Error : SubTitle);
-                                            graphics.DrawString(text, VideoPlayerProperties.Font, brush, new System.Drawing.RectangleF(32, 0, 288, 240), format);
+                                            graphics.DrawString(text, VideoPlayerProperties.Font, brush, new System.Drawing.RectangleF(0, 320, 288, 240), format);
                                         }
                                     }
                                 }
@@ -721,17 +750,6 @@ namespace FIPToolKit.Models
                     break;
                 case SoftButtons.Button1:
                     VideoPlayerProperties.Mute = !VideoPlayerProperties.Mute;
-                    if (player != null)
-                    {
-                        ThreadPool.QueueUserWorkItem(_ =>
-                        {
-                            player.Mute = VideoPlayerProperties.Mute;
-                            if (player.VideoTrack == -1)
-                            {
-                                DrawMusicArtwork();
-                            }
-                        });
-                    }
                     break;
                 case SoftButtons.Button4:
                     PlayPreviousTrack();
@@ -831,7 +849,7 @@ namespace FIPToolKit.Models
                 player.Pause();
                 if (VideoPlayerProperties.PauseOtherMedia)
                 {
-                    OnInactive?.Invoke(this, new FIPVideoPlayerEventArgs(this));
+                    OnInactive?.Invoke(this, new FIPPageEventArgs(this));
                 }
             }
         }
@@ -844,7 +862,7 @@ namespace FIPToolKit.Models
                 player.Play();
                 if (VideoPlayerProperties.PauseOtherMedia)
                 {
-                    OnActive?.Invoke(this, new FIPVideoPlayerEventArgs(this));
+                    OnActive?.Invoke(this, new FIPPageEventArgs(this));
                 }
             }
         }
@@ -1094,6 +1112,30 @@ namespace FIPToolKit.Models
                 });
             }
             OnSettingsUpdated?.Invoke(this, new FIPVideoPlayerEventArgs(this, index));
+        }
+
+        public bool Mute
+        {
+            get
+            {
+                return VideoPlayerProperties.Mute;
+            }
+            set
+            {
+                VideoPlayerProperties.Mute = value;
+            }
+        }
+
+        public int Volume
+        {
+            get
+            {
+                return VideoPlayerProperties.Volume;
+            }
+            set
+            {
+                VideoPlayerProperties.Volume = value;
+            }
         }
     }
 }

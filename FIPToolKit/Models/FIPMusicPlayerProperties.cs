@@ -34,6 +34,7 @@ namespace FIPToolKit.Models
     public class FIPMusicPlayerProperties : FIPPageProperties
     {
         public event EventHandler OnVolumeChanged;
+        public event EventHandler OnMuteChanged;
         public event EventHandler OnShuffleChanged;
         public event EventHandler OnRepeatChanged;
         public event EventHandler OnPathChanged;
@@ -244,7 +245,17 @@ namespace FIPToolKit.Models
                 {
                     _mute = value;
                     IsDirty = true;
+                    OnMuteChanged?.Invoke(this, EventArgs.Empty);
                 }
+            }
+        }
+
+        public void SetMute(bool mute)
+        {
+            if (_mute != mute)
+            {
+                _mute = mute;
+                IsDirty = true;
             }
         }
     }

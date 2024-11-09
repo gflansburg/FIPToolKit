@@ -44,6 +44,8 @@ namespace FIPDisplayProfiler
             this.numMaxAIAircraft = new System.Windows.Forms.NumericUpDown();
             this.numMaxMPAircraft = new System.Windows.Forms.NumericUpDown();
             this.label6 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.tbAIPClientToken = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.numMaxAIAircraft)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMaxMPAircraft)).BeginInit();
             this.SuspendLayout();
@@ -52,7 +54,7 @@ namespace FIPDisplayProfiler
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(313, 117);
+            this.btnCancel.Location = new System.Drawing.Point(313, 144);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 8;
@@ -62,7 +64,7 @@ namespace FIPDisplayProfiler
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnOK.Location = new System.Drawing.Point(394, 117);
+            this.btnOK.Location = new System.Drawing.Point(394, 144);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -86,17 +88,17 @@ namespace FIPDisplayProfiler
             this.tbFont.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbFont.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.tbFont.Location = new System.Drawing.Point(95, 12);
+            this.tbFont.Location = new System.Drawing.Point(108, 12);
             this.tbFont.Name = "tbFont";
             this.tbFont.ReadOnly = true;
-            this.tbFont.Size = new System.Drawing.Size(293, 20);
+            this.tbFont.Size = new System.Drawing.Size(280, 20);
             this.tbFont.TabIndex = 1;
             this.tbFont.TabStop = false;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(58, 14);
+            this.label4.Location = new System.Drawing.Point(71, 15);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(31, 13);
             this.label4.TabIndex = 38;
@@ -105,7 +107,7 @@ namespace FIPDisplayProfiler
             // btnFontColor
             // 
             this.btnFontColor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnFontColor.Location = new System.Drawing.Point(95, 40);
+            this.btnFontColor.Location = new System.Drawing.Point(108, 40);
             this.btnFontColor.Name = "btnFontColor";
             this.btnFontColor.Size = new System.Drawing.Size(100, 21);
             this.btnFontColor.TabIndex = 3;
@@ -115,7 +117,7 @@ namespace FIPDisplayProfiler
             // label18
             // 
             this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(54, 44);
+            this.label18.Location = new System.Drawing.Point(68, 44);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(34, 13);
             this.label18.TabIndex = 48;
@@ -124,7 +126,7 @@ namespace FIPDisplayProfiler
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(25, 70);
+            this.label1.Location = new System.Drawing.Point(38, 70);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(64, 13);
             this.label1.TabIndex = 49;
@@ -132,7 +134,7 @@ namespace FIPDisplayProfiler
             // 
             // tbVatSimId
             // 
-            this.tbVatSimId.Location = new System.Drawing.Point(95, 67);
+            this.tbVatSimId.Location = new System.Drawing.Point(108, 67);
             this.tbVatSimId.Name = "tbVatSimId";
             this.tbVatSimId.Size = new System.Drawing.Size(100, 20);
             this.tbVatSimId.TabIndex = 4;
@@ -141,7 +143,7 @@ namespace FIPDisplayProfiler
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(10, 96);
+            this.label2.Location = new System.Drawing.Point(23, 95);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(79, 13);
             this.label2.TabIndex = 51;
@@ -149,7 +151,7 @@ namespace FIPDisplayProfiler
             // 
             // numMaxAIAircraft
             // 
-            this.numMaxAIAircraft.Location = new System.Drawing.Point(95, 93);
+            this.numMaxAIAircraft.Location = new System.Drawing.Point(108, 93);
             this.numMaxAIAircraft.Maximum = new decimal(new int[] {
             200,
             0,
@@ -166,7 +168,7 @@ namespace FIPDisplayProfiler
             // 
             // numMaxMPAircraft
             // 
-            this.numMaxMPAircraft.Location = new System.Drawing.Point(95, 119);
+            this.numMaxMPAircraft.Location = new System.Drawing.Point(108, 119);
             this.numMaxMPAircraft.Maximum = new decimal(new int[] {
             200,
             0,
@@ -184,11 +186,27 @@ namespace FIPDisplayProfiler
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(10, 122);
+            this.label6.Location = new System.Drawing.Point(17, 121);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(85, 13);
             this.label6.TabIndex = 56;
             this.label6.Text = "Max MP Aircraft:";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 149);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(90, 13);
+            this.label3.TabIndex = 57;
+            this.label3.Text = "AIP Client Token:";
+            // 
+            // tbAIPClientToken
+            // 
+            this.tbAIPClientToken.Location = new System.Drawing.Point(108, 145);
+            this.tbAIPClientToken.Name = "tbAIPClientToken";
+            this.tbAIPClientToken.Size = new System.Drawing.Size(181, 20);
+            this.tbAIPClientToken.TabIndex = 58;
             // 
             // FSUIPCMapForm
             // 
@@ -196,7 +214,9 @@ namespace FIPDisplayProfiler
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(482, 149);
+            this.ClientSize = new System.Drawing.Size(482, 176);
+            this.Controls.Add(this.tbAIPClientToken);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.numMaxMPAircraft);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.numMaxAIAircraft);
@@ -241,5 +261,7 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.NumericUpDown numMaxAIAircraft;
         private System.Windows.Forms.NumericUpDown numMaxMPAircraft;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox tbAIPClientToken;
     }
 }

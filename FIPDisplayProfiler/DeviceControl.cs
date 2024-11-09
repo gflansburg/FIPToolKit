@@ -21,9 +21,11 @@ namespace FIPDisplayProfiler
         private global::FIPDisplayProfiler.ToolStripSubMenu leftToolStripMenuItem;
         private global::FIPDisplayProfiler.ToolStripSubMenu rightToolStripMenuItem;
 
-        public event FIPVideoPlayer.FIPVideoPlayerEventHandler OnVideoPlayerActive;
-        public event FIPVideoPlayer.FIPVideoPlayerEventHandler OnVideoPlayerInactive;
+        public event FIPPage.FIPPageEventHandler OnVideoPlayerActive;
+        public event FIPPage.FIPPageEventHandler OnVideoPlayerInactive;
         public event FIPSpotifyPlayer.FIPCanPlayEventHandler OnPlayerCanPlay;
+        public event FIPPage.FIPPageEventHandler OnMuteChanged;
+        public event FIPPage.FIPPageEventHandler OnVolumeChanged;
 
         public IntPtr MainWindowHandle { get; set; }
         private FIPDevice _device;
@@ -99,24 +101,16 @@ namespace FIPDisplayProfiler
             if (e.Page.GetType() == typeof(FIPSpotifyPlayer))
             {
                 ((FIPSpotifyPlayer)e.Page).Browser = WebView21;
-                ((FIPSpotifyPlayer)e.Page).CacheArtwork = Properties.Settings.Default.CacheSpotifyArtwork;
-                ((FIPSpotifyPlayer)e.Page).ShowArtistImages = Properties.Settings.Default.ShowArtistImages;
+                ((FIPSpotifyPlayer)e.Page).CacheArtwork = Settings.Default.CacheSpotifyArtwork;
+                ((FIPSpotifyPlayer)e.Page).ShowArtistImages = Settings.Default.ShowArtistImages;
                 ((FIPSpotifyPlayer)e.Page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
                 ((FIPSpotifyPlayer)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
-            }
-            else if (e.Page.GetType() == typeof(FIPSimConnectRadio))
-            {
-                ((FIPSimConnectRadio)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
-                ((FIPSimConnectRadio)e.Page).Init();
-            }
-            else if (e.Page.GetType() == typeof(FIPFSUIPCRadio))
-            {
-                ((FIPFSUIPCRadio)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
-                ((FIPFSUIPCRadio)e.Page).Init();
             }
             else if (e.Page.GetType() == typeof(FIPMusicPlayer))
             {
                 ((FIPMusicPlayer)e.Page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPMusicPlayer)e.Page).OnVolumeChanged += MusicPlayer_OnVolumeChanged;
+                ((FIPMusicPlayer)e.Page).OnMuteChanged += MusicPlayer_OnMuteChanged;
                 ((FIPMusicPlayer)e.Page).Init();
             }
             else if (e.Page.GetType() == typeof(FIPVideoPlayer))
@@ -124,6 +118,8 @@ namespace FIPDisplayProfiler
                 ((FIPVideoPlayer)e.Page).OnActive += Page_OnActive;
                 ((FIPVideoPlayer)e.Page).OnInactive += Page_OnInactive;
                 ((FIPVideoPlayer)e.Page).OnNameChanged += Page_OnNameChanged;
+                ((FIPVideoPlayer)e.Page).OnVolumeChanged += VideoPlayer_OnVolumeChanged;
+                ((FIPVideoPlayer)e.Page).OnMuteChanged += VideoPlayer_OnMuteChanged;
             }
             if (e.IsActive)
             {
@@ -139,7 +135,27 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void Page_OnNameChanged(object sender, FIPVideoPlayerEventArgs e)
+        private void VideoPlayer_OnMuteChanged(object sender, FIPPageEventArgs e)
+        {
+            OnMuteChanged?.Invoke(sender, e);
+        }
+
+        private void VideoPlayer_OnVolumeChanged(object sender, FIPPageEventArgs e)
+        {
+            OnVolumeChanged?.Invoke(sender, e);
+        }
+
+        private void MusicPlayer_OnMuteChanged(object sender, FIPPageEventArgs e)
+        {
+            OnMuteChanged?.Invoke(sender, e);
+        }
+
+        private void MusicPlayer_OnVolumeChanged(object sender, FIPPageEventArgs e)
+        {
+            OnVolumeChanged?.Invoke(sender, e);
+        }
+
+        private void Page_OnNameChanged(object sender, FIPPageEventArgs e)
         {
             lbPages.Invoke((Action)(() =>
             {
@@ -256,19 +272,11 @@ namespace FIPDisplayProfiler
                 ((FIPSpotifyPlayer)page).OnTrackStateChanged += FIPSpotifyController_OnTrackStateChanged;
                 ((FIPSpotifyPlayer)page).OnCanPlay += DeviceControl_OnCanPlay;
             }
-            else if (page.GetType() == typeof(FIPSimConnectRadio))
-            {
-                ((FIPSimConnectRadio)page).OnCanPlay += DeviceControl_OnCanPlay;
-                ((FIPSimConnectRadio)page).Init();
-            }
-            else if (page.GetType() == typeof(FIPFSUIPCRadio))
-            {
-                ((FIPFSUIPCRadio)page).OnCanPlay += DeviceControl_OnCanPlay;
-                ((FIPFSUIPCRadio)page).Init();
-            }
             else if (page.GetType() == typeof(FIPMusicPlayer))
             {
                 ((FIPMusicPlayer)page).OnCanPlay += DeviceControl_OnCanPlay;
+                ((FIPMusicPlayer)page).OnVolumeChanged += MusicPlayer_OnVolumeChanged;
+                ((FIPMusicPlayer)page).OnMuteChanged += MusicPlayer_OnMuteChanged;
                 ((FIPMusicPlayer)page).Init();
             }
             else if (page.GetType() == typeof(FIPVideoPlayer))
@@ -276,6 +284,8 @@ namespace FIPDisplayProfiler
                 ((FIPVideoPlayer)page).OnActive += Page_OnActive;
                 ((FIPVideoPlayer)page).OnInactive += Page_OnInactive;
                 ((FIPVideoPlayer)page).OnNameChanged += Page_OnNameChanged;
+                ((FIPVideoPlayer)page).OnVolumeChanged += VideoPlayer_OnVolumeChanged;
+                ((FIPVideoPlayer)page).OnMuteChanged += VideoPlayer_OnMuteChanged;
             }
             return index;
         }
@@ -406,6 +416,8 @@ namespace FIPDisplayProfiler
                                 page.OnNameChanged += Page_OnNameChanged;
                                 page.OnActive += Page_OnActive;
                                 page.OnInactive += Page_OnInactive;
+                                page.OnVolumeChanged += VideoPlayer_OnVolumeChanged;
+                                page.OnMuteChanged += VideoPlayer_OnMuteChanged;
                                 Device.AddPage(page, true);
                             }
                         }
@@ -420,6 +432,8 @@ namespace FIPDisplayProfiler
                             {
                                 FIPMusicPlayer page = new FIPMusicPlayer(form.MusicPlayer);
                                 page.OnCanPlay += DeviceControl_OnCanPlay;
+                                page.OnVolumeChanged += MusicPlayer_OnVolumeChanged;
+                                page.OnMuteChanged += MusicPlayer_OnMuteChanged;
                                 page.Init();
                                 Device.AddPage(page, true);
                             }
@@ -2027,12 +2041,12 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void Page_OnInactive(object sender, FIPVideoPlayerEventArgs e)
+        private void Page_OnInactive(object sender, FIPPageEventArgs e)
         {
             OnVideoPlayerInactive?.Invoke(sender, e);
         }
 
-        private void Page_OnActive(object sender, FIPVideoPlayerEventArgs e)
+        private void Page_OnActive(object sender, FIPPageEventArgs e)
         {
             OnVideoPlayerActive?.Invoke(sender, e);
         }
@@ -2050,18 +2064,6 @@ namespace FIPDisplayProfiler
                 {
                     ((FIPSpotifyPlayer)fipPage).ExternalResume();
                 }
-                else if (fipPage.GetType() == typeof(FIPSimConnectRadio))
-                {
-                    ((FIPSimConnectRadio)fipPage).ExternalResume();
-                }
-                else if (fipPage.GetType() == typeof(FIPFSUIPCRadio))
-                {
-                    ((FIPFSUIPCRadio)fipPage).ExternalResume();
-                }
-                else if (fipPage.GetType() == typeof(FIPMusicPlayer))
-                {
-                    ((FIPMusicPlayer)fipPage).ExternalResume();
-                }
                 else if (fipPage.GetType() == typeof(FIPMusicPlayer))
                 {
                     ((FIPMusicPlayer)fipPage).ExternalResume();
@@ -2076,14 +2078,6 @@ namespace FIPDisplayProfiler
                 if (fipPage.GetType() == typeof(FIPSpotifyPlayer))
                 {
                     ((FIPSpotifyPlayer)fipPage).ExternalPause();
-                }
-                else if (fipPage.GetType() == typeof(FIPSimConnectRadio))
-                {
-                    ((FIPSimConnectRadio)fipPage).ExternalPause();
-                }
-                else if (fipPage.GetType() == typeof(FIPFSUIPCRadio))
-                {
-                    ((FIPFSUIPCRadio)fipPage).ExternalPause();
                 }
                 else if (fipPage.GetType() == typeof(FIPMusicPlayer))
                 {
@@ -2102,6 +2096,64 @@ namespace FIPDisplayProfiler
                     if (!e.CanPlay)
                     {
                         break;
+                    }
+                }
+            }
+        }
+
+        public void MuteChanged(FIPPage sender)
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPVideoPlayer) && fipPage != sender)
+                {
+                    if (sender.GetType() == typeof(FIPVideoPlayer))
+                    {
+                        ((FIPVideoPlayer)fipPage).Mute = ((FIPVideoPlayer)sender).Mute;
+                    }
+                    else if (sender.GetType() == typeof(FIPMusicPlayer))
+                    {
+                        ((FIPVideoPlayer)fipPage).Mute = ((FIPMusicPlayer)sender).Mute;
+                    }
+                }
+                else if (fipPage.GetType() == typeof(FIPMusicPlayer) && fipPage != sender)
+                {
+                    if (sender.GetType() == typeof(FIPVideoPlayer))
+                    {
+                        ((FIPMusicPlayer)fipPage).Mute = ((FIPVideoPlayer)sender).Mute;
+                    }
+                    else if (sender.GetType() == typeof(FIPMusicPlayer))
+                    {
+                        ((FIPMusicPlayer)fipPage).Mute = ((FIPMusicPlayer)sender).Mute;
+                    }
+                }
+            }
+        }
+
+        public void VolumeChanged(FIPPage sender)
+        {
+            foreach (FIPPage fipPage in Device.Pages)
+            {
+                if (fipPage.GetType() == typeof(FIPVideoPlayer) && fipPage != sender)
+                {
+                    if (sender.GetType() == typeof(FIPVideoPlayer))
+                    {
+                        ((FIPVideoPlayer)fipPage).Volume = ((FIPVideoPlayer)sender).Volume;
+                    }
+                    else if (sender.GetType() == typeof(FIPMusicPlayer))
+                    {
+                        ((FIPVideoPlayer)fipPage).Volume = ((FIPMusicPlayer)sender).Volume;
+                    }
+                }
+                else if (fipPage.GetType() == typeof(FIPMusicPlayer) && fipPage != sender)
+                {
+                    if (sender.GetType() == typeof(FIPVideoPlayer))
+                    {
+                        ((FIPMusicPlayer)fipPage).Volume = ((FIPVideoPlayer)sender).Volume;
+                    }
+                    else if (sender.GetType() == typeof(FIPMusicPlayer))
+                    {
+                        ((FIPMusicPlayer)fipPage).Volume = ((FIPMusicPlayer)sender).Volume;
                     }
                 }
             }

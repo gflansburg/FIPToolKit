@@ -823,7 +823,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return adfRelativeBearing.Value;
+                return (adfRelativeBearing.Value * 360 / 65536);
             }
         }
 
@@ -963,16 +963,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                int bug = (headingBug.Value / (65536 / 360));
-                if(bug <= 0)
-                {
-                    bug += 360;
-                }
-                else if(bug > 360)
-                {
-                    bug -= 360;
-                }
-                return bug;
+                return (int)Math.Abs((double)headingBug.Value * 360f / 65536f);
             }
         }
 

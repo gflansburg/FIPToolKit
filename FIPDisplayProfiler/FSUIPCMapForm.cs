@@ -29,6 +29,7 @@ namespace FIPDisplayProfiler
             FSUIPCMap.VatSimId = Convert.ToInt32(tbVatSimId.Text);
             FSUIPCMap.MaxAIAircraft = Convert.ToInt32(numMaxAIAircraft.Value);
             FSUIPCMap.MaxMPAircraft = Convert.ToInt32(numMaxMPAircraft.Value);
+            FSUIPCMap.AIPClientToken = tbAIPClientToken.Text;
             FSUIPCMap.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
@@ -66,6 +67,7 @@ namespace FIPDisplayProfiler
             tbVatSimId.Text = FSUIPCMap.VatSimId.ToString();
             numMaxAIAircraft.Value = FSUIPCMap.MaxAIAircraft;
             numMaxMPAircraft.Value = FSUIPCMap.MaxMPAircraft;
+            tbAIPClientToken.Text = FSUIPCMap.AIPClientToken;
         }
 
         private void tbVatSimId_KeyPress(object sender, KeyPressEventArgs e)

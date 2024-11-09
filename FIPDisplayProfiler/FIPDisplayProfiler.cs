@@ -173,6 +173,8 @@ namespace FIPDisplayProfiler
             control.OnVideoPlayerActive += Control_OnVideoPlayerActive;
             control.OnVideoPlayerInactive += Control_OnVideoPlayerInactive;
             control.OnPlayerCanPlay += Control_OnPlayerCanPlay;
+            control.OnMuteChanged += Control_OnMuteChanged;
+            control.OnVolumeChanged += Control_OnVolumeChanged;
             TabPage tab = new TabPage(device.SerialNumber);
             tab.Size = control.Size;
             tab.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
@@ -723,7 +725,7 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void Control_OnVideoPlayerInactive(object sender, FIPVideoPlayerEventArgs e)
+        private void Control_OnVideoPlayerInactive(object sender, FIPPageEventArgs e)
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
@@ -735,7 +737,7 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void Control_OnVideoPlayerActive(object sender, FIPVideoPlayerEventArgs e)
+        private void Control_OnVideoPlayerActive(object sender, FIPPageEventArgs e)
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
@@ -743,6 +745,30 @@ namespace FIPDisplayProfiler
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.PauseOtherMedia();
+                }
+            }
+        }
+
+        private void Control_OnVolumeChanged(object sender, FIPPageEventArgs e)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.VolumeChanged(e.Page);
+                }
+            }
+        }
+
+        private void Control_OnMuteChanged(object sender, FIPPageEventArgs e)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.MuteChanged(e.Page);
                 }
             }
         }

@@ -29,7 +29,11 @@ namespace FIPToolKit.FlightSim
         public bool IsOnGround { get; set; }
         public int GroundSpeed { get; set; }
         public bool IsGearFloats { get; set; }
-        public double NavRelativeBearingToStation { get; set; }
+        public double Nav1Radial { get; set; }
+        public double Nav2Radial { get; set; }
+        public bool Nav1Available { get; set; }
+        public bool Nav2Available { get; set; }
+        public double AdfRelativeBearing { get; set; }
         public string Airline { get; set; }
         public string FlightNumber { get; set; }
         public string Category { get; set; }
@@ -38,6 +42,15 @@ namespace FIPToolKit.FlightSim
         public double VerticalSpeed { get; set; }
         public double FuelTankRightMainQuantity { get; set; }
         public double FuelTankLeftMainQuantity { get; set; }
+        public int AmbientTemperatureCelcius { get; set; }
+        public double AmbientWindDirectionDegrees { get; set; }
+        public double AmbientWindSpeedKnots { get; set; }
+        public double KollsmanInchesMercury { get; set; }
+        public double GPSRequiredMagneticHeadingRadians { get; set; }
+        public double GPSRequiredTrueHeadingRadians { get; set; }
+        public bool HasActiveWaypoint { get; set; }
+        public double GPSCrossTrackErrorMeters { get; set; }
+        public double HeadingBug { get; set; }
 
         public AircraftData()
         {
@@ -78,12 +91,24 @@ namespace FIPToolKit.FlightSim
             GroundAltitude = 0;
             GroundSpeed = 0;
             IsGearFloats = false;
-            NavRelativeBearingToStation = 0;
+            Nav1Radial = 0;
+            Nav2Radial = 0;
+            Nav1Available = false;
+            Nav2Available = false;
+            AdfRelativeBearing = 0;
             FuelTankLeftMainQuantity = 0;
             FuelTankRightMainQuantity = 0;
+            AmbientTemperatureCelcius = 0;
+            AmbientWindDirectionDegrees = 0;
+            AmbientWindSpeedKnots = 0;
+            KollsmanInchesMercury = 0;
+            GPSRequiredMagneticHeadingRadians = 0;
+            GPSRequiredTrueHeadingRadians = 0;
+            HasActiveWaypoint = false;
+            GPSCrossTrackErrorMeters = 0;
         }
 
-        public void UpdateData(SimConnect.FLIGHT_DATA flightData)
+    public void UpdateData(SimConnect.FLIGHT_DATA flightData)
         {
             Position = new PointLatLng(flightData.PLANE_LATITUDE, flightData.PLANE_LONGITUDE);
             Altitude = (int)flightData.PLANE_ALTITUDE;
@@ -100,6 +125,20 @@ namespace FIPToolKit.FlightSim
             GroundAltitude = (int)flightData.GROUND_ALTITUDE;
             FuelTankLeftMainQuantity = flightData.FUEL_TANK_LEFT_MAIN_QUANTITY;
             FuelTankRightMainQuantity = flightData.FUEL_TANK_RIGHT_MAIN_QUANTITY;
+            AdfRelativeBearing = flightData.ADF_RADIAL;
+            Nav1Available = Convert.ToBoolean(flightData.NAV1_AVAILABLE);
+            Nav2Available = Convert.ToBoolean(flightData.NAV2_AVAILABLE);
+            Nav1Radial = flightData.NAV_RELATIVE_BEARING_TO_STATION_1;
+            Nav2Radial = flightData.NAV_RELATIVE_BEARING_TO_STATION_2;
+            AmbientTemperatureCelcius = (int)flightData.AMBIENT_TEMPERATURE;
+            AmbientWindDirectionDegrees = flightData.AMBIENT_WIND_DIRECTION;
+            AmbientWindSpeedKnots = flightData.AMBIENT_WIND_VELOCITY;
+            KollsmanInchesMercury = flightData.KOLLSMAN_SETTING_HG;
+            GPSRequiredMagneticHeadingRadians = flightData.GPS_WP_BEARING;
+            GPSRequiredTrueHeadingRadians = flightData.GPS_WP_TRUE_REQ_HDG;
+            HasActiveWaypoint = Convert.ToBoolean(flightData.GPS_IS_ACTIVE_WAY_POINT);
+            GPSCrossTrackErrorMeters = flightData.GPS_WP_CROSS_TRK;
+            HeadingBug = flightData.AUTOPILOT_HEADING_LOCK_DIR;
         }
 
         public void UpdateData(SimConnect.FULL_DATA flightData)
@@ -175,6 +214,20 @@ namespace FIPToolKit.FlightSim
             GroundAltitude = (int)flightData.GROUND_ALTITUDE;
             FuelTankLeftMainQuantity = flightData.FUEL_TANK_LEFT_MAIN_QUANTITY;
             FuelTankRightMainQuantity = flightData.FUEL_TANK_RIGHT_MAIN_QUANTITY;
+            AdfRelativeBearing = flightData.ADF_RADIAL;
+            Nav1Available = Convert.ToBoolean(flightData.NAV1_AVAILABLE);
+            Nav2Available = Convert.ToBoolean(flightData.NAV2_AVAILABLE);
+            Nav1Radial = flightData.NAV_RELATIVE_BEARING_TO_STATION_1;
+            Nav2Radial = flightData.NAV_RELATIVE_BEARING_TO_STATION_2;
+            AmbientTemperatureCelcius = (int)flightData.AMBIENT_TEMPERATURE;
+            AmbientWindDirectionDegrees = flightData.AMBIENT_WIND_DIRECTION;
+            AmbientWindSpeedKnots = flightData.AMBIENT_WIND_VELOCITY;
+            KollsmanInchesMercury = flightData.KOLLSMAN_SETTING_HG;
+            GPSRequiredMagneticHeadingRadians = flightData.GPS_WP_BEARING;
+            GPSRequiredTrueHeadingRadians = flightData.GPS_WP_TRUE_REQ_HDG;
+            HasActiveWaypoint = Convert.ToBoolean(flightData.GPS_IS_ACTIVE_WAY_POINT);
+            GPSCrossTrackErrorMeters = flightData.GPS_WP_CROSS_TRK;
+            HeadingBug = flightData.AUTOPILOT_HEADING_LOCK_DIR;
         }
     }
 }

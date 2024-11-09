@@ -16,6 +16,7 @@ namespace FIPToolKit.Models
         public event EventHandler OnLoadMapSettings;
         public event EventHandler OnUpdateMap;
         public event EventHandler OnShowTrackChanged;
+        public event EventHandler OnAIPClientTokenChanged;
 
         public FIPMapProperties() : base()
         {
@@ -366,5 +367,24 @@ namespace FIPToolKit.Models
                 }
             }
         }
+
+        private string _aipClientToken;
+        public string AIPClientToken
+        {
+            get
+            {
+                return (_aipClientToken ?? string.Empty);
+            }
+            set
+            {
+                if (!(_aipClientToken ?? string.Empty).Equals(value ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                {
+                    _aipClientToken = value;
+                    IsDirty = true;
+                    OnAIPClientTokenChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
     }
 }

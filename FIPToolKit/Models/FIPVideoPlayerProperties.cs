@@ -19,6 +19,7 @@ namespace FIPToolKit.Models
         public event EventHandler OnPositionChanged;
         public event EventHandler OnPortraitModeChanged;
         public event EventHandler OnFilenameChanged;
+        public event EventHandler OnMuteChanged;
 
         public FIPVideoPlayerProperties() : base() 
         {
@@ -221,7 +222,17 @@ namespace FIPToolKit.Models
                 {
                     _mute = value;
                     IsDirty = true;
+                    OnMuteChanged?.Invoke(this, EventArgs.Empty);
                 }
+            }
+        }
+
+        public void SetMute(bool mute)
+        {
+            if (_mute != mute)
+            {
+                _mute = mute;
+                IsDirty = true;
             }
         }
 

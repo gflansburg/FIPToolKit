@@ -423,16 +423,20 @@ namespace FIPDisplayMSFS2020
             else if (e.Page.GetType() == typeof(FIPMusicPlayer))
             {
                 ((FIPMusicPlayer)e.Page).OnCanPlay += Player_OnCanPlay;
+                ((FIPMusicPlayer)e.Page).OnVolumeChanged += MusicPlayer_OnVolumeChanged;
+                ((FIPMusicPlayer)e.Page).OnMuteChanged += MusicPlayer_OnMuteChanged;
                 ((FIPMusicPlayer)e.Page).Init();
             }
             else if (e.Page.GetType() == typeof(FIPVideoPlayer))
             {
                 ((FIPVideoPlayer)e.Page).OnActive += VideoPlayer_OnActive;
                 ((FIPVideoPlayer)e.Page).OnInactive += VideoPlayer_OnInactive;
+                ((FIPVideoPlayer)e.Page).OnVolumeChanged += VideoPlayer_OnVolumeChanged;
+                ((FIPVideoPlayer)e.Page).OnMuteChanged += VideoPlayer_OnMuteChanged;
             }
         }
 
-        private void VideoPlayer_OnInactive(object sender, FIPVideoPlayerEventArgs e)
+        private void VideoPlayer_OnInactive(object sender, FIPPageEventArgs e)
         {
             foreach (FIPDevice device in Engine.Devices)
             {
@@ -450,7 +454,7 @@ namespace FIPDisplayMSFS2020
             }
         }
 
-        private void VideoPlayer_OnActive(object sender, FIPVideoPlayerEventArgs e)
+        private void VideoPlayer_OnActive(object sender, FIPPageEventArgs e)
         {
             foreach (FIPDevice device in Engine.Devices)
             {
@@ -932,6 +936,78 @@ namespace FIPDisplayMSFS2020
                             player.RefreshToken();
                         }
                         break;
+                    }
+                }
+            }
+        }
+
+        private void VideoPlayer_OnMuteChanged(object sender, FIPPageEventArgs e)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPPage page in device.Pages)
+                {
+                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    {
+                        ((FIPMusicPlayer)page).Mute = ((FIPVideoPlayer)e.Page).Mute;
+                    }
+                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
+                    {
+                        ((FIPVideoPlayer)page).Mute = ((FIPVideoPlayer)e.Page).Mute;
+                    }
+                }
+            }
+        }
+
+        private void VideoPlayer_OnVolumeChanged(object sender, FIPPageEventArgs e)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPPage page in device.Pages)
+                {
+                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    {
+                        ((FIPMusicPlayer)page).Volume = ((FIPVideoPlayer)e.Page).Volume;
+                    }
+                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
+                    {
+                        ((FIPVideoPlayer)page).Volume = ((FIPVideoPlayer)e.Page).Volume;
+                    }
+                }
+            }
+        }
+
+        private void MusicPlayer_OnMuteChanged(object sender, FIPPageEventArgs e)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPPage page in device.Pages)
+                {
+                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    {
+                        ((FIPMusicPlayer)page).Mute = ((FIPMusicPlayer)e.Page).Mute;
+                    }
+                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
+                    {
+                        ((FIPVideoPlayer)page).Mute = ((FIPMusicPlayer)e.Page).Mute;
+                    }
+                }
+            }
+        }
+
+        private void MusicPlayer_OnVolumeChanged(object sender, FIPPageEventArgs e)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPPage page in device.Pages)
+                {
+                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    {
+                        ((FIPMusicPlayer)page).Volume = ((FIPMusicPlayer)e.Page).Volume;
+                    }
+                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
+                    {
+                        ((FIPVideoPlayer)page).Volume = ((FIPMusicPlayer)e.Page).Volume;
                     }
                 }
             }

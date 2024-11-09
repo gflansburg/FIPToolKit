@@ -90,7 +90,6 @@ namespace FIPToolKit.Models
         public static event SimConnectErrorEventHandler OnError;
         public static event SimConnectFlightDataEventHandler OnFlightDataReceived;
         public static event SimConnectTrafficEventHandler OnTrafficReceived;
-        public static event SimConnectAirportListEventHandler OnAirportListReceived;
         public static event SimConnectFlightDataByTypeEventHandler OnFlightDataByTypeReceived;
 
         public FIPSimConnect()
@@ -102,26 +101,12 @@ namespace FIPToolKit.Models
             SimConnect.OnSim += SimConnect_OnSim;
             SimConnect.OnFlightDataReceived += SimConnect_OnFlightDataReceived;
             SimConnect.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
-            SimConnect.OnAirportListReceived += SimConnect_OnAirportListReceived;
             SimConnect.OnTrafficReceived += SimConnect_OnTrafficReceived;
         }
 
         protected virtual void SimConnect_OnTrafficReceived(uint objectId, Aircraft aircraft, TrafficEvent eventType)
         {
             OnTrafficReceived?.Invoke(objectId, aircraft, eventType);
-        }
-
-        protected virtual void SimConnect_OnAirportListReceived(Dictionary<string, Airport> airports)
-        {
-
-            foreach (Airport airport in airports.Values)
-            {
-                if (!FlightSim.Tools.Airports.ContainsKey(airport.ICAO))
-                {
-                    FlightSim.Tools.Airports.Add(airport.ICAO, airport);
-                }
-            }
-            OnAirportListReceived?.Invoke(airports);
         }
 
         private static void ConnectionTimer_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -171,17 +156,17 @@ namespace FIPToolKit.Models
 
         protected virtual void SimConnect_OnError(string error)
         {
-            IsConnected = false;
-            OnStopTimer.Invoke(this, new EventArgs());
+            /*IsConnected = false;
+            OnStopTimer?.Invoke(this, new EventArgs());
             SimConnect.Deinitialize();
             if (_timer != null && !_timer.IsBusy)
             {
                 _timer.RunWorkerAsync();
-            }
+            }*/
             OnError?.Invoke(error);
         }
 
-        protected virtual void SimConnect_OnFlightDataReceived(SimConnect.FULL_DATA data)
+        protected virtual void SimConnect_OnFlightDataReceived(FULL_DATA data)
         {
             AircraftData aircraftData = FlightSim.Tools.LoadAircraft(data.ATC_TYPE, data.ATC_MODEL);
             if(aircraftData != null)

@@ -16,7 +16,7 @@ namespace FIPDisplayProfiler
 {
     public partial class FSUIPCCommandSequenceDlg : Form
     {
-        public FIPFSUIPCCommandSequenceButton Button { get; set; }
+        public FIPCommandSequenceButton Button { get; set; }
 
         private Font _fontHolder;
         private string _iconFilename;

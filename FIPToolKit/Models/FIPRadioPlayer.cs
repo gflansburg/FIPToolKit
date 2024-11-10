@@ -1,4 +1,6 @@
 ﻿using FIPToolKit.Drawing;
+using FIPToolKit.FlightSim;
+using FIPToolKit.Tools;
 using LibVLCSharp.Shared;
 using Newtonsoft.Json;
 using RestSharp;
@@ -16,13 +18,43 @@ namespace FIPToolKit.Models
 {
     public abstract class FIPRadioPlayer : FIPMusicPlayer
     {
+        public FlightSimProviderBase FlightSimProvider { get; private set; }
+
         public bool CanPlayFirstSong { get; set; }
 
-        public FIPRadioPlayer(FIPRadioProperties properties) : base(properties)
+        public FIPRadioPlayer(FIPRadioProperties properties, FlightSimProviderBase flightSimProvider) : base(properties)
         {
+            FlightSimProvider = flightSimProvider;
             properties.ControlType = GetType().FullName;
-            properties.Name = "Radio Player";
+            properties.Name = string.Format("{0} Radio Player", flightSimProvider.Name);
             properties.IsDirty = false;
+            CanPlayFirstSong = flightSimProvider.IsConnected;
+            flightSimProvider.OnFlightDataReceived += FlightSimProvider_OnFlightDataReceived;
+            flightSimProvider.OnConnected += FlightSimProvider_OnConnected;
+        }
+
+        private void FlightSimProvider_OnConnected(FlightSimProviderBase sender)
+        {
+            CanPlayFirstSong = true;
+        }
+
+        private LatLong cachedLocation = null;
+        private void FlightSimProvider_OnFlightDataReceived(FlightSimProviderBase sender)
+        {
+            LatLong location = new LatLong(FlightSimProvider.Latitude, FlightSimProvider.Longitude);
+            if (location.IsEmpty())
+            {
+                ListenerLocation = LocalLocation;
+            }
+            else
+            {
+                ListenerLocation = location;
+            }
+            if (cachedLocation == null || Net.DistanceBetween(location.Latitude.Value, location.Longitude.Value, cachedLocation.Latitude.Value, cachedLocation.Longitude.Value) >= 1)
+            {
+                cachedLocation = location;
+                CreatePlaylist();
+            }
         }
 
         private List<FIPRadioStation> GetStations()

@@ -48,7 +48,7 @@ namespace FIPDisplayProfiler
                 Close();
                 return;
             }
-            FIPToolKit.FlightSim.FlightSimProviders.FIPSimConnect.MainWindowHandle = this.Handle;
+            FIPToolKit.FlightSim.FlightSimProviders.SimConnect.MainWindowHandle = this.Handle;
         }
 
         private void Engine_OnPageChanged(object sender, FIPDeviceActivePage page)
@@ -242,8 +242,8 @@ namespace FIPDisplayProfiler
                 }
                 Engine.Dispose();
                 Engine = null;
-                FIPToolKit.FlightSim.FlightSimProviders.FIPSimConnect.Deinitialize();
-                FIPToolKit.FlightSim.FlightSimProviders.FIPFSUIPC.Deinitialize();
+                FIPToolKit.FlightSim.FlightSimProviders.SimConnect.Deinitialize();
+                FIPToolKit.FlightSim.FlightSimProviders.FSUIPC.Deinitialize();
             }
             if (Properties.Settings.Default.CloseFlightShareOnExit)
             {
@@ -511,7 +511,7 @@ namespace FIPDisplayProfiler
         {
             if (m.Msg == FIPToolKit.FlightSim.SimConnect.WM_USER_SIMCONNECT)
             {
-                FIPToolKit.FlightSim.FlightSimProviders.FIPSimConnect.ReceiveMessage();
+                FIPToolKit.FlightSim.FlightSimProviders.SimConnect.ReceiveMessage();
                 return;
             }
             else if (m.Msg == NativeMethods.WM_SYSCOMMAND)

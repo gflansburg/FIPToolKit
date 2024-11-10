@@ -325,7 +325,7 @@ namespace FIPDisplayMSFS2020
         private async void LaunchPanels()
         {
             await InitializeWebView2Async();
-            FlightSimProviders.FIPSimConnect.MainWindowHandle = this.Handle;
+            FlightSimProviders.SimConnect.MainWindowHandle = this.Handle;
             FIPButton.KeyAPIMode = KeyAPIModes.FSUIPC;
             Engine = new FIPEngine();
             Engine.OnPageChanged += Engine_OnPageChanged;
@@ -799,8 +799,8 @@ namespace FIPDisplayMSFS2020
                 }
                 Engine.Dispose();
                 Engine = null;
-                FlightSimProviders.FIPSimConnect.Deinitialize();
-                FlightSimProviders.FIPFSUIPC.Deinitialize();
+                FlightSimProviders.SimConnect.Deinitialize();
+                FlightSimProviders.FSUIPC.Deinitialize();
             }
             FIPFlightShare.CloseFlightShare();
         }
@@ -853,7 +853,7 @@ namespace FIPDisplayMSFS2020
         {
             if (m.Msg == SimConnect.WM_USER_SIMCONNECT)
             {
-                FlightSimProviders.FIPSimConnect.ReceiveMessage();
+                FlightSimProviders.SimConnect.ReceiveMessage();
                 return;
             }
             else if (m.Msg == NativeMethods.WM_CLOSE)
@@ -885,8 +885,8 @@ namespace FIPDisplayMSFS2020
                     }
                     Engine.Dispose();
                     Engine = null;
-                    FlightSimProviders.FIPSimConnect.Deinitialize();
-                    FlightSimProviders.FIPFSUIPC.Deinitialize();
+                    FlightSimProviders.SimConnect.Deinitialize();
+                    FlightSimProviders.FSUIPC.Deinitialize();
                 }
                 FIPFlightShare.CloseFlightShare();
             }

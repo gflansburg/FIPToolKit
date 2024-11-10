@@ -9,15 +9,15 @@ using System.Xml.Serialization;
 namespace FIPToolKit.Models
 {
     [Serializable]
-    public class FIPFSUIPCCommandSequenceButton : FIPButton
+    public class FIPCommandSequenceButton : FIPButton
     {
-        List<FIPFSUIPCCommandButton> _sequence;
+        List<FIPCommandButton> _sequence;
 
         [XmlIgnore]
         [JsonIgnore]
         public AbortableBackgroundWorker Timer { get; set; }
 
-        public List<FIPFSUIPCCommandButton> Sequence
+        public List<FIPCommandButton> Sequence
         {
             get
             {
@@ -31,9 +31,9 @@ namespace FIPToolKit.Models
             }
         }
 
-        public FIPFSUIPCCommandSequenceButton() : base()
+        public FIPCommandSequenceButton() : base()
         {
-            Sequence = new List<FIPFSUIPCCommandButton>();
+            Sequence = new List<FIPCommandButton>();
         }
 
         public override void Execute()

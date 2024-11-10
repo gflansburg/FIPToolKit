@@ -6,63 +6,65 @@ using static FIPToolKit.FlightSim.SimConnect;
 
 namespace FIPToolKit.FlightSim
 {
-    public class SimConnectProvider
+    public class SimConnectProvider : FlightSimProviderBase
     {
         public static readonly SimConnectProvider Instance;
 
+        public override string Name => "SimConnect";
+
         private FLIGHT_DATA FlightData { get; set; } = new FLIGHT_DATA();
 
-        public Dictionary<string, Aircraft> Traffic => SimConnect.Instance.Traffic;
+        public override Dictionary<string, Aircraft> Traffic => SimConnect.Instance.Traffic;
 
-        public int AltitudeFeet => (int)FlightData.PLANE_ALTITUDE;
+        public override double AltitudeFeet => FlightData.PLANE_ALTITUDE;
 
-        public double HeadingMagneticDegrees => FlightData.PLANE_HEADING_DEGREES_MAGNETIC;
+        public override double HeadingMagneticDegrees => FlightData.PLANE_HEADING_DEGREES_MAGNETIC;
 
-        public double HeadingTrueDegrees => FlightData.PLANE_HEADING_DEGREES_TRUE;
+        public override double HeadingTrueDegrees => FlightData.PLANE_HEADING_DEGREES_TRUE;
 
-        public double HeadingMagneticRadians => HeadingMagneticDegrees * (Math.PI / 180);
+        public override double HeadingMagneticRadians => HeadingMagneticDegrees * (Math.PI / 180);
 
-        public double HeadingTrueRadians => HeadingTrueDegrees * (Math.PI / 180);
+        public override double HeadingTrueRadians => HeadingTrueDegrees * (Math.PI / 180);
 
-        public bool OnGround => Convert.ToBoolean(FlightData.SIM_ON_GROUND);
+        public override bool OnGround => Convert.ToBoolean(FlightData.SIM_ON_GROUND);
 
-        public int GroundSpeedKnots => (int)FlightData.AIRSPEED_TRUE;
+        public override double GroundSpeedKnots => FlightData.AIRSPEED_TRUE;
 
-        public int AirSpeedIndicatedKnots => (int)FlightData.AIRSPEED_INDICATED;
+        public override double AirSpeedIndicatedKnots => FlightData.AIRSPEED_INDICATED;
 
-        public int AmbientTemperatureCelcius => (int)FlightData.AMBIENT_TEMPERATURE;
+        public override double AmbientTemperatureCelcius => FlightData.AMBIENT_TEMPERATURE;
 
-        public double AmbientWindDirectionDegrees => FlightData.AMBIENT_WIND_DIRECTION;
+        public override double AmbientWindDirectionDegrees => FlightData.AMBIENT_WIND_DIRECTION;
 
-        public double AmbientWindSpeedKnots => FlightData.AMBIENT_WIND_VELOCITY;
+        public override double AmbientWindSpeedKnots => FlightData.AMBIENT_WIND_VELOCITY;
 
-        public double KohlsmanInchesMercury => FlightData.KOHLSMAN_SETTING_HG;
+        public override double KohlsmanInchesMercury => FlightData.KOHLSMAN_SETTING_HG;
 
-        public ReadyToFly ReadyToFly => IsRunning ? ReadyToFly.Ready : ReadyToFly.Loading;
+        public override ReadyToFly IsReadyToFly => IsRunning ? FlightSim.ReadyToFly.Ready : FlightSim.ReadyToFly.Loading;
 
-        public double GPSRequiredMagneticHeadingRadians => (AircraftId == 50 ? FlightData.GPS_WP_BEARING + Math.PI : FlightData.GPS_WP_BEARING);
+        public override double GPSRequiredMagneticHeadingRadians => (AircraftId == 50 ? FlightData.GPS_WP_BEARING + Math.PI : FlightData.GPS_WP_BEARING);
 
-        public double GPSRequiredTrueHeadingRadians => FlightData.GPS_WP_TRUE_REQ_HDG;
+        public override double GPSRequiredTrueHeadingRadians => FlightData.GPS_WP_TRUE_REQ_HDG;
 
-        public bool HasActiveWaypoint => Convert.ToBoolean(FlightData.GPS_IS_ACTIVE_WAY_POINT);
+        public override bool HasActiveWaypoint => Convert.ToBoolean(FlightData.GPS_IS_ACTIVE_WAY_POINT);
 
-        public double GPSCrossTrackErrorMeters => FlightData.GPS_WP_CROSS_TRK;
+        public override double GPSCrossTrackErrorMeters => FlightData.GPS_WP_CROSS_TRK;
 
-        public double Nav1Radial => FlightData.NAV_RELATIVE_BEARING_TO_STATION_1;
+        public override double Nav1Radial => FlightData.NAV_RELATIVE_BEARING_TO_STATION_1;
 
-        public double Nav2Radial => FlightData.NAV_RELATIVE_BEARING_TO_STATION_2;
+        public override double Nav2Radial => FlightData.NAV_RELATIVE_BEARING_TO_STATION_2;
 
-        public bool Nav1Available => Convert.ToBoolean(FlightData.NAV1_AVAILABLE);
+        public override bool Nav1Available => Convert.ToBoolean(FlightData.NAV1_AVAILABLE);
 
-        public bool Nav2Available => Convert.ToBoolean(FlightData.NAV2_AVAILABLE);
+        public override bool Nav2Available => Convert.ToBoolean(FlightData.NAV2_AVAILABLE);
 
-        public double AdfRelativeBearing => FlightData.ADF_RADIAL;
+        public override double AdfRelativeBearing => FlightData.ADF_RADIAL;
 
-        public double HeadingBug => FlightData.AUTOPILOT_HEADING_LOCK_DIR;
+        public override double HeadingBug => FlightData.AUTOPILOT_HEADING_LOCK_DIR;
 
-        public double Latitude => FlightData.PLANE_LATITUDE;
+        public override double Latitude => FlightData.PLANE_LATITUDE;
 
-        public double Longitude => FlightData.PLANE_LONGITUDE;
+        public override double Longitude => FlightData.PLANE_LONGITUDE;
 
         private IntPtr _mainWindowHandle;
         
@@ -81,54 +83,99 @@ namespace FIPToolKit.FlightSim
 
         private int _aircraftId = 0;
 
-        public int AircraftId
+        public override int AircraftId
         {
             get
             {
                 return _aircraftId;
             }
-            private set
+        }
+
+        private bool _isConnected;
+        public override bool IsConnected
+        {
+            get
             {
-                if (_aircraftId != value)
-                {
-                    _aircraftId = value;
-                    OnAircraftChange?.Invoke(_aircraftId);
-                }
+                return _isConnected;
             }
         }
 
-        public bool IsConnected { get; private set; }
-
         public bool IsRunning { get; private set; }
 
-        public EngineType EngineType { get; private set; }
+        private EngineType _engineType;
+        public override EngineType EngineType
+        {
+            get
+            {
+                return _engineType;
+            }
+        }
 
-        public bool IsFloatPlane { get; private set; }
+        private bool _isGearFloats;
+        public override bool IsGearFloats
+        {
+            get
+            {
+                return _isGearFloats;
+            }
+        }
 
-        public bool IsHeavy { get; private set; }
+        private bool _isHelo;
+        public override bool IsHelo
+        {
+            get
+            {
+                return _isHelo;
+            }
+        }
 
-        public string AircraftModel { get; private set; }
+        private bool _isHeavy;
+        public override bool IsHeavy
+        {
+            get
+            {
+                return _isHeavy;
+            }
+        }
 
-        public string AircraftType { get; private set; }
+        private string _aircraftName;
+        public override string AircraftName
+        {
+            get
+            {
+                return _aircraftName;
+            }
+        }
 
-        public string ATCIdentifier { get; private set; }
+        private string _atcModel;
+        public override string ATCModel
+        {
+            get
+            {
+                return _atcModel;
+            }
+        }
+
+        private string _atcType;
+        public override string ATCType
+        {
+            get
+            {
+                return _atcType;
+            }
+        }
+
+        private string _atcIdentifier;
+        public override string ATCIdentifier
+        {
+            get
+            {
+                return _atcIdentifier;
+            }
+        }
 
         protected AbortableBackgroundWorker _timer;
         private bool _stop = false;
-
-        public delegate void SimConnectAircraftChangeEventHandler(int aircraftId);
-        public event SimConnectAircraftChangeEventHandler OnAircraftChange;
-
-        public event EventHandler OnSetLeds;
-        public event EventHandler OnStopTimer;
-        public event EventHandler OnUdatePage;
-        public event SimConnectEventHandler OnSim;
-        public event SimConnectQuitEventHandler OnQuit;
-        public event SimConnectConnectEventHandler OnConnected;
-        public event SimConnectErrorEventHandler OnError;
-        public event SimConnectFlightDataEventHandler OnFlightDataReceived;
-        public event SimConnectTrafficEventHandler OnTrafficReceived;
-        public event SimConnectFlightDataByTypeEventHandler OnFlightDataByTypeReceived;
 
         static SimConnectProvider()
         {
@@ -141,7 +188,6 @@ namespace FIPToolKit.FlightSim
             SimConnect.Instance.OnError += SimConnect_OnError;
             SimConnect.Instance.OnConnected += SimConnect_OnConnected;
             SimConnect.Instance.OnQuit += SimConnect_OnQuit;
-            SimConnect.Instance.OnSim += SimConnect_OnSim;
             SimConnect.Instance.OnFlightDataReceived += SimConnect_OnFlightDataReceived;
             SimConnect.Instance.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
             SimConnect.Instance.OnTrafficReceived += SimConnect_OnTrafficReceived;
@@ -149,7 +195,7 @@ namespace FIPToolKit.FlightSim
 
         protected void SimConnect_OnTrafficReceived(uint objectId, Aircraft aircraft, TrafficEvent eventType)
         {
-            OnTrafficReceived?.Invoke(objectId, aircraft, eventType);
+            TrafficReceived(objectId.ToString(), aircraft, eventType);
         }
 
         private void ConnectionTimer_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -173,28 +219,28 @@ namespace FIPToolKit.FlightSim
         protected void SimConnect_OnSim(bool isRunning)
         {
             IsRunning = isRunning;
-            OnSetLeds?.Invoke(Instance, new EventArgs());
-            OnSim?.Invoke(isRunning);
+            SetLeds();
+            ReadyToFly(IsReadyToFly);
         }
 
         protected void SimConnect_OnQuit()
         {
-            IsConnected = false;
-            OnStopTimer?.Invoke(Instance, new EventArgs());
+            _isConnected = false;
+            StopTimer();
             if(_timer != null)
             {
                 _timer.RunWorkerAsync();
             }
-            OnSetLeds?.Invoke(Instance, new EventArgs());
-            OnQuit?.Invoke();
+            SetLeds();
+            Quit();
         }
 
         protected void SimConnect_OnConnected()
         {
-            IsConnected = true;
-            OnUdatePage?.Invoke(Instance, new EventArgs());
-            OnSetLeds?.Invoke(Instance, new EventArgs());
-            OnConnected?.Invoke();
+            _isConnected = true;
+            UdatePage();
+            SetLeds();
+            Connected();
         }
 
         protected void SimConnect_OnError(string error)
@@ -206,12 +252,12 @@ namespace FIPToolKit.FlightSim
             {
                 _timer.RunWorkerAsync();
             }*/
-            OnError?.Invoke(error);
+            Error(error);
         }
 
         protected void SimConnect_OnFlightDataReceived(FULL_DATA data)
         {
-            FlightData = new SimConnect.FLIGHT_DATA()
+            FlightData = new FLIGHT_DATA()
             {
                 PLANE_LATITUDE = data.PLANE_LATITUDE,
                 PLANE_LONGITUDE = data.PLANE_LONGITUDE,
@@ -243,32 +289,34 @@ namespace FIPToolKit.FlightSim
                 NAV1_AVAILABLE = data.NAV1_AVAILABLE,
                 NAV2_AVAILABLE = data.NAV2_AVAILABLE
             };
-            AircraftData aircraftData = FlightSim.Tools.LoadAircraft(data.ATC_TYPE, data.ATC_MODEL);
+            AircraftData aircraftData = Tools.LoadAircraft(data.ATC_TYPE, data.ATC_MODEL);
             if(aircraftData != null)
             {
-                AircraftId = aircraftData.AircraftId;
-                EngineType = aircraftData.EngineType;
-                IsHeavy = aircraftData.IsHeavy;
-                AircraftModel = aircraftData.Model;
-                AircraftType = aircraftData.Type;
-                ATCIdentifier = aircraftData.ATCIdentifier;
+                _aircraftName = aircraftData.Name;
+                _aircraftId = aircraftData.AircraftId;
+                _engineType = aircraftData.EngineType;
+                _isHeavy = aircraftData.IsHeavy;
+                _isHelo = aircraftData.IsHelo;
+                _atcModel = aircraftData.Model;
+                _atcType = aircraftData.Type;
+                _atcIdentifier = aircraftData.ATCIdentifier;
+                _isGearFloats = aircraftData.IsGearFloats;
+                _isHelo = aircraftData.IsHelo;
+                AircraftChange(_aircraftId);
             }
             if (data.ATC_MODEL.Equals("Airbus-H135") || data.ATC_MODEL.Equals("EC135P3H"))
             {
-                EngineType = EngineType.Helo;
-                IsFloatPlane = false;
+                _engineType = EngineType.Helo;
+                _isHelo = true;
+                _isGearFloats = false;
             }
-            else
-            {
-                IsFloatPlane = Convert.ToBoolean(data.IS_GEAR_FLOATS);
-            }
-            OnFlightDataReceived?.Invoke(data);
+            FlightDataReceived();
         }
 
         protected void SimConnect_OnFlightDataByTypeReceived(FLIGHT_DATA data)
         {
             FlightData = data;
-            OnFlightDataByTypeReceived?.Invoke(data);
+            FlightDataReceived();
         }
 
         public void ReceiveMessage()
@@ -323,6 +371,22 @@ namespace FIPToolKit.FlightSim
             catch(Exception)
             {
             }
+        }
+
+        public override void SendControlToFS(string control, int value)
+        {
+        }
+
+        public override void SendSimControlToFS(string control, int value)
+        {
+        }
+
+        public override void SendAutoPilotControlToFS(string control, int value)
+        {
+        }
+
+        public override void SendAxisControlToFS(string control, int value)
+        {
         }
     }
 }

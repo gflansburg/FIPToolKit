@@ -25,6 +25,7 @@ namespace FIPToolKit.FlightSim
         public string Name { get; set; }
         public EngineType EngineType { get; set; }
         public bool IsHeavy { get; set; }
+        public bool IsHelo { get; set; }
         public PointLatLng Position { get; set; }
         public bool IsOnGround { get; set; }
         public int GroundSpeed { get; set; }
@@ -87,6 +88,7 @@ namespace FIPToolKit.FlightSim
             ATCIdentifier = string.Empty;
             EngineType = EngineType.Piston;
             IsHeavy = false;
+            IsHelo = false;
             IsOnGround = true;
             GroundAltitude = 0;
             GroundSpeed = 0;
@@ -182,6 +184,7 @@ namespace FIPToolKit.FlightSim
                 }
                 EngineType = (EngineType)flightData.ENGINE_TYPE;
                 IsHeavy = Convert.ToBoolean(flightData.ATC_HEAVY);
+                IsHelo = EngineType == EngineType.Helo;
                 Name = flightData.TITLE;
             }
             else
@@ -190,6 +193,7 @@ namespace FIPToolKit.FlightSim
                 Model = data.Model;
                 IsHeavy = data.IsHeavy;
                 EngineType = data.EngineType;
+                IsHelo = EngineType == data.EngineType;
                 Name = data.Name;
             }
             ATCModel = flightData.ATC_MODEL;

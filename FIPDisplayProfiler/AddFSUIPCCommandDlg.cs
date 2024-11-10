@@ -27,13 +27,13 @@ namespace FIPDisplayProfiler
 
         private class FSUIPCCommandDlgControlSet
         {
-            public FIPFSUIPCControlSet ControlSet { get; set; }
+            public FIPControlSet ControlSet { get; set; }
             public string Name { get; set; }
         }
 
         private class FSUIPCCommandDlgAction
         {
-            public FIPFSUIPCButtonAction Action { get; set; }
+            public FIPButtonAction Action { get; set; }
             public string Name { get; set; }
         }
 
@@ -72,7 +72,7 @@ namespace FIPDisplayProfiler
                     Name = Regex.Replace(keyPressLength.ToString(), "(\\B[A-Z])", " $1").Replace(" A ", " a ").Replace(" And ", " and ")
                 });
             }
-            foreach (FIPFSUIPCControlSet controlSet in (FIPFSUIPCControlSet[])Enum.GetValues(typeof(FIPFSUIPCControlSet)))
+            foreach (FIPControlSet controlSet in (FIPControlSet[])Enum.GetValues(typeof(FIPControlSet)))
             {
                 cbCommandSet.Items.Add(new FSUIPCCommandDlgControlSet()
                 {
@@ -80,7 +80,7 @@ namespace FIPDisplayProfiler
                     Name = Regex.Replace(controlSet.ToString(), "(\\B[A-Z])", " $1").Replace(" A ", " a ").Replace(" And ", " and ").Replace("Fsuipc", "FSUIPC").Replace("Fs ", "FS ")
                 });
             }
-            foreach (FIPFSUIPCButtonAction action in (FIPFSUIPCButtonAction[])Enum.GetValues(typeof(FIPFSUIPCButtonAction)))
+            foreach (FIPButtonAction action in (FIPButtonAction[])Enum.GetValues(typeof(FIPButtonAction)))
             {
                 cbAction.Items.Add(new FSUIPCCommandDlgAction()
                 {
@@ -163,7 +163,7 @@ namespace FIPDisplayProfiler
             return -1;
         }
 
-        private int IndexOfControlSet(FIPFSUIPCControlSet controlSet)
+        private int IndexOfControlSet(FIPControlSet controlSet)
         {
             for (int i = 0; i < cbCommandSet.Items.Count; i++)
             {
@@ -176,7 +176,7 @@ namespace FIPDisplayProfiler
             return -1;
         }
 
-        private int IndexOfButtonAction(FIPFSUIPCButtonAction action)
+        private int IndexOfButtonAction(FIPButtonAction action)
         {
             for (int i = 0; i < cbCommandSet.Items.Count; i++)
             {
@@ -247,10 +247,10 @@ namespace FIPDisplayProfiler
             Button.Action = (cbAction.SelectedItem as FSUIPCCommandDlgAction).Action;
             Button.ControlSet = (cbCommandSet.SelectedItem as FSUIPCCommandDlgControlSet).ControlSet;
             Button.Value = Convert.ToInt32(tbValue.Text);
-            Button.Control = (cbFsControl.SelectedItem as FSUIPCCommandDlgFsControl).Control;
-            Button.FSUIPCControl = (cbFSUIPCControl.SelectedItem as FSUIPCCommandDlgFSUIPCControl).Control;
-            Button.FSUIPCAutoPilotControl = (cbFSUIPCAutoPilotControl.SelectedItem as FSUIPCCommandDlgFSUIPCAutoPilotControl).Control;
-            Button.FSUIPCAxisControl = (cbFSUIPCAxisControl.SelectedItem as FSUIPCCommandDlgFSUIPCAxisControl).Control;
+            Button.Control = (cbFsControl.SelectedItem as FSUIPCCommandDlgFsControl).Control.ToString();
+            Button.SimControl = (cbFSUIPCControl.SelectedItem as FSUIPCCommandDlgFSUIPCControl).Control.ToString();
+            Button.AutoPilotControl = (cbFSUIPCAutoPilotControl.SelectedItem as FSUIPCCommandDlgFSUIPCAutoPilotControl).Control.ToString();
+            Button.AxisControl = (cbFSUIPCAxisControl.SelectedItem as FSUIPCCommandDlgFSUIPCAxisControl).Control.ToString();
             Button.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
@@ -258,10 +258,10 @@ namespace FIPDisplayProfiler
 
         private void AddFSUIPCCommandDlg_Load(object sender, EventArgs e)
         {
-            cbFsControl.SelectedIndex = Button.Control.HasValue ? IndexOfFsControl(Button.Control.Value) : 0;
-            cbFSUIPCControl.SelectedIndex = Button.FSUIPCControl.HasValue ? IndexOfFSUIPCControl(Button.FSUIPCControl.Value) : 0;
-            cbFSUIPCAutoPilotControl.SelectedIndex = Button.FSUIPCAutoPilotControl.HasValue ? IndexOfFSUIPCAutoPilotControl(Button.FSUIPCAutoPilotControl.Value) : 0;
-            cbFSUIPCAxisControl.SelectedIndex = Button.FSUIPCAxisControl.HasValue ? IndexOfFSUIPCAxisControl(Button.FSUIPCAxisControl.Value) : 0;
+            cbFsControl.SelectedIndex = !string.IsNullOrEmpty(Button.Control) ? IndexOfFsControl((FsControl)Enum.Parse(typeof(FsControl), Button.Control, true)) : 0;
+            cbFSUIPCControl.SelectedIndex = !string.IsNullOrEmpty(Button.SimControl) ? IndexOfFSUIPCControl((FSUIPCControl)Enum.Parse(typeof(FSUIPCControl), Button.SimControl, true)) : 0;
+            cbFSUIPCAutoPilotControl.SelectedIndex = !string.IsNullOrEmpty(Button.AutoPilotControl) ? IndexOfFSUIPCAutoPilotControl((FSUIPCAutoPilotControl)Enum.Parse(typeof(FSUIPCAutoPilotControl), Button.AutoPilotControl, true)) : 0;
+            cbFSUIPCAxisControl.SelectedIndex = !string.IsNullOrEmpty(Button.AxisControl) ? IndexOfFSUIPCAxisControl((FSUIPCAxisControl)Enum.Parse(typeof(FSUIPCAxisControl), Button.AxisControl, true)) : 0;
             tbValue.Text = Button.Value.ToString();
             cbAction.SelectedIndex = IndexOfButtonAction(Button.Action);
             cbCommandSet.SelectedIndex = IndexOfControlSet(Button.ControlSet);
@@ -271,20 +271,20 @@ namespace FIPDisplayProfiler
             cbFSUIPCAxisControl.Visible = false;
             switch (Button.ControlSet)
             {
-                case FIPFSUIPCControlSet.FsControl:
+                case FIPControlSet.FsControl:
                     cbFsControl.Visible = true;
                     break;
-                case FIPFSUIPCControlSet.FsuipcControl:
+                case FIPControlSet.FsuipcControl:
                     cbFSUIPCControl.Visible = true;
                     break;
-                case FIPFSUIPCControlSet.FsuipcAutoPilotControl:
+                case FIPControlSet.FsuipcAutoPilotControl:
                     cbFSUIPCAutoPilotControl.Visible = true;
                     break;
-                case FIPFSUIPCControlSet.FsuipcAxisControl:
+                case FIPControlSet.FsuipcAxisControl:
                     cbFSUIPCAxisControl.Visible = true;
                     break;
             }
-            tbValue.Enabled = (Button.Action == FIPFSUIPCButtonAction.Set);
+            tbValue.Enabled = (Button.Action == FIPButtonAction.Set);
             btnOK.Enabled = IsCommandEnabled;
         }
 
@@ -297,13 +297,13 @@ namespace FIPDisplayProfiler
                 {
                     switch (controlSet.ControlSet)
                     {
-                        case FIPFSUIPCControlSet.FsControl:
+                        case FIPControlSet.FsControl:
                             return cbFsControl.SelectedIndex > 0;
-                        case FIPFSUIPCControlSet.FsuipcControl:
+                        case FIPControlSet.FsuipcControl:
                             return cbFSUIPCControl.SelectedIndex > 0;
-                        case FIPFSUIPCControlSet.FsuipcAutoPilotControl:
+                        case FIPControlSet.FsuipcAutoPilotControl:
                             return cbFSUIPCAutoPilotControl.SelectedIndex > 0;
-                        case FIPFSUIPCControlSet.FsuipcAxisControl:
+                        case FIPControlSet.FsuipcAxisControl:
                             return cbFSUIPCAxisControl.SelectedIndex > 0;
                     }
                 }
@@ -320,16 +320,16 @@ namespace FIPDisplayProfiler
             cbFSUIPCAxisControl.Visible = false;
             switch (controlSet.ControlSet)
             {
-                case FIPFSUIPCControlSet.FsControl:
+                case FIPControlSet.FsControl:
                     cbFsControl.Visible = true;
                     break;
-                case FIPFSUIPCControlSet.FsuipcControl:
+                case FIPControlSet.FsuipcControl:
                     cbFSUIPCControl.Visible = true;
                     break;
-                case FIPFSUIPCControlSet.FsuipcAutoPilotControl:
+                case FIPControlSet.FsuipcAutoPilotControl:
                     cbFSUIPCAutoPilotControl.Visible = true;
                     break;
-                case FIPFSUIPCControlSet.FsuipcAxisControl:
+                case FIPControlSet.FsuipcAxisControl:
                     cbFSUIPCAxisControl.Visible = true;
                     break;
             }
@@ -358,7 +358,7 @@ namespace FIPDisplayProfiler
         private void cbAction_SelectedIndexChanged(object sender, EventArgs e)
         {
             FSUIPCCommandDlgAction action = cbAction.SelectedItem as FSUIPCCommandDlgAction;
-            tbValue.Enabled = (action.Action == FIPFSUIPCButtonAction.Set);
+            tbValue.Enabled = (action.Action == FIPButtonAction.Set);
         }
 
         private void tbValue_KeyPress(object sender, KeyPressEventArgs e)

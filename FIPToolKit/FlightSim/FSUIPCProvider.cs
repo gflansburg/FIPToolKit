@@ -16,35 +16,58 @@ using FIPToolKit.FlightSim;
 
 namespace FIPToolKit.FlightSim
 {
-    public class FSUIPCProvider
+    public class FSUIPCProvider : FlightSimProviderBase
     {
         public static readonly FSUIPCProvider Instance;
 
+        public override string Name => "FUSIPC";
+
         private int _aircraftId = 0;
-        
-        public int AircraftId 
-        { 
+        public override int AircraftId
+        {
             get
             {
                 return _aircraftId;
             }
-            private set
+        }
+
+        private bool _isConnected;
+        public override bool IsConnected
+        {
+            get
             {
-                if(_aircraftId != value)
-                {
-                    _aircraftId = value;
-                    OnAircraftChange?.Invoke(_aircraftId);
-                }
+                return _isConnected;
             }
         }
 
-        public bool IsConnected { get; private set; }
+        private Dictionary<string, Aircraft> _traffic = new Dictionary<string, Aircraft>();
+        public override Dictionary<string, Aircraft> Traffic
+        {
+            get
+            {
+                return _traffic;
+            }
+        }
 
-        public Dictionary<string, Aircraft> Traffic { get; private set; }
+        private string _aircraftName;
+        public override string AircraftName
+        {
+            get
+            {
+                return _aircraftName;
+            }
+        }
 
-        public string AircraftName { get; private set; }
+        private bool _isHelo;
+        public override bool IsHelo
+        {
+            get
+            {
+                return _isHelo;
+            }
+        }
 
-        public bool IsFloatPlane
+        public override bool IsGearFloats
         {
             get
             {
@@ -75,7 +98,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public ReadyToFly ReadyToFly
+        public override ReadyToFly IsReadyToFly
         {
             get
             {
@@ -85,7 +108,7 @@ namespace FIPToolKit.FlightSim
 
 
         private EngineType _engineType;
-        public EngineType EngineType
+        public override EngineType EngineType
         {
             get
             {
@@ -93,7 +116,14 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public bool IsHeavy { get; private set; }
+        private bool _isHeavy;
+        public override bool IsHeavy
+        {
+            get
+            {
+                return _isHeavy;
+            }
+        }
 
         public double AirSpeedBarberPoleKnots
         {
@@ -103,7 +133,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double AirSpeedIndicatedKnots
+        public override double AirSpeedIndicatedKnots
         {
             get
             {
@@ -119,7 +149,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double GroundSpeedKnots
+        public override double GroundSpeedKnots
         {
             get
             {
@@ -135,7 +165,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double HeadingMagneticDegrees
+        public override double HeadingMagneticDegrees
         {
             get
             {
@@ -143,7 +173,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double HeadingTrueDegrees
+        public override double HeadingTrueDegrees
         {
             get
             {
@@ -151,7 +181,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double HeadingMagneticRadians
+        public override double HeadingMagneticRadians
         {
             get
             {
@@ -159,7 +189,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double HeadingTrueRadians
+        public override double HeadingTrueRadians
         {
             get
             {
@@ -167,7 +197,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public bool OnGround
+        public override bool OnGround
         {
             get
             {
@@ -175,25 +205,25 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private string _aircraftType;
-        public string AircraftType
+        private string _atcType;
+        public override string ATCType
         {
             get
             {
-                return _aircraftType;
+                return _atcType;
             }
         }
 
-        private string _aircraftModel;
-        public string AircraftModel
+        private string _atcModel;
+        public override string ATCModel
         {
             get
             {
-                return _aircraftModel;
+                return _atcModel;
             }
         }
 
-        public double Latitude
+        public override double Latitude
         {
             get
             {
@@ -201,7 +231,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double Longitude
+        public override double Longitude
         {
             get
             {
@@ -209,7 +239,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double AltitudeFeet
+        public override double AltitudeFeet
         {
             get
             {
@@ -239,7 +269,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public int AmbientWindSpeedKnots
+        public override double AmbientWindSpeedKnots
         {
             get
             {
@@ -247,7 +277,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double AmbientWindDirectionDegrees
+        public override double AmbientWindDirectionDegrees
         {
             get
             {
@@ -263,7 +293,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double AmbientTemperatureCelcius
+        public override double AmbientTemperatureCelcius
         {
             get
             {
@@ -295,7 +325,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double GPSRequiredTrueHeadingRadians
+        public override double GPSRequiredTrueHeadingRadians
         {
             get
             {
@@ -311,7 +341,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double GPSRequiredMagneticHeadingRadians
+        public override double GPSRequiredMagneticHeadingRadians
         {
             get
             {
@@ -329,7 +359,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double GPSCrossTrackErrorMeters
+        public override double GPSCrossTrackErrorMeters
         {
             get
             {
@@ -337,7 +367,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public bool HasActiveWaypoint
+        public override bool HasActiveWaypoint
         {
             get
             {
@@ -377,7 +407,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double KohlsmanInchesMercury
+        public override double KohlsmanInchesMercury
         {
             get
             {
@@ -469,24 +499,6 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private string _atcType;
-        public string ATCType
-        {
-            get
-            {
-                return _atcType;
-            }
-        }
-
-        private string _atcModel;
-        public string ATCModel
-        {
-            get
-            {
-                return _atcModel;
-            }
-        }
-
         public string ATCFlightNumber
         {
             get
@@ -495,7 +507,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public string ATCIdentifier
+        public override string ATCIdentifier
         {
             get
             {
@@ -519,7 +531,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double Nav1Radial
+        public override double Nav1Radial
         {
             get
             {
@@ -527,7 +539,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double Nav2Radial
+        public override double Nav2Radial
         {
             get
             {
@@ -663,7 +675,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public int AdfRelativeBearing
+        public override double AdfRelativeBearing
         {
             get
             {
@@ -759,7 +771,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public bool Nav1Available
+        public override bool Nav1Available
         {
             get
             {
@@ -767,7 +779,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public bool Nav2Available
+        public override bool Nav2Available
         {
             get
             {
@@ -775,7 +787,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public int HeadingBug
+        public override double HeadingBug
         {
             get
             {
@@ -861,24 +873,6 @@ namespace FIPToolKit.FlightSim
         private Offset<int> nav1Available = new Offset<int>(0x07A0);
         private Offset<int> nav2Available = new Offset<int>(0x07A4);
 
-        public delegate void FSUIPCEventHandler();
-        public event FSUIPCEventHandler OnConnected;
-
-        public delegate void FSUIPCQuitEventHandler();
-        public event FSUIPCQuitEventHandler OnQuit;
-
-        public delegate void FSUIPCTrafficEventHandler(string callsign, Aircraft aircraft, TrafficEvent eventType);
-        public event FSUIPCTrafficEventHandler OnTrafficReceived;
-
-        public delegate void FSUIPCFlightDataEventHandler();
-        public event FSUIPCFlightDataEventHandler OnFlightDataReceived;
-
-        public delegate void FSUIPCReadyEventHandler(ReadyToFly readyToFly);
-        public event FSUIPCReadyEventHandler OnReadyToFly;
-
-        public delegate void FSUIPCAircraftChangeEventHandler(int aircraftId);
-        public event FSUIPCAircraftChangeEventHandler OnAircraftChange;
-
         static FSUIPCProvider()
         {
             Instance = new FSUIPCProvider();
@@ -894,9 +888,9 @@ namespace FIPToolKit.FlightSim
             if (!initialized)
             {
                 initialized = true;
-                if (Traffic == null)
+                if (_traffic == null)
                 {
-                    Traffic = new Dictionary<string, Aircraft>();
+                    _traffic = new Dictionary<string, Aircraft>();
                 }
                 if (_timerConnection == null)
                 {
@@ -914,8 +908,8 @@ namespace FIPToolKit.FlightSim
                 try
                 {
                     FSUIPCConnection.Open();
-                    IsConnected = true;
-                    OnConnected?.Invoke();
+                    _isConnected = true;
+                    Connected();
                     _timerMain = new AbortableBackgroundWorker();
                     _timerMain.DoWork += ProcessMain;
                     _timerMain.RunWorkerAsync();
@@ -938,80 +932,85 @@ namespace FIPToolKit.FlightSim
                     double lng = Longitude;
                     FSUIPCConnection.Process();
                     GetAITraffic();
-                    double distance = FlightSim.Tools.DistanceTo(lat, lng, Latitude, Longitude);
+                    double distance = Tools.DistanceTo(lat, lng, Latitude, Longitude);
                     //Have we moved more than 500M in 1 millisecond?
                     if (readyToFly.ValueChanged || distance >= 500)
                     {
-                        OnReadyToFly?.Invoke(ReadyToFly);
+                        ReadyToFly(IsReadyToFly);
                     }
-                    if (String.IsNullOrEmpty(_aircraftModel) || aircraftModel.ValueChanged || !_atcModel.Equals(aircraftModel.Value))
+                    if (string.IsNullOrEmpty(_atcModel) || aircraftModel.ValueChanged || !_atcModel.Equals(aircraftModel.Value))
                     {
                         _atcModel = aircraftModel.Value;
                         _atcType = aircraftType.Value;
-                        AircraftData data = FlightSim.Tools.LoadAircraft(aircraftType.Value, aircraftModel.Value);
+                        AircraftData data = Tools.LoadAircraft(aircraftType.Value, aircraftModel.Value);
                         if (data != null)
                         {
-                            AircraftId = data.AircraftId;
-                            AircraftName = data.Name;
-                            _aircraftType = data.Type;
-                            _aircraftModel = data.Model;
+                            _aircraftId = data.AircraftId;
+                            _aircraftName = data.Name;
+                            _atcType = data.Type;
+                            _atcModel = data.Model;
                             _engineType = data.EngineType;
-                            IsHeavy = data.IsHeavy;
+                            _isHeavy = data.IsHeavy;
+                            _isHelo = data.IsHelo;
+                            AircraftChange(_aircraftId);
                         }
                         else
                         {
-                            AircraftId = 0;
-                            IsHeavy = false;
-                            AircraftName = title.Value;
+                            _aircraftId = 0;
+                            _isHeavy = false;
+                            _aircraftName = title.Value;
                             _engineType = (EngineType)engineType.Value;
-                            _aircraftType = aircraftType.Value;
+                            _isHelo = _engineType == EngineType.Helo;
+                            _atcType = aircraftType.Value;
                             try
                             {
                                 if (aircraftType.Value.Contains('\u005F'))
                                 {
-                                    _aircraftType = (aircraftType.Value.Split(new char[] { '\u005F' })[2].Split(new char[] { '.' })[0]);
+                                    _atcType = (aircraftType.Value.Split(new char[] { '\u005F' })[2].Split(new char[] { '.' })[0]);
                                 }
                                 else if (aircraftType.Value.Contains(' '))
                                 {
-                                    _aircraftType = (aircraftType.Value.Split(new char[] { ' ' })[1].Split(new char[] { '.' })[0]);
+                                    _atcType = (aircraftType.Value.Split(new char[] { ' ' })[1].Split(new char[] { '.' })[0]);
                                 }
                             }
                             catch
                             {
                             }
-                            _aircraftModel = aircraftModel.Value;
+                            _atcModel = aircraftModel.Value;
                             try
                             {
                                 if (aircraftModel.Value.Contains(' '))
                                 {
-                                    _aircraftModel = (aircraftModel.Value.Split(new char[] { '.' })[1].Split(new char[] { ' ' })[1]);
+                                    _atcModel = (aircraftModel.Value.Split(new char[] { '.' })[1].Split(new char[] { ' ' })[1]);
                                 }
                                 else if (aircraftModel.Value.Contains('_'))
                                 {
-                                    _aircraftModel = (aircraftModel.Value.Split(new char[] { '.' })[1].Split(new char[] { '\u005F' })[2]);
+                                    _atcModel = (aircraftModel.Value.Split(new char[] { '.' })[1].Split(new char[] { '\u005F' })[2]);
                                 }
                                 else if (aircraftModel.Value.Contains(':'))
                                 {
-                                    _aircraftModel = (aircraftModel.Value.Split(new char[] { ':' })[1]);
+                                    _atcModel = (aircraftModel.Value.Split(new char[] { ':' })[1]);
                                 }
                             }
                             catch
                             {
                             }
+                            AircraftChange(_aircraftId);
                         }
-                        OnReadyToFly?.Invoke(ReadyToFly);
+                        ReadyToFly(IsReadyToFly);
                     }
-                    OnFlightDataReceived?.Invoke();
+                    FlightDataReceived();
                     Thread.Sleep(1);
                 }
                 catch (Exception)
                 {
-                    IsConnected = false;
-                    _aircraftModel = string.Empty;
-                    _aircraftType = string.Empty;
+                    _isConnected = false;
+                    _atcModel = string.Empty;
+                    _atcType = string.Empty;
                     _engineType = EngineType.Piston;
-                    IsHeavy = false;
-                    OnQuit?.Invoke();
+                    _isHeavy = false;
+                    _isHelo = false;
+                    Quit();
                     if (_timerConnection != null && !_timerConnection.IsBusy)
                     {
                         _timerConnection.RunWorkerAsync();
@@ -1031,25 +1030,25 @@ namespace FIPToolKit.FlightSim
                     if (!Traffic.ContainsKey(plane.ATCIdentifier))
                     {
                         Aircraft aircraft = new Aircraft(plane);
-                        Traffic.Add(plane.ATCIdentifier, aircraft);
-                        OnTrafficReceived?.Invoke(plane.ATCIdentifier, aircraft, TrafficEvent.Add);
+                        _traffic.Add(plane.ATCIdentifier, aircraft);
+                        TrafficReceived(plane.ATCIdentifier, aircraft, TrafficEvent.Add);
                     }
                     else
                     {
-                        Traffic[plane.ATCIdentifier].UpdateAircraft(plane);
-                        OnTrafficReceived?.Invoke(plane.ATCIdentifier, Traffic[plane.ATCIdentifier], TrafficEvent.Update);
+                        _traffic[plane.ATCIdentifier].UpdateAircraft(plane);
+                        TrafficReceived(plane.ATCIdentifier, Traffic[plane.ATCIdentifier], TrafficEvent.Update);
                     }
                 }
-                catch(Exception)
+                catch (Exception)
                 {
 
                 }
             }
             List<Aircraft> aircraftToRemove = Traffic.Values.Where(a => !allPlanes.Any(p => p.ATCIdentifier == a.Callsign)).ToList();
-            foreach(Aircraft aircraft in aircraftToRemove)
+            foreach (Aircraft aircraft in aircraftToRemove)
             {
-                Traffic.Remove(aircraft.Callsign);
-                OnTrafficReceived?.Invoke(aircraft.Callsign, aircraft, TrafficEvent.Remove);
+                _traffic.Remove(aircraft.Callsign);
+                TrafficReceived(aircraft.Callsign, aircraft, TrafficEvent.Remove);
             }
         }
 
@@ -1080,7 +1079,7 @@ namespace FIPToolKit.FlightSim
                 _timerConnection = null;
             }
             FSUIPCConnection.Close();
-            IsConnected = false;
+            _isConnected = false;
             if (_timerMain != null)
             {
                 DateTime stopTime = DateTime.Now;
@@ -1104,7 +1103,31 @@ namespace FIPToolKit.FlightSim
                 _timerMain.Dispose();
                 _timerMain = null;
             }
-            OnQuit?.Invoke();
+            Quit();
+        }
+
+        public override void SendControlToFS(string control, int value)
+        {
+            FsControl fsControl = (FsControl)Enum.Parse(typeof(FsControl), control, true);
+            FSUIPCConnection.SendControlToFS(fsControl, value);
+        }
+
+        public override void SendSimControlToFS(string control, int value)
+        {
+            FSUIPCControl fsuipcControl = (FSUIPCControl)Enum.Parse(typeof(FSUIPCControl), control, true);
+            FSUIPCConnection.SendControlToFS(fsuipcControl, value);
+        }
+
+        public override void SendAutoPilotControlToFS(string control, int value)
+        {
+            FSUIPCAutoPilotControl autoPilotControl = (FSUIPCAutoPilotControl)Enum.Parse(typeof(FSUIPCAutoPilotControl), control, true);
+            FSUIPCConnection.SendControlToFS(autoPilotControl, value);
+        }
+
+        public override void SendAxisControlToFS(string control, int value)
+        {
+            FSUIPCAxisControl axisControl = (FSUIPCAxisControl)Enum.Parse(typeof(FSUIPCAxisControl), control, true);
+            FSUIPCConnection.SendControlToFS(axisControl, value);
         }
     }
 }

@@ -313,40 +313,25 @@ namespace FIPDisplayProfiler
                 leftToolStripMenuItem,
                 rightToolStripMenuItem
             });
-            FlightSimProviders.FIPSimConnect.OnConnected += SimConnect_OnConnected;
-            FlightSimProviders.FIPSimConnect.OnQuit += SimConnect_OnQuit;
-            FlightSimProviders.FIPSimConnect.OnSim += SimConnect_OnSim;
-            FlightSimProviders.FIPFSUIPC.OnConnected += FIPFSUIPCPage_OnConnected;
-            FlightSimProviders.FIPFSUIPC.OnQuit += FIPFSUIPCPage_OnQuit;
-            FlightSimProviders.FIPFSUIPC.OnReadyToFly += FIPFSUIPCPage_OnReadyToFly;
+            FlightSimProviders.SimConnect.OnConnected += FlightSimProviders_OnConnected;
+            FlightSimProviders.SimConnect.OnQuit += FlightSimProviders_OnQuit;
+            FlightSimProviders.SimConnect.OnReadyToFly += FlightSimProviders_OnReadyToFly;
+            FlightSimProviders.FSUIPC.OnConnected += FlightSimProviders_OnConnected;
+            FlightSimProviders.FSUIPC.OnQuit += FlightSimProviders_OnQuit;
+            FlightSimProviders.FSUIPC.OnReadyToFly += FlightSimProviders_OnReadyToFly;
         }
 
-        private void SimConnect_OnSim(bool isRunning)
+        private void FlightSimProviders_OnReadyToFly(FlightSimProviderBase flightSimProvider, ReadyToFly readyToFly)
         {
             UpdateLeds();
         }
 
-        private void FIPFSUIPCPage_OnReadyToFly(FIPToolKit.FlightSim.ReadyToFly readyToFly)
+        private void FlightSimProviders_OnQuit(FlightSimProviderBase flightSimProvider)
         {
             UpdateLeds();
         }
 
-        private void FIPFSUIPCPage_OnQuit()
-        {
-            UpdateLeds();
-        }
-
-        private void SimConnect_OnQuit()
-        {
-            UpdateLeds();
-        }
-
-        private void FIPFSUIPCPage_OnConnected()
-        {
-            UpdateLeds();
-        }
-
-        private void SimConnect_OnConnected()
+        private void FlightSimProviders_OnConnected(FlightSimProviderBase flightSimProvider)
         {
             UpdateLeds();
         }
@@ -934,25 +919,17 @@ namespace FIPDisplayProfiler
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
                             ((FIPVideoPlayer)page).OnSettingsUpdated += Page_OnSettingsUpdated;
-                            this.Invoke((Action)(() =>
+                            Invoke((Action)(() =>
                             {
                                 ((FIPVideoPlayer)page).UpdateSettings(index, dlg.VideoName, dlg.Filename, dlg.PlayerFont, dlg.SubtitleFont, dlg.FontColor, dlg.MaintainAspectRatio, dlg.PortraitMode, dlg.ShowControls, dlg.ResumePlayback, dlg.PauseOtherMedia);
                             }));
                         }
                     }
-                    else if (typeof(FIPSimConnectRadio).IsAssignableFrom(page.GetType()))
+                    else if (typeof(FIPRadioPlayer).IsAssignableFrom(page.GetType()))
                     {
                         RadioForm dlg = new RadioForm()
                         {
-                            Radio = ((FIPSimConnectRadio)page).Properties as FIPRadioProperties
-                        };
-                        dlg.ShowDialog(this);
-                    }
-                    else if (typeof(FIPFSUIPCRadio).IsAssignableFrom(page.GetType()))
-                    {
-                        RadioForm dlg = new RadioForm()
-                        {
-                            Radio = ((FIPFSUIPCRadio)page).Properties as FIPRadioProperties
+                            Radio = ((FIPRadioPlayer)page).Properties as FIPRadioProperties
                         };
                         dlg.ShowDialog(this);
                     }
@@ -992,11 +969,11 @@ namespace FIPDisplayProfiler
                             }
                         }
                     }
-                    else if (typeof(FIPFSUIPCAltimeter).IsAssignableFrom(page.GetType()))
+                    else if (typeof(FIPAltimeter).IsAssignableFrom(page.GetType()))
                     {
                         AltimeterForm dlg = new AltimeterForm()
                         {
-                            Altimeter = ((FIPFSUIPCAltimeter)page).Properties as FIPAltimeterProperties
+                            Altimeter = ((FIPAltimeter)page).Properties as FIPAltimeterProperties
                         };
                         if (dlg.ShowDialog(this) == DialogResult.OK)
                         {
@@ -1005,36 +982,15 @@ namespace FIPDisplayProfiler
                             lbPages.SelectedIndex = index;
                         }
                     }
-                    else if (typeof(FIPSimConnectAltimeter).IsAssignableFrom(page.GetType()))
-                    {
-                        AltimeterForm dlg = new AltimeterForm()
-                        {
-                            Altimeter = ((FIPSimConnectAltimeter)page).Properties as FIPAltimeterProperties
-                        };
-                        if (dlg.ShowDialog(this) == DialogResult.OK)
-                        {
-                            lbPages.DrawMode = DrawMode.OwnerDrawFixed;
-                            lbPages.DrawMode = DrawMode.Normal;
-                            lbPages.SelectedIndex = index;
-                        }
-                    }
-                    else if (typeof(FIPSimConnectAirspeed).IsAssignableFrom(page.GetType()))
+                    else if (typeof(FIPAirspeed).IsAssignableFrom(page.GetType()))
                     {
                         AirspeedForm dlg = new AirspeedForm()
                         {
-                            AirspeedGauge = ((FIPSimConnectAirspeed)page).Properties as FIPAirspeedProperties
+                            AirspeedGauge = ((FIPAirspeed)page).Properties as FIPAirspeedProperties
                         };
                         dlg.ShowDialog(this);
                     }
-                    else if (typeof(FIPSimConnectAirspeed).IsAssignableFrom(page.GetType()))
-                    {
-                        AirspeedForm dlg = new AirspeedForm()
-                        {
-                            AirspeedGauge = ((FIPSimConnectAirspeed)page).Properties as FIPAirspeedProperties
-                        };
-                        dlg.ShowDialog(this);
-                    }
-                    else if (typeof(FIPSimConnectAnalogGauge).IsAssignableFrom(page.GetType()))
+                    else if (typeof(FIPAnalogGauge).IsAssignableFrom(page.GetType()))
                     {
                         AnalogGaugeForm dlg = new AnalogGaugeForm()
                         {
@@ -1042,35 +998,11 @@ namespace FIPDisplayProfiler
                         };
                         dlg.ShowDialog(this);
                     }
-                    else if (typeof(FIPFSUIPCAirspeed).IsAssignableFrom(page.GetType()))
-                    {
-                        AirspeedForm dlg = new AirspeedForm()
-                        {
-                            AirspeedGauge = ((FIPFSUIPCAirspeed)page).Properties as FIPAirspeedProperties
-                        };
-                        dlg.ShowDialog(this);
-                    }
-                    else if (typeof(FIPFSUIPCAnalogGauge).IsAssignableFrom(page.GetType()))
-                    {
-                        AnalogGaugeForm dlg = new AnalogGaugeForm()
-                        {
-                            AnalogGauge = new FIPAnalogGaugeProperties()
-                        };
-                        dlg.ShowDialog(this);
-                    }
-                    else if (typeof(FIPSimConnectMap).IsAssignableFrom(page.GetType()))
+                    else if (typeof(FIPMap).IsAssignableFrom(page.GetType()))
                     {
                         SimConnectMapForm dlg = new SimConnectMapForm()
                         {
-                            SimMap = ((FIPSimConnectMap)page).Properties as FIPMapProperties
-                        };
-                        dlg.ShowDialog(this);
-                    }
-                    else if (typeof(FIPFSUIPCMap).IsAssignableFrom(page.GetType()))
-                    {
-                        FSUIPCMapForm dlg = new FSUIPCMapForm()
-                        {
-                            FSUIPCMap = ((FIPFSUIPCMap)page).Properties as FIPMapProperties
+                            SimMap = ((FIPMap)page).Properties as FIPMapProperties
                         };
                         dlg.ShowDialog(this);
                     }
@@ -1233,7 +1165,7 @@ namespace FIPDisplayProfiler
                             keySequenceToolStripMenuItem.Visible = false;
                             FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
                         }
-                        else if (typeof(FIPFSUIPCCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                        else if (typeof(FIPCommandSequenceButton).IsAssignableFrom(button.GetType()))
                         {
                             windowsCommandStripMenuItem.Visible = false;
                             oSCommandToolStripMenuItem.Visible = false;
@@ -1434,9 +1366,9 @@ namespace FIPDisplayProfiler
                 bool newButton = false;
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
                 FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
-                if (button == null || !typeof(FIPFSUIPCCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                if (button == null || !typeof(FIPCommandSequenceButton).IsAssignableFrom(button.GetType()))
                 {
-                    button = new FIPFSUIPCCommandSequenceButton()
+                    button = new FIPCommandSequenceButton()
                     {
                         Font = selectedPage.Properties.Font,
                         Color = selectedPage.Properties.FontColor,
@@ -1447,7 +1379,7 @@ namespace FIPDisplayProfiler
                 }
                 FSUIPCCommandSequenceDlg dlg = new FSUIPCCommandSequenceDlg()
                 {
-                    Button = button as FIPFSUIPCCommandSequenceButton
+                    Button = button as FIPCommandSequenceButton
                 };
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                 {

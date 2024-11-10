@@ -8,7 +8,7 @@ namespace FIPToolKit.FlightSim
 {
     public class FlightSimProviders
     {
-        public static readonly SimConnectProvider FIPSimConnect = SimConnectProvider.Instance;
-        public static readonly FSUIPCProvider FIPFSUIPC = FSUIPCProvider.Instance;
+        public static readonly SimConnectProvider SimConnect = SimConnectProvider.Instance;
+        public static readonly FSUIPCProvider FSUIPC = FSUIPCProvider.Instance;
     }
 }

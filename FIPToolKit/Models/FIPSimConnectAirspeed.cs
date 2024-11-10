@@ -1,6 +1,5 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.FlightSim;
-using Newtonsoft.Json;
 using Saitek.DirectOutput;
 using System;
 using System.Collections.Generic;
@@ -8,10 +7,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {

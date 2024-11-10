@@ -31,6 +31,7 @@ namespace FIPDisplayProfiler
             MusicPlayer.Path = tbPath.Text;
             MusicPlayer.AutoPlay = cbAutoPlay.Checked;
             MusicPlayer.Resume = cbResume.Checked;
+            MusicPlayer.PauseOtherMedia = cbPauseOtherMedia.Checked;
             MusicPlayer.RadioDistance = rbAny.Checked ? RadioDistance.Any : rb50.Checked ? RadioDistance.NM50 : rb100.Checked ? RadioDistance.NM100 : rb250.Checked ? RadioDistance.NM500 : RadioDistance.NM500;
             MusicPlayer.IsDirty = true;
             DialogResult = DialogResult.OK;
@@ -76,6 +77,7 @@ namespace FIPDisplayProfiler
             tbPath.Text = MusicPlayer.Path;
             cbAutoPlay.Checked = MusicPlayer.AutoPlay;
             cbResume.Checked = MusicPlayer.Resume;
+            cbPauseOtherMedia.Checked = MusicPlayer.PauseOtherMedia;
             btnFontColor.BackColor = MusicPlayer.FontColor;
             btnOK.Enabled = !string.IsNullOrEmpty(tbPath.Text);
         }

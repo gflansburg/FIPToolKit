@@ -1,32 +1,18 @@
-﻿using FIPToolKit.Drawing;
-using FIPToolKit.FlightSim;
+﻿using FIPToolKit.FlightSim;
 using FIPToolKit.Tools;
-using LibVLCSharp.Shared;
-using Microsoft.Web.WebView2.Core;
-using Newtonsoft.Json;
-using RestSharp;
-using Saitek.DirectOutput;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Threading;
-using System.Web;
 
 namespace FIPToolKit.Models
 {
     public class FIPFSUIPCRadio : FIPRadioPlayer, IFIPFSUIPC
     {
-        public FIPFSUIPC FIPFSUIPC { get; set; } = new FIPFSUIPC();
+        public FSUIPCProvider FIPFSUIPC => FlightSimProviders.FIPFSUIPC;
 
         public FIPFSUIPCRadio(FIPRadioProperties properties) : base(properties) 
         {
             properties.ControlType = GetType().FullName;
-            properties.Name = "Radio (FSUIPC)";
+            properties.Name = "FSUIPC Radio";
             properties.IsDirty = false;
+            CanPlayFirstSong = FIPFSUIPC.IsConnected;
             FIPFSUIPC.OnFlightDataReceived += FIPFSUIPCMap_OnFlightDataReceived;
             FIPFSUIPC.OnConnected += FIPFSUIPC_OnConnected;
         }

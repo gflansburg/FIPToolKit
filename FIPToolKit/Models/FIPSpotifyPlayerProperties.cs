@@ -1,14 +1,7 @@
 ﻿using FIPToolKit.Drawing;
-using FIPToolKit.Models;
-using FIPToolKit.Tools;
-using SpotifyAPI.Web;
 using SpotifyAPI.Web.Models;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FIPToolKit.Models
 {
@@ -18,6 +11,8 @@ namespace FIPToolKit.Models
         public event EventHandler OnTokenExpired;
         public event EventHandler OnTokenChanged;
         public event EventHandler OnTokenCleared;
+        public event EventHandler OnVolumeChanged;
+        public event EventHandler OnMuteChanged;
 
         public FIPSpotifyPlayerProperties() : base()
         {
@@ -27,6 +22,59 @@ namespace FIPToolKit.Models
             FontColor = Color.White;
             _playList = new FIPPlayList();
             IsDirty = false;
+        }
+
+        private int _volume = 100;
+        public int Volume
+        {
+            get
+            {
+                return _volume;
+            }
+            set
+            {
+                if (_volume != value)
+                {
+                    SetVolume(value);
+                    OnVolumeChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public void SetVolume(int volume)
+        {
+            if (_volume != volume)
+            {
+                _volume = volume;
+                IsDirty = true;
+            }
+        }
+
+        private bool _mute = false;
+        public bool Mute
+        {
+            get
+            {
+                return _mute;
+            }
+            set
+            {
+                if (_mute != value)
+                {
+                    _mute = value;
+                    IsDirty = true;
+                    OnMuteChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        public void SetMute(bool mute)
+        {
+            if (_mute != mute)
+            {
+                _mute = mute;
+                IsDirty = true;
+            }
         }
 
         private FIPPlayList _playList;
@@ -121,6 +169,23 @@ namespace FIPToolKit.Models
                 if (!_artistFont.FontFamily.Name.Equals(value.FontFamily.Name, StringComparison.OrdinalIgnoreCase) || _artistFont.Size != value.Size || _artistFont.Bold != value.Bold || _artistFont.Italic != value.Italic || _artistFont.Strikeout != value.Strikeout || _artistFont.Underline != value.Underline || _artistFont.Unit != value.Unit || _artistFont.GdiCharSet != value.GdiCharSet)
                 {
                     _artistFont = value;
+                    IsDirty = true;
+                }
+            }
+        }
+
+        private bool _pauseOtherMedia = true;
+        public bool PauseOtherMedia
+        {
+            get
+            {
+                return _pauseOtherMedia;
+            }
+            set
+            {
+                if (_pauseOtherMedia != value)
+                {
+                    _pauseOtherMedia = value;
                     IsDirty = true;
                 }
             }

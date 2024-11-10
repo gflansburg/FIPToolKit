@@ -1,30 +1,22 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.FlightSim;
-using FIPToolKit.Threading;
-using Newtonsoft.Json;
 using Nito.AsyncEx;
-using Saitek.DirectOutput;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
     public abstract class FIPSimConnectAnalogGauge : FIPPage, IFIPSimConnect
     {
+        public SimConnectProvider FIPSimConnect => FlightSimProviders.FIPSimConnect;
+
         protected Bitmap gauge;
         protected AsyncLock _lock = new AsyncLock();
 
         public FIPSimConnectAnalogGauge(FIPAnalogGaugeProperties properties) : base(properties)
         {
-            FIPSimConnect = new FIPSimConnect();
             FIPSimConnect.OnSim += SimConnect_OnSim;
             FIPSimConnect.OnQuit += SimConnect_OnQuit;
             FIPSimConnect.OnSetLeds += SimConnect_OnSetLeds;
@@ -56,8 +48,6 @@ namespace FIPToolKit.Models
                 return Properties as FIPAnalogGaugeProperties;
             }
         }
-
-        public FIPSimConnect FIPSimConnect { get; set; }
 
         private void Properties_OnUpdateGauge(object sender, EventArgs e)
         {

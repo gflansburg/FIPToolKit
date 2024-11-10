@@ -133,7 +133,7 @@ namespace FIPToolKit.FlightSim
             AmbientTemperatureCelcius = (int)flightData.AMBIENT_TEMPERATURE;
             AmbientWindDirectionDegrees = flightData.AMBIENT_WIND_DIRECTION;
             AmbientWindSpeedKnots = flightData.AMBIENT_WIND_VELOCITY;
-            KollsmanInchesMercury = flightData.KOLLSMAN_SETTING_HG;
+            KollsmanInchesMercury = flightData.KOHLSMAN_SETTING_HG;
             GPSRequiredMagneticHeadingRadians = flightData.GPS_WP_BEARING;
             GPSRequiredTrueHeadingRadians = flightData.GPS_WP_TRUE_REQ_HDG;
             HasActiveWaypoint = Convert.ToBoolean(flightData.GPS_IS_ACTIVE_WAY_POINT);
@@ -222,7 +222,7 @@ namespace FIPToolKit.FlightSim
             AmbientTemperatureCelcius = (int)flightData.AMBIENT_TEMPERATURE;
             AmbientWindDirectionDegrees = flightData.AMBIENT_WIND_DIRECTION;
             AmbientWindSpeedKnots = flightData.AMBIENT_WIND_VELOCITY;
-            KollsmanInchesMercury = flightData.KOLLSMAN_SETTING_HG;
+            KollsmanInchesMercury = flightData.KOHLSMAN_SETTING_HG;
             GPSRequiredMagneticHeadingRadians = flightData.GPS_WP_BEARING;
             GPSRequiredTrueHeadingRadians = flightData.GPS_WP_TRUE_REQ_HDG;
             HasActiveWaypoint = Convert.ToBoolean(flightData.GPS_IS_ACTIVE_WAY_POINT);

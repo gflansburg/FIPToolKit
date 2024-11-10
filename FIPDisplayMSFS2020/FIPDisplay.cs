@@ -12,16 +12,17 @@ using System.Text;
 using System.Windows.Forms;
 using FIPToolKit.FlightSim;
 using Microsoft.Web.WebView2.Core;
-using SpotifyAPI.Web.Models;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Xml.Linq;
+using System.Drawing;
 
 namespace FIPDisplayMSFS2020
 {
     public partial class FIPDisplay : Form
     {
         private FIPEngine Engine;
+
+        private delegate Bitmap BitmapDelegate();
+        public GMap.NET.WindowsForms.GMapControl Map { get; set; }
 
         //private const int WM_MY_CLOSE = (0x400 + 1000);
 
@@ -324,7 +325,7 @@ namespace FIPDisplayMSFS2020
         private async void LaunchPanels()
         {
             await InitializeWebView2Async();
-            FIPSimConnect.MainWindowHandle = this.Handle;
+            FlightSimProviders.FIPSimConnect.MainWindowHandle = this.Handle;
             FIPButton.KeyAPIMode = KeyAPIModes.FSUIPC;
             Engine = new FIPEngine();
             Engine.OnPageChanged += Engine_OnPageChanged;
@@ -415,58 +416,137 @@ namespace FIPDisplayMSFS2020
         private void Device_OnPageAdded(object sender, FIPDeviceEventArgs e)
         {
             e.Page.OnSettingsChanged += Page_OnSettingsChanged;
-            if (e.Page.GetType() == typeof(FIPSpotifyPlayer))
+            if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
             {
                 ((FIPSpotifyPlayer)e.Page).OnBeginAuthentication += SpotifyPlayer_OnBeginAuthentication;
                 ((FIPSpotifyPlayer)e.Page).OnCanPlay += Player_OnCanPlay;
+                ((FIPSpotifyPlayer)e.Page).OnActive += Player_OnActive;
+                ((FIPSpotifyPlayer)e.Page).OnInactive += Player_OnInactive;
             }
-            else if (e.Page.GetType() == typeof(FIPMusicPlayer))
+            else if (typeof(FIPMusicPlayer).IsAssignableFrom(e.Page.GetType()))
             {
                 ((FIPMusicPlayer)e.Page).OnCanPlay += Player_OnCanPlay;
                 ((FIPMusicPlayer)e.Page).OnVolumeChanged += MusicPlayer_OnVolumeChanged;
                 ((FIPMusicPlayer)e.Page).OnMuteChanged += MusicPlayer_OnMuteChanged;
+                ((FIPMusicPlayer)e.Page).Volume = GetInitialVolume(((FIPMusicPlayer)e.Page).Volume);
+                ((FIPMusicPlayer)e.Page).Mute = GetInitialMute(((FIPMusicPlayer)e.Page).Mute);
+                ((FIPMusicPlayer)e.Page).OnActive += Player_OnActive;
+                ((FIPMusicPlayer)e.Page).OnInactive += Player_OnInactive;
                 ((FIPMusicPlayer)e.Page).Init();
             }
-            else if (e.Page.GetType() == typeof(FIPVideoPlayer))
+            else if (typeof(FIPVideoPlayer).IsAssignableFrom(e.Page.GetType()))
             {
-                ((FIPVideoPlayer)e.Page).OnActive += VideoPlayer_OnActive;
-                ((FIPVideoPlayer)e.Page).OnInactive += VideoPlayer_OnInactive;
+                ((FIPVideoPlayer)e.Page).OnActive += Player_OnActive;
+                ((FIPVideoPlayer)e.Page).OnInactive += Player_OnInactive;
                 ((FIPVideoPlayer)e.Page).OnVolumeChanged += VideoPlayer_OnVolumeChanged;
                 ((FIPVideoPlayer)e.Page).OnMuteChanged += VideoPlayer_OnMuteChanged;
+                ((FIPVideoPlayer)e.Page).Volume = GetInitialVolume(((FIPVideoPlayer)e.Page).Volume);
+                ((FIPVideoPlayer)e.Page).Mute = GetInitialMute(((FIPVideoPlayer)e.Page).Mute);
+            }
+            else if (typeof(FIPMap).IsAssignableFrom(e.Page.GetType()))
+            {
+                ((FIPMap)e.Page).OnInitMap += Map_OnInitMap;
+                ((FIPMap)e.Page).OnGetMapBitmap += Map_OnGetMapBitmap;
             }
         }
 
-        private void VideoPlayer_OnInactive(object sender, FIPPageEventArgs e)
+        private void Map_OnGetMapBitmap(object sender, ref Bitmap bmp)
+        {
+            bmp = GetMapBitmap();
+        }
+
+        private void Map_OnInitMap(object sender, ref GMap.NET.WindowsForms.GMapControl map, int width, int height)
+        {
+            if (map == null)
+            {
+                map = new GMap.NET.WindowsForms.GMapControl()
+                {
+                    Bearing = 0f,
+                    CanDragMap = true,
+                    ForceDoubleBuffer = true,
+                    EmptyTileColor = Color.AliceBlue,
+                    GrayScaleMode = false,
+                    HelperLineOption = GMap.NET.WindowsForms.HelperLineOptions.DontShow,
+                    LevelsKeepInMemory = 5,
+                    Location = new Point(0, 0),
+                    MapProvider = GMap.NET.MapProviders.OpenStreetMapProvider2.Instance,
+                    MarkersEnabled = true,
+                    MaxZoom = 18,
+                    MinZoom = 2,
+                    MouseWheelZoomEnabled = true,
+                    NegativeMode = false,
+                    PolygonsEnabled = true,
+                    Position = new GMap.NET.PointLatLng(0, 0),
+                    RetryLoadTile = 0,
+                    RoutesEnabled = true,
+                    ScaleMode = GMap.NET.WindowsForms.ScaleModes.Integer,
+                    SelectedAreaFillColor = Color.FromArgb(33, 65, 105, 225),
+                    ShowTileGridLines = false,
+                    ShowCenter = false,
+                    Size = new Size(width, height),
+                    DragButton = MouseButtons.Left,
+                    MouseWheelZoomType = GMap.NET.MouseWheelZoomType.MousePositionAndCenter
+                };
+                Map = map;
+            }
+        }
+
+        public Bitmap GetMapBitmap()
+        {
+            if (Map != null)
+            {
+                if (InvokeRequired)
+                {
+                    return (Bitmap)Invoke(new BitmapDelegate(GetMapBitmap), new object[] { });
+                }
+                else
+                {
+                    Bitmap map = new Bitmap(Map.Size.Width, Map.Size.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                    Rectangle mapRect = new Rectangle(0, 0, Map.Size.Width, Map.Size.Height);
+                    Map.DrawToBitmap(map, mapRect);
+                    return map;
+                }
+            }
+            return null;
+        }
+
+        private void Player_OnInactive(object sender, FIPPageEventArgs e)
         {
             foreach (FIPDevice device in Engine.Devices)
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPSpotifyPlayer))
+                    if (page != e.Page)
                     {
-                        ((FIPSpotifyPlayer)page).ExternalResume();
-                    }
-                    else if (page.GetType() == typeof(FIPMusicPlayer))
-                    {
-                        ((FIPMusicPlayer)page).ExternalResume();
+                        if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            ((FIPSpotifyPlayer)page).ExternalResume();
+                        }
+                        else if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            ((FIPMusicPlayer)page).ExternalResume();
+                        }
                     }
                 }
             }
         }
 
-        private void VideoPlayer_OnActive(object sender, FIPPageEventArgs e)
+        private void Player_OnActive(object sender, FIPPageEventArgs e)
         {
             foreach (FIPDevice device in Engine.Devices)
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPSpotifyPlayer))
+                    if (page != e.Page)
                     {
-                        ((FIPSpotifyPlayer)page).ExternalPause();
-                    }
-                    else if (page.GetType() == typeof(FIPMusicPlayer))
-                    {
-                        ((FIPMusicPlayer)page).ExternalPause();
+                        if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            ((FIPSpotifyPlayer)page).ExternalPause();
+                        }
+                        else if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            ((FIPMusicPlayer)page).ExternalPause();
+                        }
                     }
                 }
             }
@@ -478,13 +558,17 @@ namespace FIPDisplayMSFS2020
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPVideoPlayer))
+                    if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()))
                     {
-                        e.CanPlay = ((FIPVideoPlayer)page).CanPlayOther;
-                        if (!e.CanPlay)
-                        {
-                            break;
-                        }
+                        e.CanPlay = !((FIPVideoPlayer)page).CanPlayOther ? false : e.CanPlay;
+                    }
+                    else if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        e.CanPlay = !((FIPMusicPlayer)page).CanPlayOther ? false : e.CanPlay;
+                    }
+                    else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        e.CanPlay = !((FIPSpotifyPlayer)page).CanPlayOther ? false : e.CanPlay;
                     }
                 }
             }
@@ -715,8 +799,8 @@ namespace FIPDisplayMSFS2020
                 }
                 Engine.Dispose();
                 Engine = null;
-                FIPSimConnect.Deinitialize();
-                FIPFSUIPC.Deinitialize();
+                FlightSimProviders.FIPSimConnect.Deinitialize();
+                FlightSimProviders.FIPFSUIPC.Deinitialize();
             }
             FIPFlightShare.CloseFlightShare();
         }
@@ -767,9 +851,9 @@ namespace FIPDisplayMSFS2020
 
         protected override void WndProc(ref Message m)
         {
-            if (m.Msg == FIPToolKit.FlightSim.SimConnect.WM_USER_SIMCONNECT)
+            if (m.Msg == SimConnect.WM_USER_SIMCONNECT)
             {
-                FIPSimConnect.ReceiveMessage();
+                FlightSimProviders.FIPSimConnect.ReceiveMessage();
                 return;
             }
             else if (m.Msg == NativeMethods.WM_CLOSE)
@@ -801,8 +885,8 @@ namespace FIPDisplayMSFS2020
                     }
                     Engine.Dispose();
                     Engine = null;
-                    FIPSimConnect.Deinitialize();
-                    FIPFSUIPC.Deinitialize();
+                    FlightSimProviders.FIPSimConnect.Deinitialize();
+                    FlightSimProviders.FIPFSUIPC.Deinitialize();
                 }
                 FIPFlightShare.CloseFlightShare();
             }
@@ -863,7 +947,7 @@ namespace FIPDisplayMSFS2020
                 {
                     foreach (FIPPage page in device.Pages)
                     {
-                        if (page.GetType() == typeof(FIPSpotifyPlayer))
+                        if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
                         {
                             if (((FIPSpotifyPlayer)page).IsAuthenticating)
                             {
@@ -886,7 +970,7 @@ namespace FIPDisplayMSFS2020
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPSpotifyPlayer))
+                    if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
                     {
                         if (!WebViewShowTimes.ContainsKey(device.SerialNumber))
                         {
@@ -947,11 +1031,11 @@ namespace FIPDisplayMSFS2020
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()) && page != sender)
                     {
                         ((FIPMusicPlayer)page).Mute = ((FIPVideoPlayer)e.Page).Mute;
                     }
-                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
+                    else if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()) && page != sender)
                     {
                         ((FIPVideoPlayer)page).Mute = ((FIPVideoPlayer)e.Page).Mute;
                     }
@@ -965,11 +1049,11 @@ namespace FIPDisplayMSFS2020
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()) && page != sender)
                     {
                         ((FIPMusicPlayer)page).Volume = ((FIPVideoPlayer)e.Page).Volume;
                     }
-                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
+                    else if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()) && page != sender)
                     {
                         ((FIPVideoPlayer)page).Volume = ((FIPVideoPlayer)e.Page).Volume;
                     }
@@ -983,13 +1067,53 @@ namespace FIPDisplayMSFS2020
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    if (e.Page != page)
                     {
-                        ((FIPMusicPlayer)page).Mute = ((FIPMusicPlayer)e.Page).Mute;
-                    }
-                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
-                    {
-                        ((FIPVideoPlayer)page).Mute = ((FIPMusicPlayer)e.Page).Mute;
+                        if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            if (typeof(FIPVideoPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPVideoPlayer)page).Mute = ((FIPVideoPlayer)e.Page).Mute;
+                            }
+                            else if (typeof(FIPMusicPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPVideoPlayer)page).Mute = ((FIPMusicPlayer)e.Page).Mute;
+                            }
+                            else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPVideoPlayer)page).Mute = ((FIPSpotifyPlayer)e.Page).Mute;
+                            }
+                        }
+                        else if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            if (typeof(FIPVideoPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPMusicPlayer)page).Mute = ((FIPVideoPlayer)e.Page).Mute;
+                            }
+                            else if (typeof(FIPMusicPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPMusicPlayer)page).Mute = ((FIPMusicPlayer)e.Page).Mute;
+                            }
+                            else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPMusicPlayer)page).Mute = ((FIPSpotifyPlayer)e.Page).Mute;
+                            }
+                        }
+                        else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            if (typeof(FIPVideoPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPSpotifyPlayer)page).Mute = ((FIPVideoPlayer)e.Page).Mute;
+                            }
+                            else if (typeof(FIPMusicPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPSpotifyPlayer)page).Mute = ((FIPMusicPlayer)e.Page).Mute;
+                            }
+                            else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPSpotifyPlayer)page).Mute = ((FIPSpotifyPlayer)e.Page).Mute;
+                            }
+                        }
                     }
                 }
             }
@@ -1001,16 +1125,102 @@ namespace FIPDisplayMSFS2020
             {
                 foreach (FIPPage page in device.Pages)
                 {
-                    if (page.GetType() == typeof(FIPMusicPlayer) && page != sender)
+                    if (e.Page != page)
                     {
-                        ((FIPMusicPlayer)page).Volume = ((FIPMusicPlayer)e.Page).Volume;
-                    }
-                    else if (page.GetType() == typeof(FIPVideoPlayer) && page != sender)
-                    {
-                        ((FIPVideoPlayer)page).Volume = ((FIPMusicPlayer)e.Page).Volume;
+                        if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            if (typeof(FIPVideoPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPVideoPlayer)page).Volume = ((FIPVideoPlayer)e.Page).Volume;
+                            }
+                            else if (typeof(FIPMusicPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPVideoPlayer)page).Volume = ((FIPMusicPlayer)e.Page).Volume;
+                            }
+                            else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPVideoPlayer)page).Volume = ((FIPSpotifyPlayer)e.Page).Volume;
+                            }
+                        }
+                        else if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                        {
+                            if (typeof(FIPVideoPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPMusicPlayer)page).Volume = ((FIPVideoPlayer)e.Page).Volume;
+                            }
+                            else if (typeof(FIPMusicPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPMusicPlayer)page).Volume = ((FIPMusicPlayer)e.Page).Volume;
+                            }
+                            else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPMusicPlayer)page).Volume = ((FIPSpotifyPlayer)e.Page).Volume;
+                            }
+                        }
+                        else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
+                        {
+                            if (typeof(FIPVideoPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPSpotifyPlayer)page).Volume = ((FIPVideoPlayer)e.Page).Volume;
+                            }
+                            else if (typeof(FIPMusicPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPSpotifyPlayer)page).Volume = ((FIPMusicPlayer)e.Page).Volume;
+                            }
+                            else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
+                            {
+                                ((FIPSpotifyPlayer)page).Volume = ((FIPSpotifyPlayer)e.Page).Volume;
+                            }
+                        }
                     }
                 }
             }
+        }
+
+        private int GetInitialVolume(int volume)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPPage page in device.Pages)
+                {
+                    if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        volume = Math.Min(((FIPMusicPlayer)page).Volume, volume);
+                    }
+                    else if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        volume = Math.Min(((FIPVideoPlayer)page).Volume, volume);
+                    }
+                    else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        volume = Math.Min(((FIPSpotifyPlayer)page).Volume, volume);
+                    }
+                }
+            }
+            return volume;
+        }
+
+        private bool GetInitialMute(bool mute)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPPage page in device.Pages)
+                {
+                    if (typeof(FIPMusicPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        mute = ((FIPMusicPlayer)page).Mute ? true : mute;
+                    }
+                    else if (typeof(FIPVideoPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        mute = ((FIPVideoPlayer)page).Mute ? true : mute;
+                    }
+                    else if (typeof(FIPSpotifyPlayer).IsAssignableFrom(page.GetType()))
+                    {
+                        mute = ((FIPSpotifyPlayer)page).Mute ? true : mute;
+                    }
+                }
+            }
+            return mute;
         }
     }
 }

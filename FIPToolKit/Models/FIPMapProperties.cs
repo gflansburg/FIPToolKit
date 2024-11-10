@@ -1,12 +1,7 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.FlightSim;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unosquare.Labs.EmbedIO;
 
 namespace FIPToolKit.Models
 {
@@ -26,7 +21,7 @@ namespace FIPToolKit.Models
             _mapType = FlightSim.MapType.Normal;
             _maxAIAircraft = 100;
             _maxMPAircraft = 100;
-            _searchRadius = SimConnect.SearchRadius = 200000;
+            _searchRadius = SimConnect.Instance.SearchRadius = 200000;
             OverlayColor = Color.Black;
             _showTrack = true;
             _showTraffic = true;
@@ -256,7 +251,7 @@ namespace FIPToolKit.Models
                 if (_searchRadius != value)
                 {
                     _searchRadius = value;
-                    SimConnect.SearchRadius = _searchRadius;
+                    SimConnect.Instance.SearchRadius = _searchRadius;
                     IsDirty = true;
                 }
             }

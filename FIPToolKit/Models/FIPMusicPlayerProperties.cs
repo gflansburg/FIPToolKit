@@ -1,15 +1,6 @@
 ﻿using FIPToolKit.Drawing;
-using LibVLCSharp.Shared;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Unosquare.Swan;
 
 namespace FIPToolKit.Models
 {
@@ -256,6 +247,23 @@ namespace FIPToolKit.Models
             {
                 _mute = mute;
                 IsDirty = true;
+            }
+        }
+
+        private bool _pauseOtherMedia = true;
+        public bool PauseOtherMedia
+        {
+            get
+            {
+                return _pauseOtherMedia;
+            }
+            set
+            {
+                if (_pauseOtherMedia != value)
+                {
+                    _pauseOtherMedia = value;
+                    IsDirty = true;
+                }
             }
         }
     }

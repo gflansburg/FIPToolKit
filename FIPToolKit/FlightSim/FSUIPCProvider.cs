@@ -14,15 +14,15 @@ using FSUIPC;
 using FIPToolKit.Threading;
 using FIPToolKit.FlightSim;
 
-namespace FIPToolKit.Models
+namespace FIPToolKit.FlightSim
 {
-    public class FIPFSUIPC
+    public class FSUIPCProvider
     {
-        private static int _aircraftId = 0;
+        public static readonly FSUIPCProvider Instance;
+
+        private int _aircraftId = 0;
         
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int AircraftId 
+        public int AircraftId 
         { 
             get
             {
@@ -38,21 +38,13 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool IsConnected { get; private set; }
+        public bool IsConnected { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static Dictionary<string, Aircraft> Traffic { get; private set; }
+        public Dictionary<string, Aircraft> Traffic { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string AircraftName { get; private set; }
+        public string AircraftName { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool IsFloatPlane
+        public bool IsFloatPlane
         {
             get
             {
@@ -67,9 +59,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool IsSkiPlane
+        public bool IsSkiPlane
         {
             get
             {
@@ -77,9 +67,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool IsSkidPlane
+        public bool IsSkidPlane
         {
             get
             {
@@ -87,9 +75,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static ReadyToFly ReadyToFly
+        public ReadyToFly ReadyToFly
         {
             get
             {
@@ -98,10 +84,8 @@ namespace FIPToolKit.Models
         }
 
 
-        private static EngineType _engineType;
-        [XmlIgnore]
-        [JsonIgnore]
-        public static EngineType EngineType
+        private EngineType _engineType;
+        public EngineType EngineType
         {
             get
             {
@@ -109,13 +93,9 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool IsHeavy { get; private set; }
+        public bool IsHeavy { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AirSpeedBarberPoleKnots
+        public double AirSpeedBarberPoleKnots
         {
             get
             {
@@ -123,9 +103,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AirSpeedIndicatedKnots
+        public double AirSpeedIndicatedKnots
         {
             get
             {
@@ -133,9 +111,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AirSpeedTrueKnots
+        public double AirSpeedTrueKnots
         {
             get
             {
@@ -143,9 +119,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double GroundSpeedKnots
+        public double GroundSpeedKnots
         {
             get
             {
@@ -153,9 +127,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double VerticalSpeedFeetPerSec
+        public double VerticalSpeedFeetPerSec
         {
             get
             {
@@ -163,9 +135,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double HeadingMagneticDegrees
+        public double HeadingMagneticDegrees
         {
             get
             {
@@ -173,9 +143,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double HeadingTrueDegrees
+        public double HeadingTrueDegrees
         {
             get
             {
@@ -183,9 +151,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double HeadingMagneticRadians
+        public double HeadingMagneticRadians
         {
             get
             {
@@ -193,9 +159,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double HeadingTrueRadians
+        public double HeadingTrueRadians
         {
             get
             {
@@ -203,9 +167,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool OnGround
+        public bool OnGround
         {
             get
             {
@@ -213,10 +175,8 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static string _aircraftType;
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string AircraftType
+        private string _aircraftType;
+        public string AircraftType
         {
             get
             {
@@ -224,10 +184,8 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static string _aircraftModel;
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string AircraftModel
+        private string _aircraftModel;
+        public string AircraftModel
         {
             get
             {
@@ -235,9 +193,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Latitude
+        public double Latitude
         {
             get
             {
@@ -245,9 +201,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Longitude
+        public double Longitude
         {
             get
             {
@@ -255,9 +209,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AltitudeFeet
+        public double AltitudeFeet
         {
             get
             {
@@ -272,9 +224,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AltitudeMeters
+        public double AltitudeMeters
         {
             get
             {
@@ -289,9 +239,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int AmbientWindSpeedKnots
+        public int AmbientWindSpeedKnots
         {
             get
             {
@@ -299,9 +247,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AmbientWindDirectionDegrees
+        public double AmbientWindDirectionDegrees
         {
             get
             {
@@ -309,9 +255,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AmbientWindDirectionRadians
+        public double AmbientWindDirectionRadians
         {
             get
             {
@@ -319,9 +263,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AmbientTemperatureCelcius
+        public double AmbientTemperatureCelcius
         {
             get
             {
@@ -329,9 +271,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AmbientTemperatureFahrenheit
+        public double AmbientTemperatureFahrenheit
         {
             get
             {
@@ -339,9 +279,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double PressureAltitudeFeet
+        public double PressureAltitudeFeet
         {
             get
             {
@@ -349,9 +287,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double GroundAltitudeFeet
+        public double GroundAltitudeFeet
         {
             get
             {
@@ -359,9 +295,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double GPSRequiredTrueHeadingRadians
+        public double GPSRequiredTrueHeadingRadians
         {
             get
             {
@@ -369,9 +303,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double GPSRequiredTrueHeadingDegrees
+        public double GPSRequiredTrueHeadingDegrees
         {
             get
             {
@@ -379,9 +311,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double GPSRequiredMagneticHeadingRadians
+        public double GPSRequiredMagneticHeadingRadians
         {
             get
             {
@@ -390,9 +320,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double GPSRequiredMagneticHeadingDegrees
+        public double GPSRequiredMagneticHeadingDegrees
         {
             get
             {
@@ -401,9 +329,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double GPSCrossTrackErrorMeters
+        public double GPSCrossTrackErrorMeters
         {
             get
             {
@@ -411,9 +337,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool HasActiveWaypoint
+        public bool HasActiveWaypoint
         {
             get
             {
@@ -421,9 +345,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static InternationalUnits InternationalUnits
+        public InternationalUnits InternationalUnits
         {
             get
             {
@@ -431,9 +353,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double PressureMillibars
+        public double PressureMillibars
         {
             get
             {
@@ -441,9 +361,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double PressureInchesMercury
+        public double PressureInchesMercury
         {
             get
             {
@@ -451,29 +369,23 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double KollsmanMillibars
+        public double KohlsmanMillibars
         {
             get
             {
-                return Kollsman.Value / 16d;
+                return kohlsman.Value / 16d;
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double KollsmanInchesMercury
+        public double KohlsmanInchesMercury
         {
             get
             {
-                return (Kollsman.Value == 0 ? 29.92d : ((Kollsman.Value / 16d) * 0.029529983071d));
+                return (kohlsman.Value == 0 ? 29.92d : ((kohlsman.Value / 16d) * 0.029529983071d));
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double PercentFuel
+        public double PercentFuel
         {
             get
             {
@@ -483,9 +395,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double FuelLevel
+        public double FuelLevel
         {
             get
             {
@@ -495,9 +405,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double PitchDegrees
+        public double PitchDegrees
         {
             get
             {
@@ -505,9 +413,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double BankDegrees
+        public double BankDegrees
         {
             get
             {
@@ -515,9 +421,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double PitchRadians
+        public double PitchRadians
         {
             get
             {
@@ -525,9 +429,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double BankRadians
+        public double BankRadians
         {
             get
             {
@@ -535,9 +437,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static GearType GearType
+        public GearType GearType
         {
             get
             {
@@ -545,9 +445,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int Nav1RelativeBearing
+        public int Nav1RelativeBearing
         {
             get
             {
@@ -555,9 +453,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int Nav2RelativeBearing
+        public int Nav2RelativeBearing
         {
             get
             {
@@ -565,9 +461,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string ATCAirline
+        public string ATCAirline
         {
             get
             {
@@ -575,10 +469,8 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static string _atcType;
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string ATCType
+        private string _atcType;
+        public string ATCType
         {
             get
             {
@@ -586,10 +478,8 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static string _atcModel;
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string ATCModel
+        private string _atcModel;
+        public string ATCModel
         {
             get
             {
@@ -597,9 +487,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string ATCFlightNumber
+        public string ATCFlightNumber
         {
             get
             {
@@ -607,9 +495,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string ATCIdentifier
+        public string ATCIdentifier
         {
             get
             {
@@ -617,9 +503,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static short Nav1Obs
+        public short Nav1Obs
         {
             get
             {
@@ -627,9 +511,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static short Nav2Obs
+        public short Nav2Obs
         {
             get
             {
@@ -637,9 +519,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Nav1Radial
+        public double Nav1Radial
         {
             get
             {
@@ -647,9 +527,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Nav2Radial
+        public double Nav2Radial
         {
             get
             {
@@ -657,9 +535,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Nav1MagneticVariance
+        public double Nav1MagneticVariance
         {
             get
             {
@@ -667,9 +543,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Nav2MagneticVariance
+        public double Nav2MagneticVariance
         {
             get
             {
@@ -677,9 +551,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static VorToFromFlag Nav1ToFromFlag
+        public VorToFromFlag Nav1ToFromFlag
         {
             get
             {
@@ -687,9 +559,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static VorToFromFlag Nav2ToFromFlag
+        public VorToFromFlag Nav2ToFromFlag
         {
             get
             {
@@ -697,9 +567,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static float Nav1CourseDeviation
+        public float Nav1CourseDeviation
         {
             get
             {
@@ -707,9 +575,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static float Nav2CourseDeviation
+        public float Nav2CourseDeviation
         {
             get
             {
@@ -717,9 +583,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Vor1Longitude
+        public double Vor1Longitude
         {
             get
             {
@@ -727,9 +591,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Vor1Latitude
+        public double Vor1Latitude
         {
             get
             {
@@ -737,9 +599,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Vor2Longitude
+        public double Vor2Longitude
         {
             get
             {
@@ -747,9 +607,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Vor2Latitude
+        public double Vor2Latitude
         {
             get
             {
@@ -757,9 +615,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int Vor1Elevation
+        public int Vor1Elevation
         {
             get
             {
@@ -767,9 +623,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int Vor2Elevation
+        public int Vor2Elevation
         {
             get
             {
@@ -777,9 +631,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string Vor1Identity
+        public string Vor1Identity
         {
             get
             {
@@ -787,9 +639,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string Vor2Identity
+        public string Vor2Identity
         {
             get
             {
@@ -797,9 +647,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string Vor1Name
+        public string Vor1Name
         {
             get
             {
@@ -807,9 +655,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string Vor2Name
+        public string Vor2Name
         {
             get
             {
@@ -817,9 +663,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int AdfRelativeBearing
+        public int AdfRelativeBearing
         {
             get
             {
@@ -827,9 +671,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AdfLongitude
+        public double AdfLongitude
         {
             get
             {
@@ -837,9 +679,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double AdfLatitude
+        public double AdfLatitude
         {
             get
             {
@@ -847,9 +687,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int AdfElevation
+        public int AdfElevation
         {
             get
             {
@@ -857,9 +695,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string AdfIdentity
+        public string AdfIdentity
         {
             get
             {
@@ -867,9 +703,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static string AdfName
+        public string AdfName
         {
             get
             {
@@ -877,9 +711,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Dme1Distance
+        public double Dme1Distance
         {
             get
             {
@@ -887,9 +719,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Dme2Distance
+        public double Dme2Distance
         {
             get
             {
@@ -897,9 +727,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Dme1Speed
+        public double Dme1Speed
         {
             get
             {
@@ -907,9 +735,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static double Dme2Speed
+        public double Dme2Speed
         {
             get
             {
@@ -917,9 +743,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static TimeSpan Dme1TimeToStation
+        public TimeSpan Dme1TimeToStation
         {
             get
             {
@@ -927,9 +751,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static TimeSpan Dme2TimeToStation
+        public TimeSpan Dme2TimeToStation
         {
             get
             {
@@ -937,9 +759,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool Nav1Available
+        public bool Nav1Available
         {
             get
             {
@@ -947,9 +767,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static bool Nav2Available
+        public bool Nav2Available
         {
             get
             {
@@ -957,9 +775,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
-        public static int HeadingBug
+        public int HeadingBug
         {
             get
             {
@@ -967,108 +783,113 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static AbortableBackgroundWorker _timerConnection;
-        private static AbortableBackgroundWorker _timerMain;
-        private static bool initialized = false;
-        private static bool stop = false;
+        private AbortableBackgroundWorker _timerConnection;
+        private AbortableBackgroundWorker _timerMain;
+        private bool initialized = false;
+        private bool stop = false;
 
-        private static Offset<short> Kollsman = new Offset<short>(0x0330);
-        private static Offset<double> pressure = new Offset<double>(0x34A0);
-        private static Offset<int> airSpeedIndicated = new Offset<int>(0x02BC);
-        private static Offset<int> airSpeedTrue = new Offset<int>(0x02B8);
-        private static Offset<int> airSpeedBarberPole = new Offset<int>(0x02C4);
-        private static Offset<int> groundSpeed = new Offset<int>(0x02B4);
-        private static Offset<int> verticalSpeed = new Offset<int>(0x02C8);
-        private static Offset<short> headingBug = new Offset<short>(0x07CC);
-        private static Offset<double> headingMagnetic = new Offset<double>(0x02CC);
-        private static Offset<uint> headingTrue = new Offset<uint>(0x0580);
-        private static Offset<ushort> onGround = new Offset<ushort>(0x0366);
-        private static Offset<string> aircraftType = new Offset<string>(0x3160, 24);
-        private static Offset<string> aircraftModel = new Offset<string>(0x3500, 24);
-        private static Offset<FsLongitude> longitude = new Offset<FsLongitude>(0x0568, 8);
-        private static Offset<FsLatitude> latitude = new Offset<FsLatitude>(0x0560, 8);
-        private static Offset<short> internationalUnits = new Offset<short>(0x0C18);
-        private static Offset<int> altitude = new Offset<int>(0x3324);
-        private static Offset<int> groundAltitude = new Offset<int>(0x0020);
-        private static Offset<byte> engineType = new Offset<byte>(0x0609);
-        private static Offset<short> ambientWindSpeed = new Offset<short>(0x0E90);
-        private static Offset<double> ambientWindDirection = new Offset<double>(0x3490);
-        private static Offset<double> ambientTemperature = new Offset<double>(0x34A8);
-        private static Offset<double> pressureAltitude = new Offset<double>(0x34B0);
-        private static Offset<byte> readyToFly = new Offset<byte>(0x3364);
-        private static Offset<double> gpsRequiredMagneticHeading = new Offset<double>(0x6050);
-        private static Offset<double> gpsRequiredTrueHeading = new Offset<double>(0x6060);
-        private static Offset<double> gpsCrossTrackError = new Offset<double>(0x6058);
-        private static Offset<uint> gpsFlags = new Offset<uint>(0x6004);
-        private static Offset<double> pitch = new Offset<double>(0x0578);
-        private static Offset<double> bank = new Offset<double>(0x057C);
-        private static Offset<short> gearType = new Offset<short>(0x060C);
-        private static Offset<short> nav1RelativeBearing = new Offset<short>(0x0C56);
-        private static Offset<short> nav2RelativeBearing = new Offset<short>(0x0C5C);
-        private static Offset<string> title = new Offset<string>(0x3D00, 256);
-        private static Offset<string> atcAirline = new Offset<string>(0x3148, 24);
-        private static Offset<string> atcFlightNumber = new Offset<string>(0x3130, 12);
-        private static Offset<string> atcIdentifier = new Offset<string>(0x313C, 12);
-        private static Offset<byte> gearTypeExtended = new Offset<byte>(0x05D6);
-        private static Offset<short> nav1Obs = new Offset<short>(0x0C4E);
-        private static Offset<short> nav2Obs = new Offset<short>(0x0C5E);
-        private static Offset<short> nav1Radial = new Offset<short>(0x0C50);
-        private static Offset<short> nav2Radial = new Offset<short>(0x0C60);
-        private static Offset<short> nav1MagVar = new Offset<short>(0x0C40);
-        private static Offset<short> nav2MagVar = new Offset<short>(0x0C42);
-        private static Offset<byte> nav1ToFromFlag = new Offset<byte>(0x0C4B);
-        private static Offset<byte> nav2ToFromFlag = new Offset<byte>(0x0C5B);
-        private static Offset<float> nav1CourseDeviation = new Offset<float>(0x2AAC);
-        private static Offset<float> nav2CourseDeviation = new Offset<float>(0x2AB4);
-        private static Offset<FsLongitude> vor1Longitude = new Offset<FsLongitude>(0x0878, 8);
-        private static Offset<FsLatitude> vor1Latitude = new Offset<FsLatitude>(0x0874, 8);
-        private static Offset<FsLongitude> vor2Longitude = new Offset<FsLongitude>(0x0860, 8);
-        private static Offset<FsLatitude> vor2Latitude = new Offset<FsLatitude>(0x0858, 8);
-        private static Offset<int> vor1Elevation = new Offset<int>(0x087C);
-        private static Offset<int> vor2Elevation = new Offset<int>(0x0868);
-        private static Offset<string> vor1Identity = new Offset<string>(0x3000, 6);
-        private static Offset<string> vor2Identity = new Offset<string>(0x301F, 6);
-        private static Offset<string> vor1Name = new Offset<string>(0x3006, 25);
-        private static Offset<string> vor2Name = new Offset<string>(0x3025, 25);
-        private static Offset<short> adfRelativeBearing = new Offset<short>(0x0C6A);
-        private static Offset<FsLongitude> adfLongitude = new Offset<FsLongitude>(0x1124, 8);
-        private static Offset<FsLatitude> adfLatitude = new Offset<FsLatitude>(0x1128, 8);
-        private static Offset<int> adfElevation = new Offset<int>(0x112C);
-        private static Offset<string> adfIdentity = new Offset<string>(0x303E, 6);
-        private static Offset<string> adfName = new Offset<string>(0x3044, 25);
-        private static Offset<short> dme1Distance = new Offset<short>(0x0300);
-        private static Offset<short> dme2Distance = new Offset<short>(0x0306);
-        private static Offset<short> dme1Speed = new Offset<short>(0x0302);
-        private static Offset<short> dme2Speed = new Offset<short>(0x0308);
-        private static Offset<short> dme1TimeToStation = new Offset<short>(0x0304);
-        private static Offset<short> dme2TimeToStation = new Offset<short>(0x030A);
-        private static Offset<int> nav1Available = new Offset<int>(0x07A0);
-        private static Offset<int> nav2Available = new Offset<int>(0x07A4);
+        private Offset<short> kohlsman = new Offset<short>(0x0330);
+        private Offset<double> pressure = new Offset<double>(0x34A0);
+        private Offset<int> airSpeedIndicated = new Offset<int>(0x02BC);
+        private Offset<int> airSpeedTrue = new Offset<int>(0x02B8);
+        private Offset<int> airSpeedBarberPole = new Offset<int>(0x02C4);
+        private Offset<int> groundSpeed = new Offset<int>(0x02B4);
+        private Offset<int> verticalSpeed = new Offset<int>(0x02C8);
+        private Offset<short> headingBug = new Offset<short>(0x07CC);
+        private Offset<double> headingMagnetic = new Offset<double>(0x02CC);
+        private Offset<uint> headingTrue = new Offset<uint>(0x0580);
+        private Offset<ushort> onGround = new Offset<ushort>(0x0366);
+        private Offset<string> aircraftType = new Offset<string>(0x3160, 24);
+        private Offset<string> aircraftModel = new Offset<string>(0x3500, 24);
+        private Offset<FsLongitude> longitude = new Offset<FsLongitude>(0x0568, 8);
+        private Offset<FsLatitude> latitude = new Offset<FsLatitude>(0x0560, 8);
+        private Offset<short> internationalUnits = new Offset<short>(0x0C18);
+        private Offset<int> altitude = new Offset<int>(0x3324);
+        private Offset<int> groundAltitude = new Offset<int>(0x0020);
+        private Offset<byte> engineType = new Offset<byte>(0x0609);
+        private Offset<short> ambientWindSpeed = new Offset<short>(0x0E90);
+        private Offset<double> ambientWindDirection = new Offset<double>(0x3490);
+        private Offset<double> ambientTemperature = new Offset<double>(0x34A8);
+        private Offset<double> pressureAltitude = new Offset<double>(0x34B0);
+        private Offset<byte> readyToFly = new Offset<byte>(0x3364);
+        private Offset<double> gpsRequiredMagneticHeading = new Offset<double>(0x6050);
+        private Offset<double> gpsRequiredTrueHeading = new Offset<double>(0x6060);
+        private Offset<double> gpsCrossTrackError = new Offset<double>(0x6058);
+        private Offset<uint> gpsFlags = new Offset<uint>(0x6004);
+        private Offset<double> pitch = new Offset<double>(0x0578);
+        private Offset<double> bank = new Offset<double>(0x057C);
+        private Offset<short> gearType = new Offset<short>(0x060C);
+        private Offset<short> nav1RelativeBearing = new Offset<short>(0x0C56);
+        private Offset<short> nav2RelativeBearing = new Offset<short>(0x0C5C);
+        private Offset<string> title = new Offset<string>(0x3D00, 256);
+        private Offset<string> atcAirline = new Offset<string>(0x3148, 24);
+        private Offset<string> atcFlightNumber = new Offset<string>(0x3130, 12);
+        private Offset<string> atcIdentifier = new Offset<string>(0x313C, 12);
+        private Offset<byte> gearTypeExtended = new Offset<byte>(0x05D6);
+        private Offset<short> nav1Obs = new Offset<short>(0x0C4E);
+        private Offset<short> nav2Obs = new Offset<short>(0x0C5E);
+        private Offset<short> nav1Radial = new Offset<short>(0x0C50);
+        private Offset<short> nav2Radial = new Offset<short>(0x0C60);
+        private Offset<short> nav1MagVar = new Offset<short>(0x0C40);
+        private Offset<short> nav2MagVar = new Offset<short>(0x0C42);
+        private Offset<byte> nav1ToFromFlag = new Offset<byte>(0x0C4B);
+        private Offset<byte> nav2ToFromFlag = new Offset<byte>(0x0C5B);
+        private Offset<float> nav1CourseDeviation = new Offset<float>(0x2AAC);
+        private Offset<float> nav2CourseDeviation = new Offset<float>(0x2AB4);
+        private Offset<FsLongitude> vor1Longitude = new Offset<FsLongitude>(0x0878, 8);
+        private Offset<FsLatitude> vor1Latitude = new Offset<FsLatitude>(0x0874, 8);
+        private Offset<FsLongitude> vor2Longitude = new Offset<FsLongitude>(0x0860, 8);
+        private Offset<FsLatitude> vor2Latitude = new Offset<FsLatitude>(0x0858, 8);
+        private Offset<int> vor1Elevation = new Offset<int>(0x087C);
+        private Offset<int> vor2Elevation = new Offset<int>(0x0868);
+        private Offset<string> vor1Identity = new Offset<string>(0x3000, 6);
+        private Offset<string> vor2Identity = new Offset<string>(0x301F, 6);
+        private Offset<string> vor1Name = new Offset<string>(0x3006, 25);
+        private Offset<string> vor2Name = new Offset<string>(0x3025, 25);
+        private Offset<short> adfRelativeBearing = new Offset<short>(0x0C6A);
+        private Offset<FsLongitude> adfLongitude = new Offset<FsLongitude>(0x1124, 8);
+        private Offset<FsLatitude> adfLatitude = new Offset<FsLatitude>(0x1128, 8);
+        private Offset<int> adfElevation = new Offset<int>(0x112C);
+        private Offset<string> adfIdentity = new Offset<string>(0x303E, 6);
+        private Offset<string> adfName = new Offset<string>(0x3044, 25);
+        private Offset<short> dme1Distance = new Offset<short>(0x0300);
+        private Offset<short> dme2Distance = new Offset<short>(0x0306);
+        private Offset<short> dme1Speed = new Offset<short>(0x0302);
+        private Offset<short> dme2Speed = new Offset<short>(0x0308);
+        private Offset<short> dme1TimeToStation = new Offset<short>(0x0304);
+        private Offset<short> dme2TimeToStation = new Offset<short>(0x030A);
+        private Offset<int> nav1Available = new Offset<int>(0x07A0);
+        private Offset<int> nav2Available = new Offset<int>(0x07A4);
 
         public delegate void FSUIPCEventHandler();
-        public static event FSUIPCEventHandler OnConnected;
+        public event FSUIPCEventHandler OnConnected;
 
         public delegate void FSUIPCQuitEventHandler();
-        public static event FSUIPCQuitEventHandler OnQuit;
+        public event FSUIPCQuitEventHandler OnQuit;
 
         public delegate void FSUIPCTrafficEventHandler(string callsign, Aircraft aircraft, TrafficEvent eventType);
-        public static event FSUIPCTrafficEventHandler OnTrafficReceived;
+        public event FSUIPCTrafficEventHandler OnTrafficReceived;
 
         public delegate void FSUIPCFlightDataEventHandler();
-        public static event FSUIPCFlightDataEventHandler OnFlightDataReceived;
+        public event FSUIPCFlightDataEventHandler OnFlightDataReceived;
 
         public delegate void FSUIPCReadyEventHandler(ReadyToFly readyToFly);
-        public static event FSUIPCReadyEventHandler OnReadyToFly;
+        public event FSUIPCReadyEventHandler OnReadyToFly;
 
         public delegate void FSUIPCAircraftChangeEventHandler(int aircraftId);
-        public static event FSUIPCAircraftChangeEventHandler OnAircraftChange;
+        public event FSUIPCAircraftChangeEventHandler OnAircraftChange;
 
-        public FIPFSUIPC()
+        static FSUIPCProvider()
+        {
+            Instance = new FSUIPCProvider();
+        }
+
+        FSUIPCProvider()
         {
             Initialize();
         }
 
-        public static void Initialize()
+        public void Initialize()
         {
             if (!initialized)
             {
@@ -1086,7 +907,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static void _timerConnection_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private void _timerConnection_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             while (!IsConnected && !stop)
             {
@@ -1107,7 +928,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static void ProcessMain(object sender, System.ComponentModel.DoWorkEventArgs e)
+        private void ProcessMain(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             while (IsConnected && !stop)
             {
@@ -1199,7 +1020,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private static void GetAITraffic()
+        private void GetAITraffic()
         {
             FSUIPCConnection.AITrafficServices.RefreshAITrafficInformation();
             List<AIPlaneInfo> allPlanes = FSUIPCConnection.AITrafficServices.AllTraffic;
@@ -1232,7 +1053,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        public static void Deinitialize(int timeOut = 1000)
+        public void Deinitialize(int timeOut = 1000)
         {
             stop = true;
             if (_timerConnection != null)

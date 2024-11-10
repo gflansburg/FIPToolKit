@@ -5,10 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
@@ -82,20 +78,12 @@ namespace FIPToolKit.Models
 
     public class FIPEngine : IDisposable
     {
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDisposed { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDisposing { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public DirectOutputClient DirectOutput { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public int DeviceCount
         {
             get
@@ -105,12 +93,8 @@ namespace FIPToolKit.Models
         }
 
         [Browsable(false)]
-        [XmlElement(ElementName = "Devices")]
-        [JsonProperty(PropertyName = "Devices")]
         public List<FIPDevice> _devices { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public IEnumerable<FIPDevice> Devices
         {
             get
@@ -127,8 +111,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public IEnumerable<FIPDevice> Joysticks
         {
             get
@@ -326,8 +308,6 @@ namespace FIPToolKit.Models
             }*/
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDirty
         {
             get
@@ -365,8 +345,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsActivePagesDirty
         {
             get
@@ -457,7 +435,7 @@ namespace FIPToolKit.Models
                                 };
                             }
                             device.ClearPages();
-                            foreach (FIPPageProperties pageProperties in deviceProperties.Pages)
+                            foreach (FIPPageProperties pageProperties in deviceProperties.Pages.OrderBy(p => p.Page))
                             {
                                 Type t = Type.GetType(pageProperties.ControlType);
                                 FIPPage page = (FIPPage)Activator.CreateInstance(t, pageProperties);
@@ -488,7 +466,7 @@ namespace FIPToolKit.Models
                                 };
                             }
                             device.ClearPages();
-                            foreach (FIPPageProperties pageProperties in deviceProperties.Pages)
+                            foreach (FIPPageProperties pageProperties in deviceProperties.Pages.OrderBy(p => p.Page))
                             {
                                 Type t = Type.GetType(pageProperties.ControlType);
                                 FIPPage page = (FIPPage)Activator.CreateInstance(t, pageProperties);

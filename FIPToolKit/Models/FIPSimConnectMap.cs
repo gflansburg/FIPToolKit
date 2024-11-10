@@ -1,107 +1,86 @@
-﻿using FIPToolKit.Drawing;
-using FIPToolKit.Threading;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Threading;
-using System.Xml.Serialization;
 using GMap.NET;
-using GMap.NET.MapProviders;
-using GMap.NET.WindowsForms;
-using Saitek.DirectOutput;
-using System.Drawing.Drawing2D;
-using System.IO;
-using System.Diagnostics;
-using Microsoft.Win32;
-using RestSharp;
-using FIPToolKit.FlightShare;
 using FIPToolKit.FlightSim;
-using System.Xml.Linq;
-using System.Runtime.Remoting.Messaging;
 
 namespace FIPToolKit.Models
 {
     public class FIPSimConnectMap : FIPMap, IFIPSimConnect
     {
-        private SimConnect.FLIGHT_DATA FlightData { get; set; } = new SimConnect.FLIGHT_DATA();
+        public SimConnectProvider FIPSimConnect => FlightSimProviders.FIPSimConnect;
 
-        public FIPSimConnect FIPSimConnect { get; set; } = new FIPSimConnect();
+        public override Dictionary<string, Aircraft> Traffic => FIPSimConnect.Traffic;
 
-        public override Dictionary<string, Aircraft> Traffic => SimConnect.Traffic;
+        public override int AltitudeFeet => FIPSimConnect.AltitudeFeet;
 
-        public override int AltitudeFeet => (int)FlightData.PLANE_ALTITUDE;
+        public override double HeadingMagneticDegrees => FIPSimConnect.HeadingMagneticDegrees;
 
-        public override double HeadingMagneticDegrees => FlightData.PLANE_HEADING_DEGREES_MAGNETIC;
+        public override double HeadingTrueDegrees => FIPSimConnect.HeadingTrueDegrees;
 
-        public override double HeadingTrueDegrees => FlightData.PLANE_HEADING_DEGREES_TRUE;
+        public override double HeadingMagneticRadians => FIPSimConnect.HeadingMagneticRadians;
 
-        public override double HeadingMagneticRadians => HeadingMagneticDegrees * (Math.PI / 180);
-
-        public override double HeadingTrueRadians => HeadingTrueDegrees * (Math.PI / 180);
+        public override double HeadingTrueRadians => FIPSimConnect.HeadingTrueRadians;
 
         public override bool IsConnected => FIPSimConnect.IsConnected;
 
-        public override string ATCIdentifier => SimConnect.CurrentAircraft.ATCIdentifier;
+        public override string ATCIdentifier => FIPSimConnect.ATCIdentifier;
 
-        public override string AircraftModel => SimConnect.CurrentAircraft.Model;
+        public override string AircraftModel => FIPSimConnect.AircraftModel;
 
-        public override string AircraftType => SimConnect.CurrentAircraft.Type;
+        public override string AircraftType => FIPSimConnect.AircraftType;
 
         public override bool IsHeavy => FIPSimConnect.IsHeavy;
 
         public override EngineType EngineType => FIPSimConnect.EngineType;
 
-        public override bool OnGround => Convert.ToBoolean(FlightData.SIM_ON_GROUND);
+        public override bool OnGround => FIPSimConnect.OnGround;
 
-        public override int GroundSpeedKnots => (int)FlightData.AIRSPEED_TRUE;
+        public override int GroundSpeedKnots => FIPSimConnect.GroundSpeedKnots;
 
-        public override int AirSpeedIndicatedKnots => (int)FlightData.AIRSPEED_INDICATED;
+        public override int AirSpeedIndicatedKnots => FIPSimConnect.AirSpeedIndicatedKnots;
 
-        public override int AmbientTemperatureCelcius => (int)FlightData.AMBIENT_TEMPERATURE;
+        public override int AmbientTemperatureCelcius => FIPSimConnect.AmbientTemperatureCelcius;
 
-        public override double AmbientWindDirectionDegrees => FlightData.AMBIENT_WIND_DIRECTION;
+        public override double AmbientWindDirectionDegrees => FIPSimConnect.AmbientWindDirectionDegrees;
 
-        public override double AmbientWindSpeedKnots => FlightData.AMBIENT_WIND_VELOCITY;
+        public override double AmbientWindSpeedKnots => FIPSimConnect.AmbientWindSpeedKnots;
 
-        public override double KollsmanInchesMercury => FlightData.KOLLSMAN_SETTING_HG;
+        public override double KohlsmanInchesMercury => FIPSimConnect.KohlsmanInchesMercury;
 
         public override ReadyToFly ReadyToFly => FIPSimConnect.IsRunning ? ReadyToFly.Ready : ReadyToFly.Loading;
 
-        public override double GPSRequiredMagneticHeadingRadians => (FIPSimConnect.AircraftId == 50 ? FlightData.GPS_WP_BEARING + Math.PI : FlightData.GPS_WP_BEARING);
+        public override double GPSRequiredMagneticHeadingRadians => FIPSimConnect.GPSRequiredMagneticHeadingRadians;
 
-        public override double GPSRequiredTrueHeadingRadians => FlightData.GPS_WP_TRUE_REQ_HDG;
+        public override double GPSRequiredTrueHeadingRadians => FIPSimConnect.GPSRequiredTrueHeadingRadians;
 
-        public override bool HasActiveWaypoint => Convert.ToBoolean(FlightData.GPS_IS_ACTIVE_WAY_POINT);
+        public override bool HasActiveWaypoint => FIPSimConnect.HasActiveWaypoint;
 
-        public override double GPSCrossTrackErrorMeters => FlightData.GPS_WP_CROSS_TRK;
+        public override double GPSCrossTrackErrorMeters => FIPSimConnect.GPSCrossTrackErrorMeters;
 
-        public override double Nav1Radial => FlightData.NAV_RELATIVE_BEARING_TO_STATION_1;
+        public override double Nav1Radial => FIPSimConnect.Nav1Radial;
 
-        public override double Nav2Radial => FlightData.NAV_RELATIVE_BEARING_TO_STATION_2;
+        public override double Nav2Radial => FIPSimConnect.Nav2Radial;
 
-        public override bool Nav1Available => Convert.ToBoolean(FlightData.NAV1_AVAILABLE);
+        public override bool Nav1Available => FIPSimConnect.Nav1Available;
 
-        public override bool Nav2Available => Convert.ToBoolean(FlightData.NAV2_AVAILABLE);
+        public override bool Nav2Available => FIPSimConnect.Nav2Available;
 
-        public override double AdfRelativeBearing => FlightData.ADF_RADIAL;
+        public override double AdfRelativeBearing => FIPSimConnect.AdfRelativeBearing;
 
-        public override double HeadingBug => FlightData.AUTOPILOT_HEADING_LOCK_DIR;
+        public override double HeadingBug => FIPSimConnect.HeadingBug;
 
-        public override double Latitude => FlightData.PLANE_LATITUDE;
+        public override double Latitude => FIPSimConnect.Latitude;
 
-        public override double Longitude => FlightData.PLANE_LONGITUDE;
+        public override double Longitude => FIPSimConnect.Longitude;
 
         public FIPSimConnectMap(FIPMapProperties properties) : base(properties)
         {
             properties.ControlType = GetType().FullName;
             properties.Name = "SimConnect Map";
             properties.IsDirty = false;
-            SimConnect.OnVOR1Set += SimConnect_OnNav1Set;
-            SimConnect.OnVOR2Set += SimConnect_OnNav2Set;
-            SimConnect.OnADFSet += SimConnect_OnADFSet;
+            SimConnect.Instance.OnVOR1Set += SimConnect_OnNav1Set;
+            SimConnect.Instance.OnVOR2Set += SimConnect_OnNav2Set;
+            SimConnect.Instance.OnADFSet += SimConnect_OnADFSet;
             FIPSimConnect.OnTrafficReceived += SimConnect_OnTrafficReceived;
             FIPSimConnect.OnSim += SimConnect_OnSim;
             FIPSimConnect.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
@@ -173,7 +152,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.Nav1RelativeBearing = 0;
                         airplaneMarker.Nav2RelativeBearing = 0;
                         airplaneMarker.AdfRelativeBearing = 0;
-                        airplaneMarker.KollsmanInchesMercury = 29.92d;
+                        airplaneMarker.KohlsmanInchesMercury = 29.92d;
                         airplaneMarker.GPSHeading = 0;
                         airplaneMarker.GPSIsActive = false;
                         airplaneMarker.GPSTrackDistance = 0;
@@ -195,7 +174,6 @@ namespace FIPToolKit.Models
                 {
                     try
                     {
-                        FlightData = data;
                         //Map.Bearing = (ShowHeading ? (float)HeadingTrueDegrees : 0f);
                         airplaneMarker.ATCIdentifier = ATCIdentifier;
                         airplaneMarker.ATCModel = AircraftModel;
@@ -209,7 +187,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.AmbientTemperature = (int)AmbientTemperatureCelcius;
                         airplaneMarker.AmbientWindDirection = (float)AmbientWindDirectionDegrees;
                         airplaneMarker.AmbientWindVelocity = (int)AmbientWindSpeedKnots;
-                        airplaneMarker.KollsmanInchesMercury = KollsmanInchesMercury;
+                        airplaneMarker.KohlsmanInchesMercury = KohlsmanInchesMercury;
                         airplaneMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? GPSRequiredMagneticHeadingRadians : GPSRequiredTrueHeadingRadians);
                         airplaneMarker.GPSIsActive = HasActiveWaypoint;
                         airplaneMarker.GPSTrackDistance = (float)GPSCrossTrackErrorMeters;
@@ -241,38 +219,6 @@ namespace FIPToolKit.Models
                 {
                     try
                     {
-                        FlightData = new SimConnect.FLIGHT_DATA()
-                        {
-                            PLANE_LATITUDE = data.PLANE_LATITUDE,
-                            PLANE_LONGITUDE = data.PLANE_LONGITUDE,
-                            PLANE_ALTITUDE = data.PLANE_ALTITUDE,
-                            PRESSURE_ALTITUDE = data.PRESSURE_ALTITUDE,
-                            PLANE_HEADING_DEGREES_MAGNETIC = data.PLANE_HEADING_DEGREES_MAGNETIC,
-                            PLANE_HEADING_DEGREES_TRUE = data.PLANE_HEADING_DEGREES_TRUE,
-                            PLANE_PITCH_DEGREES = data.PLANE_PITCH_DEGREES,
-                            PLANE_BANK_DEGREES = data.PLANE_BANK_DEGREES,
-                            VERTICAL_SPEED = data.VERTICAL_SPEED,
-                            AIRSPEED_INDICATED = data.AIRSPEED_INDICATED,
-                            AIRSPEED_TRUE = data.AIRSPEED_TRUE,
-                            FUEL_TANK_RIGHT_MAIN_QUANTITY = data.FUEL_TANK_RIGHT_MAIN_QUANTITY,
-                            FUEL_TANK_LEFT_MAIN_QUANTITY = data.FUEL_TANK_LEFT_MAIN_QUANTITY,
-                            SIM_ON_GROUND = data.SIM_ON_GROUND,
-                            GROUND_ALTITUDE = data.GROUND_ALTITUDE,
-                            GROUND_VELOCITY = data.GROUND_VELOCITY,
-                            AMBIENT_WIND_VELOCITY = data.AMBIENT_WIND_VELOCITY,
-                            AMBIENT_WIND_DIRECTION = data.AMBIENT_WIND_DIRECTION,
-                            AMBIENT_TEMPERATURE = data.AMBIENT_TEMPERATURE,
-                            GPS_WP_TRUE_REQ_HDG = data.GPS_WP_TRUE_REQ_HDG,
-                            GPS_WP_BEARING = data.GPS_WP_BEARING,
-                            GPS_WP_CROSS_TRK = data.GPS_WP_CROSS_TRK,
-                            GPS_IS_ACTIVE_WAY_POINT = data.GPS_IS_ACTIVE_WAY_POINT,
-                            NAV_RELATIVE_BEARING_TO_STATION_1 = data.NAV_RELATIVE_BEARING_TO_STATION_1,
-                            NAV_RELATIVE_BEARING_TO_STATION_2 = data.NAV_RELATIVE_BEARING_TO_STATION_2,
-                            KOLLSMAN_SETTING_HG = data.KOLLSMAN_SETTING_HG,
-                            ADF_RADIAL = data.ADF_RADIAL,
-                            NAV1_AVAILABLE = data.NAV1_AVAILABLE,
-                            NAV2_AVAILABLE = data.NAV2_AVAILABLE
-                        };
                         Map.Bearing = (MapProperties.ShowHeading ? (float)HeadingTrueDegrees : 0f);
                         airplaneMarker.ATCIdentifier = ATCIdentifier;
                         airplaneMarker.ATCModel = AircraftModel;
@@ -286,7 +232,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.AmbientTemperature = AmbientTemperatureCelcius;
                         airplaneMarker.AmbientWindDirection = (float)AmbientWindDirectionDegrees;
                         airplaneMarker.AmbientWindVelocity = (int)AmbientWindSpeedKnots;
-                        airplaneMarker.KollsmanInchesMercury = KollsmanInchesMercury;
+                        airplaneMarker.KohlsmanInchesMercury = KohlsmanInchesMercury;
                         airplaneMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? GPSRequiredMagneticHeadingRadians : GPSRequiredTrueHeadingRadians);
                         airplaneMarker.GPSIsActive = HasActiveWaypoint;
                         airplaneMarker.GPSTrackDistance = (float)GPSCrossTrackErrorMeters;
@@ -332,7 +278,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.Nav1RelativeBearing = 0;
                         airplaneMarker.Nav2RelativeBearing = 0;
                         airplaneMarker.AdfRelativeBearing = 0;
-                        airplaneMarker.KollsmanInchesMercury = 29.92d;
+                        airplaneMarker.KohlsmanInchesMercury = 29.92d;
                         airplaneMarker.GPSHeading = 0;
                         airplaneMarker.GPSIsActive = false;
                         airplaneMarker.GPSTrackDistance = 0;

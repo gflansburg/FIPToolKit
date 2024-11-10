@@ -1,13 +1,11 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.Tools;
 using LibVLCSharp.Shared;
-using Newtonsoft.Json;
 using System;
 using System.Drawing;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
-using System.Xml.Serialization;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.Processing;
@@ -134,13 +132,8 @@ namespace FIPToolKit.Models
         private FIPMediaFile CurrentTrack { get; set; }
         private string SubTitle { get; set; }
         private string Error { get; set; }
-
-        [XmlIgnore]
-        [JsonIgnore]
+        private Bitmap VideoFrame { get; set; }
         public TimeSpan? Duration { get; private set; }
-
-        [XmlIgnore]
-        [JsonIgnore]
         public System.Drawing.SizeF FrameSize { get; private set; }
 
         /// <summary>
@@ -165,8 +158,6 @@ namespace FIPToolKit.Models
         public delegate void FIPVideoPlayerEventHandler(object sender, FIPVideoPlayerEventArgs e);
         public event FIPVideoPlayerEventHandler OnSettingsUpdated;
         public event FIPPageEventHandler OnVideoLoop;
-        public event FIPPageEventHandler OnActive;
-        public event FIPPageEventHandler OnInactive;
         public event FIPPageEventHandler OnNameChanged;
         public event FIPPageEventHandler OnMuteChanged;
         public event FIPPageEventHandler OnVolumeChanged;
@@ -190,17 +181,11 @@ namespace FIPToolKit.Models
 
         private void Properties_OnMuteChanged(object sender, EventArgs e)
         {
-            if (player != null && player.Mute != VideoPlayerProperties.Mute)
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                ThreadPool.QueueUserWorkItem(_ =>
-                {
-                    player.Mute = VideoPlayerProperties.Mute;
-                    if (player.VideoTrack == -1)
-                    {
-                        DrawMusicArtwork();
-                    }
-                });
-            }
+                player.Mute = VideoPlayerProperties.Mute;
+                UpdatePage();
+            });
             OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
         }
 
@@ -216,6 +201,19 @@ namespace FIPToolKit.Models
             CurrentFrame = 0;
             VideoPlayerProperties.SetPosition(0);
             LoadVideo();
+        }
+
+        public override void UpdatePage()
+        {
+            if (player != null && player.VideoTrack == -1)
+            {
+                DrawMusicArtwork();
+            }
+            else if (player != null && !player.IsPlaying)
+            {
+                UpdateVideoFrame();
+            }
+            base.UpdatePage();
         }
 
         private void CreatePlaylist()
@@ -255,7 +253,7 @@ namespace FIPToolKit.Models
             {
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    DrawMusicArtwork();
+                    UpdatePage();
                 });
             }
         }
@@ -314,13 +312,13 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return !(VideoPlayerProperties.PauseOtherMedia && player.IsPlaying);
+                return !(VideoPlayerProperties.PauseOtherMedia && player != null && player.IsPlaying);
             }
         }
 
         private void CreatePlayer()
         {
-            if (player == null)
+            if (player == null && libVLC != null)
             {
                 player = new MediaPlayer(libVLC);
                 player.SetVideoCallbacks(Lock, null, Display);
@@ -348,7 +346,7 @@ namespace FIPToolKit.Models
                             {
                                 ThreadPool.QueueUserWorkItem(_ =>
                                 {
-                                    DrawMusicArtwork();
+                                    UpdatePage();
                                 });
                             }
                             else
@@ -383,10 +381,7 @@ namespace FIPToolKit.Models
                         SubTitle = null;
                         if (CurrentTrack.Artwork != null)
                         {
-                            ThreadPool.QueueUserWorkItem(_ =>
-                            {
-                                DrawMusicArtwork();
-                            });
+                            UpdatePage();
                         }
                         else
                         {
@@ -405,16 +400,20 @@ namespace FIPToolKit.Models
                             {
                                 player.Position = start;
                             }
-                            if (VideoPlayerProperties.PauseOtherMedia)
-                            {
-                                OnActive?.Invoke(this, new FIPPageEventArgs(this));
-                            }
                             // May be an audio stream with no video.
-                            if (player.VideoTrack == -1)
-                            {
-                                DrawMusicArtwork();
-                            }
+                            UpdatePage();
                         });
+                    }
+                    if (VideoPlayerProperties.PauseOtherMedia)
+                    {
+                        SendActive();
+                    }
+                };
+                player.Paused += (s, e) =>
+                {
+                    if (VideoPlayerProperties.PauseOtherMedia)
+                    {
+                        SendInactive();
                     }
                 };
                 player.EndReached += (s, e) =>
@@ -422,6 +421,11 @@ namespace FIPToolKit.Models
                     PlayNextTrack();
                 };
             }
+        }
+
+        private void Player_Paused(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private uint Align(uint size)
@@ -487,6 +491,10 @@ namespace FIPToolKit.Models
                 if (CurrentMappedFile != null)
                 {
                     CurrentMappedFile.Dispose();
+                }
+                if (VideoFrame != null)
+                {
+                    VideoFrame.Dispose();
                 }
             });
             base.Dispose();
@@ -585,6 +593,7 @@ namespace FIPToolKit.Models
                                                         graphics.DrawImage(image.ToArray().ToNetImage(), new System.Drawing.Rectangle(0, 0, 320, 240), 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
                                                     }
                                                 }
+                                                VideoFrame = new Bitmap(bmp);
                                                 if (VideoPlayerProperties.ShowControls && player != null)
                                                 {
                                                     using (SolidBrush translucentBrush = new SolidBrush(System.Drawing.Color.FromArgb(50, 0, 0, 0)))
@@ -627,6 +636,42 @@ namespace FIPToolKit.Models
             {
                 CurrentMappedFile.Dispose();
                 CurrentMappedFile = null;
+            }
+        }
+
+        private void UpdateVideoFrame()
+        {
+            if (VideoFrame != null)
+            {
+                using (Bitmap bmp = new Bitmap(320, 240, System.Drawing.Imaging.PixelFormat.Format24bppRgb))
+                {
+                    using (Graphics graphics = Graphics.FromImage(bmp))
+                    {
+                        graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceOver;
+                        graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                        graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                        graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                        graphics.DrawImage(VideoFrame, new System.Drawing.Rectangle(0, 0, VideoFrame.Width, VideoFrame.Height), 0, 0, VideoFrame.Width, VideoFrame.Height, GraphicsUnit.Pixel);
+                        if (VideoPlayerProperties.ShowControls && player != null)
+                        {
+                            using (SolidBrush translucentBrush = new SolidBrush(System.Drawing.Color.FromArgb(50, 0, 0, 0)))
+                            {
+                                graphics.FillRectangle(translucentBrush, 0, 0, 34, 240);
+                                graphics.AddButtonIcon(player.Mute ? FIPToolKit.Properties.Resources.media_mute : FIPToolKit.Properties.Resources.media_volumeup, System.Drawing.Color.White, true, SoftButtons.Button1);
+                                graphics.AddButtonIcon(player.IsPlaying ? FIPToolKit.Properties.Resources.pause : FIPToolKit.Properties.Resources.play, System.Drawing.Color.White, false, SoftButtons.Button2);
+                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.rotate, System.Drawing.Color.White, false, SoftButtons.Button3);
+                                if (Playlist.Count > 1)
+                                {
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.media_previoustrack, System.Drawing.Color.White, false, SoftButtons.Button4);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.media_nexttrack, System.Drawing.Color.White, false, SoftButtons.Button5);
+                                }
+                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.Hide, System.Drawing.Color.White, false, SoftButtons.Button6);
+                            }
+                        }
+                        SendImage(bmp);
+                    }
+                }
             }
         }
 
@@ -734,10 +779,7 @@ namespace FIPToolKit.Models
                             {
                                 player.Play();
                             }
-                            if (player.VideoTrack == -1)
-                            {
-                                DrawMusicArtwork();
-                            }
+                            UpdatePage();
                         });
                     }
                     else if (player != null && player.Media == null && Playlist != null && Playlist.Count > 0)
@@ -759,13 +801,10 @@ namespace FIPToolKit.Models
                     break;
                 case SoftButtons.Button6:
                     VideoPlayerProperties.ShowControls = !VideoPlayerProperties.ShowControls;
-                    if (player != null && player.VideoTrack == -1)
+                    ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        ThreadPool.QueueUserWorkItem(_ =>
-                        {
-                            DrawMusicArtwork();
-                        });
-                    }
+                        UpdatePage();
+                    });
                     break;
                 case SoftButtons.Up:
                     ThreadPool.QueueUserWorkItem(_ =>
@@ -841,30 +880,34 @@ namespace FIPToolKit.Models
             return false;
         }
 
-        public override void Inactive()
+        public override void Inactive(bool sendEvent)
         {
-            base.Inactive();
             if (player != null && player.Media != null)
             {
-                player.Pause();
-                if (VideoPlayerProperties.PauseOtherMedia)
+                ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    OnInactive?.Invoke(this, new FIPPageEventArgs(this));
-                }
+                    if (player.IsPlaying)
+                    {
+                        player.Pause();
+                    }
+                });
             }
+            base.Inactive(false);
         }
 
-        public override void Active()
+        public override void Active(bool sendEvent)
         {
-            base.Active();
             if (player != null && player.Media != null)
             {
-                player.Play();
-                if (VideoPlayerProperties.PauseOtherMedia)
+                ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    OnActive?.Invoke(this, new FIPPageEventArgs(this));
-                }
+                    if (!player.IsPlaying)
+                    {
+                        player.Play();
+                    }
+                });
             }
+            base.Active(false);
         }
 
         private void LoadVideo()
@@ -1045,23 +1088,17 @@ namespace FIPToolKit.Models
                             if (img != null)
                             {
                                 track.Artwork = new Bitmap(img);
-                                if (player.VideoTrack == -1 && track == CurrentTrack)
-                                {
-                                    DrawMusicArtwork();
-                                }
+                                UpdatePage();
                             }
                         });
                     }
                     else if (CurrentTrack.Artwork == null)
                     {
                         CurrentTrack.Artwork = new Bitmap(player.VideoTrack == -1 ? FIPToolKit.Properties.Resources.Music : FIPToolKit.Properties.Resources.Video);
-                        if (player.VideoTrack == -1)
+                        ThreadPool.QueueUserWorkItem(_ =>
                         {
-                            ThreadPool.QueueUserWorkItem(_ =>
-                            {
-                                DrawMusicArtwork();
-                            });
-                        }
+                            UpdatePage();
+                        });
                     }
                 }
                 else if (e.MetadataType == MetadataType.NowPlaying)
@@ -1072,13 +1109,10 @@ namespace FIPToolKit.Models
                         CurrentTrack.Artwork = new Bitmap(player.VideoTrack == -1 && CurrentTrack.Filename.IsAudio()  ? FIPToolKit.Properties.Resources.Music : FIPToolKit.Properties.Resources.Video);
                     }
                     // May be an audio stream with no video.
-                    if (player.VideoTrack == -1)
+                    ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        ThreadPool.QueueUserWorkItem(_ =>
-                        {
-                            DrawMusicArtwork();
-                        });
-                    }
+                        UpdatePage();
+                    });
                 }
             }
         }
@@ -1104,13 +1138,10 @@ namespace FIPToolKit.Models
             {
                 VideoPlayerProperties.PortraitMode = portraitMode;
             }
-            if (player != null && player.VideoTrack == -1)
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                ThreadPool.QueueUserWorkItem(_ =>
-                {
-                    DrawMusicArtwork();
-                });
-            }
+                UpdatePage();
+            });
             OnSettingsUpdated?.Invoke(this, new FIPVideoPlayerEventArgs(this, index));
         }
 

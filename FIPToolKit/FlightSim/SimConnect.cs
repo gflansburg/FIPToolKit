@@ -1,21 +1,21 @@
-﻿using GMap.NET;
-using Microsoft.FlightSimulator.SimConnect;
+﻿using Microsoft.FlightSimulator.SimConnect;
 using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
-using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using FIPToolKit.FlightSim;
 
 namespace FIPToolKit.FlightSim
 {
-    public static class SimConnect
+    public class SimConnect
     {
+        public static readonly SimConnect Instance;
+
+        static SimConnect()
+        {
+            Instance = new SimConnect();
+        }
+
         enum EVENT_ID : uint
         {
             HEADING_BUG_SET,
@@ -98,7 +98,7 @@ namespace FIPToolKit.FlightSim
             public double AIRSPEED_TRUE;
             public double GROUND_ALTITUDE;
             public double GROUND_VELOCITY;
-            public double KOLLSMAN_SETTING_HG;
+            public double KOHLSMAN_SETTING_HG;
             public double AMBIENT_WIND_VELOCITY;
             public double AMBIENT_WIND_DIRECTION;
             public double AMBIENT_TEMPERATURE;
@@ -136,7 +136,7 @@ namespace FIPToolKit.FlightSim
             public double AIRSPEED_TRUE;
             public double GROUND_ALTITUDE;
             public double GROUND_VELOCITY;
-            public double KOLLSMAN_SETTING_HG;
+            public double KOHLSMAN_SETTING_HG;
             public double AMBIENT_WIND_VELOCITY;
             public double AMBIENT_WIND_DIRECTION;
             public double AMBIENT_TEMPERATURE;
@@ -178,55 +178,55 @@ namespace FIPToolKit.FlightSim
 
         public const int WM_USER_SIMCONNECT = 0x0402;
         
-        public static uint SearchRadius = 200000;
+        public uint SearchRadius { get; set; } = 200000;
 
-        private static Microsoft.FlightSimulator.SimConnect.SimConnect MicrosoftSimConnect = null;
-        public static Dictionary<string, Aircraft> Traffic = new Dictionary<string, Aircraft>();
-        public static AircraftData CurrentAircraft = new AircraftData();
-        public static Weather CurrentWeather = new Weather();
-        private static Timer trafficTimer = null;
+        private Microsoft.FlightSimulator.SimConnect.SimConnect MicrosoftSimConnect = null;
+        public Dictionary<string, Aircraft> Traffic = new Dictionary<string, Aircraft>();
+        public AircraftData CurrentAircraft = new AircraftData();
+        public Weather CurrentWeather = new Weather();
+        private Timer trafficTimer = null;
 
-        public static bool IsConnected { get; private set; }
-        public static bool IsRunning { get; private set; }
-        public static bool Error { get; private set; }
-        public static string ErrorMessage { get; private set; }
+        public bool IsConnected { get; private set; }
+        public bool IsRunning { get; private set; }
+        public bool Error { get; private set; }
+        public string ErrorMessage { get; private set; }
 
         public delegate void SimConnectFlightDataEventHandler(FULL_DATA data);
-        public static event SimConnectFlightDataEventHandler OnFlightDataReceived;
+        public event SimConnectFlightDataEventHandler OnFlightDataReceived;
 
         public delegate void SimConnectFlightDataByTypeEventHandler(FLIGHT_DATA data);
-        public static event SimConnectFlightDataByTypeEventHandler OnFlightDataByTypeReceived;
+        public event SimConnectFlightDataByTypeEventHandler OnFlightDataByTypeReceived;
 
         public delegate void SimConnectConnectEventHandler();
-        public static event SimConnectConnectEventHandler OnConnected;
+        public event SimConnectConnectEventHandler OnConnected;
 
         public delegate void SimConnectErrorEventHandler(string error);
-        public static event SimConnectErrorEventHandler OnError;
+        public event SimConnectErrorEventHandler OnError;
 
         public delegate void SimConnectQuitEventHandler();
-        public static event SimConnectQuitEventHandler OnQuit;
+        public event SimConnectQuitEventHandler OnQuit;
 
         public delegate void SimConnectEventHandler(bool isRunning);
-        public static event SimConnectEventHandler OnSim;
+        public event SimConnectEventHandler OnSim;
 
         public delegate void SimConnectTrafficEventHandler(uint objectId, Aircraft aircraft, TrafficEvent eventType);
-        public static event SimConnectTrafficEventHandler OnTrafficReceived;
+        public event SimConnectTrafficEventHandler OnTrafficReceived;
 
         public delegate void SimConnectADFSetEventHandler(uint heading);
-        public static event SimConnectADFSetEventHandler OnADFSet;
+        public event SimConnectADFSetEventHandler OnADFSet;
 
         public delegate void SimConnectVORSetEventHandler(uint heading);
-        public static event SimConnectVORSetEventHandler OnVOR1Set;
-        public static event SimConnectVORSetEventHandler OnVOR2Set;
+        public event SimConnectVORSetEventHandler OnVOR1Set;
+        public event SimConnectVORSetEventHandler OnVOR2Set;
 
         public delegate void SimConnectKohlsmanSetEventHandler(uint kohlsman);
-        public static event SimConnectKohlsmanSetEventHandler OnKohlsmanSet;
+        public event SimConnectKohlsmanSetEventHandler OnKohlsmanSet;
 
         public delegate void SimConnectKohlsmanEventHandler();
-        public static event SimConnectKohlsmanEventHandler OnKohlsmanInc;
-        public static event SimConnectKohlsmanEventHandler OnKohlsmanDec;
+        public event SimConnectKohlsmanEventHandler OnKohlsmanInc;
+        public event SimConnectKohlsmanEventHandler OnKohlsmanDec;
 
-        public static void Initialize(IntPtr hWnd)
+        public void Initialize(IntPtr hWnd)
         {
             try
             {
@@ -262,13 +262,13 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void ClearError()
+        public void ClearError()
         {
             Error = false;
             ErrorMessage = String.Empty;
         }
 
-        public static void Deinitialize()
+        public void Deinitialize()
         {
             if (MicrosoftSimConnect != null)
             {
@@ -285,7 +285,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void SetAPHeading(uint heading)
+        public void SetAPHeading(uint heading)
         {
             if (MicrosoftSimConnect != null)
             {
@@ -303,7 +303,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void SetADF(uint heading)
+        public void SetADF(uint heading)
         {
             if (MicrosoftSimConnect != null)
             {
@@ -322,7 +322,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void SetKohlsman(uint kohlsman)
+        public void SetKohlsman(uint kohlsman)
         {
             if (MicrosoftSimConnect != null)
             {
@@ -341,7 +341,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void IncKohlsman()
+        public void IncKohlsman()
         {
             if (MicrosoftSimConnect != null)
             {
@@ -360,7 +360,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void DecKohlsman()
+        public void DecKohlsman()
         {
             if (MicrosoftSimConnect != null)
             {
@@ -379,7 +379,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void SetVOR1(uint heading)
+        public void SetVOR1(uint heading)
         {
             if (MicrosoftSimConnect != null)
             {
@@ -398,7 +398,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void SetVOR2(uint heading)
+        public void SetVOR2(uint heading)
         {
             if (MicrosoftSimConnect != null)
             {
@@ -417,7 +417,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private static void MicrosoftSimConnect_OnRecvEvent(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_EVENT data)
+        private void MicrosoftSimConnect_OnRecvEvent(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_EVENT data)
         {
             if(data.uEventID == (uint)EVENT_ID.SIM)
             {
@@ -453,7 +453,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private static void MicrosoftSimConnect_OnRecvQuit(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV data)
+        private void MicrosoftSimConnect_OnRecvQuit(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV data)
         {
             if(trafficTimer != null)
             {
@@ -468,7 +468,7 @@ namespace FIPToolKit.FlightSim
             OnQuit?.Invoke();
         }
 
-        private static void MicrosoftSimConnect_OnRecvException(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
+        private void MicrosoftSimConnect_OnRecvException(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_EXCEPTION data)
         {
             if (data.dwException == (uint)SIMCONNECT_EXCEPTION.UNRECOGNIZED_ID)
             {
@@ -499,7 +499,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private static void MicrosoftSimConnect_OnRecvSimobjectDataBytype(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
+        private void MicrosoftSimConnect_OnRecvSimobjectDataBytype(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
         {
             try
             {
@@ -535,7 +535,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private static void MicrosoftSimConnect_OnRecvSimobjectData(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA data)
+        private void MicrosoftSimConnect_OnRecvSimobjectData(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA data)
         {
             try
             {
@@ -601,7 +601,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private static void MicrosoftSimConnect_OnRecvOpen(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_OPEN data)
+        private void MicrosoftSimConnect_OnRecvOpen(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_OPEN data)
         {
             try
             {
@@ -741,7 +741,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        private static void RequestTrafficData(object state)
+        private void RequestTrafficData(object state)
         {
             if (MicrosoftSimConnect != null && IsConnected && IsRunning)
             {
@@ -765,7 +765,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void RequestFullData()
+        public void RequestFullData()
         {
             if (MicrosoftSimConnect != null && IsConnected && IsRunning)
             {
@@ -773,7 +773,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public static void ReceiveMessage()
+        public void ReceiveMessage()
         {
             if(MicrosoftSimConnect != null)
             {

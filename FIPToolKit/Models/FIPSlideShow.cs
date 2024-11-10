@@ -1,17 +1,10 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.Threading;
-using FIPToolKit.Tools;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
@@ -27,8 +20,6 @@ namespace FIPToolKit.Models
 	
     public class FIPSlideShow : FIPPage
     {
-		[XmlIgnore]
-		[JsonIgnore]
 		public AbortableBackgroundWorker Timer { get; set; }
 		private AbortableBackgroundWorker AnimationBackgroundWorker { get; set; }
 

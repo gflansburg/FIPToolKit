@@ -1,50 +1,30 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.Threading;
 using FIPToolKit.Tools;
-using Newtonsoft.Json;
 using Saitek.DirectOutput;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
     public class FIPFlightShare : FIPPage
     {
-		[XmlIgnore]
-		[JsonIgnore]
 		public AbortableBackgroundWorker Timer { get; set; }
 
 		private bool Stop { get; set; }
 
-		[XmlIgnore]
-		[JsonIgnore]
 		public IntPtr Map { get; set; }
 
-		[XmlIgnore]
-		[JsonIgnore]
 		public IntPtr FollowMyPlane { get; set; }
 
-		[XmlIgnore]
-		[JsonIgnore]
 		public IntPtr LockWaypoints { get; set; }
 
-		[XmlIgnore]
-		[JsonIgnore]
 		public IntPtr ClearTracks { get; set; }
 
-		[XmlIgnore]
-		[JsonIgnore]
 		public IntPtr GoToMyPlane { get; set; }
 
 		private const int PIXEL_SCROLL = 50;

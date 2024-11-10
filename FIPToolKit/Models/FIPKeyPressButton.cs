@@ -1,16 +1,10 @@
 ﻿using FIPToolKit.Threading;
 using FIPToolKit.Tools;
-using FSUIPC;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Media;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
@@ -134,7 +128,7 @@ namespace FIPToolKit.Models
                         KeyPress.SendKeys(KeyPressBreak, VirtualKeyCodes.ToArray(), KeyPressLength);
                         break;
                     case KeyAPIModes.FSUIPC:
-                        if (FIPFSUIPC.IsConnected && FIPFSUIPC.ReadyToFly == FlightSim.ReadyToFly.Ready)
+                        if (FlightSim.FlightSimProviders.FIPFSUIPC.IsConnected && FlightSim.FlightSimProviders.FIPFSUIPC.ReadyToFly == FlightSim.ReadyToFly.Ready)
                         {
                             KeyPress.SendKeyToFS(KeyPressBreak, VirtualKeyCodes.ToArray());
                         }

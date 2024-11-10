@@ -646,9 +646,8 @@ namespace FIPToolKit.Models
 
         private LibVLC libVLC = null;
         private MediaPlayer player = null;
-        private Media media = null;
-        private bool opening = false;
-
+        public Media Media { get; private set; }
+        public bool Opening { get; set; }
         public FIPMusicLibrary Library { get; set; }
         public FIPMusicSong CurrentSong { get; set; }
         public FIPMusicArtist CurrentArtist { get; set; }
@@ -667,7 +666,7 @@ namespace FIPToolKit.Models
         private string Error { get; set; }
         public int PlaylistIndex { get; private set; }
         public bool IsPlaying { get; set; }
-        public bool Resume { get; private set; }
+        public bool Resume { get; set; }
         public int LibraryPageNumber { get; set; }
 
 
@@ -721,14 +720,14 @@ namespace FIPToolKit.Models
 
         private void Properties_OnMuteChanged(object sender, EventArgs e)
         {
-            if (player != null && player.Mute != MusicPlayerProperties.Mute)
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                ThreadPool.QueueUserWorkItem(_ =>
+                if (player != null && player.Mute != MusicPlayerProperties.Mute)
                 {
                     player.Mute = MusicPlayerProperties.Mute;
-                    UpdatePage();
-                });
-            }
+                }
+                UpdatePage();
+            });
             OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
         }
 
@@ -814,7 +813,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        public void Init()
+        public virtual void Init()
         {
             if (!Initialized)
             {
@@ -909,7 +908,7 @@ namespace FIPToolKit.Models
 
         private void CreatePlayer()
         {
-            if (player == null)
+            if (player == null && libVLC != null)
             {
                 player = new MediaPlayer(libVLC);
                 player.EnableHardwareDecoding = true;
@@ -939,21 +938,39 @@ namespace FIPToolKit.Models
                 player.Opening += (s, e) =>
                 {
                     Error = null;
-                    opening = true;
+                    Opening = true;
                     UpdatePage();
                 };
                 player.Playing += (s, e) =>
                 {
                     IsPlaying = true;
-                    if (opening)
+                    if (Opening)
                     {
-                        opening = false;
-                        UpdatePage();
+                        Opening = false;
                         if (Resume)
                         {
-                            ThreadPool.QueueUserWorkItem(_ => player.Pause());
+                            ThreadPool.QueueUserWorkItem(_ => 
+                            { 
+                                if (player != null) 
+                                { 
+                                    player.Pause(); 
+                                } 
+                            });
                         }
                     }
+                    if (MusicPlayerProperties.PauseOtherMedia)
+                    {
+                        SendActive();
+                    }
+                    UpdatePage();
+                };
+                player.Paused += (s, e) =>
+                {
+                    if (MusicPlayerProperties.PauseOtherMedia)
+                    {
+                        SendInactive();
+                    }
+                    UpdatePage();
                 };
                 player.EndReached += (s, e) =>
                 {
@@ -966,10 +983,10 @@ namespace FIPToolKit.Models
         {
             ThreadPool.QueueUserWorkItem(_ =>
             {
-                if (media != null)
+                if (Media != null)
                 {
-                    media.Dispose();
-                    media = null;
+                    Media.Dispose();
+                    Media = null;
                 }
                 Stop();
                 libVLC.Dispose();
@@ -1355,7 +1372,7 @@ namespace FIPToolKit.Models
                     case SoftButtons.Button4:
                         return (Library != null);
                     case SoftButtons.Button6:
-                        return (Library != null && !IsLoading);
+                        return (!IsLoading && Library != null && Library.SongCount > 0);
                 }
             }
             else
@@ -1880,35 +1897,44 @@ namespace FIPToolKit.Models
             RandomList = GetUniqueRandoms(Playlist.Count);
         }
 
-        public void ExternalPause()
+        public virtual void ExternalPause()
         {
-            if (player != null && (player.IsPlaying || IsLoading || opening) && !Resume)
+            if (Player != null && (Player.IsPlaying || IsLoading || Opening) && !Resume)
             {
                 Resume = true;
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    if (!IsLoading && !opening)
+                    if (Player != null && (Player.IsPlaying || IsLoading || Opening))
                     {
-                        player.Pause();
+                        if (!IsLoading && !Opening)
+                        {
+                            player.Pause();
+                        }
                     }
+                    UpdatePage();
                 });
             }
         }
 
-        public void ExternalResume()
+        public virtual void ExternalResume()
         {
-            if (player != null && !player.IsPlaying && Resume)
+            if (Player != null && !Player.IsPlaying && !Opening && CanPlay() && Library != null && !IsLoading && Resume)
             {
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    if (media == null)
+                    if (Player != null && !Player.IsPlaying && !Opening && CanPlay() && Library != null && !IsLoading)
                     {
-                        PlayFirstSong(true, MusicPlayerProperties.Resume);
+                        Opening = true;
+                        if (Media == null)
+                        {
+                            PlayFirstSong(true, MusicPlayerProperties.Resume);
+                        }
+                        else
+                        {
+                            Player.Play();
+                        }
                     }
-                    else
-                    {
-                        player.Play();
-                    }
+                    UpdatePage();
                 });
             }
             Resume = false;
@@ -2011,7 +2037,7 @@ namespace FIPToolKit.Models
                     CurrentArtist = Library.Artists.FirstOrDefault(a => a.ArtistName.Equals(CurrentAlbum.IsPlaylist ? "Playlists" : CurrentSong.Artist, StringComparison.OrdinalIgnoreCase));
                     UpdatePage();
                     SongChanged();
-                    FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs();
+                    FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs(this);
                     OnCanPlay?.Invoke(this, canPlay);
                     if (!canPlay.CanPlay)
                     {
@@ -2105,7 +2131,7 @@ namespace FIPToolKit.Models
                     }
                     UpdatePage();
                     SongChanged();
-                    FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs();
+                    FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs(this);
                     OnCanPlay?.Invoke(this, canPlay);
                     if (!canPlay.CanPlay)
                     {
@@ -2183,7 +2209,7 @@ namespace FIPToolKit.Models
                     }
                     UpdatePage();
                     SongChanged();
-                    FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs();
+                    FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs(this);
                     OnCanPlay?.Invoke(this, canPlay);
                     if (!canPlay.CanPlay)
                     {
@@ -2204,10 +2230,10 @@ namespace FIPToolKit.Models
             {
                 Thread.Sleep(100);
             }
-            if (media != null)
+            if (Media != null)
             {
-                media.Dispose();
-                media = null;
+                Media.Dispose();
+                Media = null;
             }
             if (song != null && !string.IsNullOrEmpty(song.Filename))
             {
@@ -2216,23 +2242,23 @@ namespace FIPToolKit.Models
                 MusicPlayerProperties.LastSong = song.Filename;
                 if (song.IsStream)
                 {
-                    media = new Media(libVLC, song.Filename, FromType.FromLocation);
+                    Media = new Media(libVLC, song.Filename, FromType.FromLocation);
                 }
                 else if (File.Exists(song.Filename))
                 {
-                    media = new Media(libVLC, song.Filename);
+                    Media = new Media(libVLC, song.Filename);
                 }
-                if (media != null)
+                if (Media != null)
                 {
                     try
                     {
-                        media.MetaChanged += Media_MetaChanged;
+                        Media.MetaChanged += Media_MetaChanged;
                         if (!Resume)
                         {
                             if (player != null && play)
                             {
                                 IsPlaying = true;
-                                player.Play(media);
+                                player.Play(Media);
                             }
                         }
                     }
@@ -2394,7 +2420,7 @@ namespace FIPToolKit.Models
         }
 
         private bool _stopped = false;
-        private void Stop()
+        public void Stop()
         {
             _stopped = false;
             MediaPlayer oldPlayer = player;
@@ -2498,17 +2524,6 @@ namespace FIPToolKit.Models
                                     string text = string.Format("{0}\n{1}", CurrentAlbum.IsPlaylist && CurrentSong.MetaData != null ? CurrentSong.MetaData.Title : CurrentSong.Title, CurrentAlbum.IsPlaylist && CurrentSong.MetaData != null ? CurrentSong.MetaData.Artist : !string.IsNullOrEmpty(Error) ? Error : CurrentSong.Artist);
                                     graphics.DrawString(text, MusicPlayerProperties.Font, brush, new RectangleF(32, 0, 288, 240), format);
                                 }
-                                if (player != null)
-                                {
-                                    graphics.AddButtonIcon(MusicPlayerProperties.Mute ? FIPToolKit.Properties.Resources.media_mute : FIPToolKit.Properties.Resources.media_volumeup, MusicPlayerProperties.Mute ? Color.Red : Color.Green, true, SoftButtons.Button1);
-                                }
-                                if (player != null)
-                                {
-                                    graphics.AddButtonIcon(player.State == VLCState.Playing ? FIPToolKit.Properties.Resources.pause : FIPToolKit.Properties.Resources.play, player.State == VLCState.Playing ? Color.Yellow : Color.Blue, true, SoftButtons.Button2);
-                                }
-                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.shuffle, MusicPlayerProperties.Shuffle == true ? Color.Green : Color.White, true, SoftButtons.Button3);
-                                graphics.AddButtonIcon(MusicPlayerProperties.Repeat == MusicRepeatState.Track ? FIPToolKit.Properties.Resources.repeat_one : FIPToolKit.Properties.Resources.repeat, MusicPlayerProperties.Repeat != MusicRepeatState.Off ? Color.Green : Color.White, true, SoftButtons.Button4);
-                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.playlist, Color.Orange, true, SoftButtons.Button6);
                             }
                             else if (Playlist == null || Playlist.Count == 0)
                             {
@@ -2518,6 +2533,7 @@ namespace FIPToolKit.Models
                             {
                                 graphics.DrawString(EmptySongMessage, MusicPlayerProperties.Font, brush, new RectangleF(0, 0, 320, 240), format);
                             }
+                            DrawButtons(graphics);
                         }
                     }
                 }
@@ -2527,6 +2543,25 @@ namespace FIPToolKit.Models
             catch
             {
             }
+        }
+
+        protected override void DrawButtons(Graphics g)
+        {
+            if (player != null)
+            {
+                g.AddButtonIcon(MusicPlayerProperties.Mute ? FIPToolKit.Properties.Resources.media_mute : FIPToolKit.Properties.Resources.media_volumeup, MusicPlayerProperties.Mute ? Color.Red : Color.Green, true, SoftButtons.Button1);
+            }
+            if (player != null)
+            {
+                g.AddButtonIcon(player.State == VLCState.Playing ? FIPToolKit.Properties.Resources.pause : FIPToolKit.Properties.Resources.play, player.State == VLCState.Playing ? Color.Yellow : Color.Blue, true, SoftButtons.Button2);
+            }
+            g.AddButtonIcon(FIPToolKit.Properties.Resources.shuffle, MusicPlayerProperties.Shuffle == true ? Color.Green : Color.White, true, SoftButtons.Button3);
+            g.AddButtonIcon(MusicPlayerProperties.Repeat == MusicRepeatState.Track ? FIPToolKit.Properties.Resources.repeat_one : FIPToolKit.Properties.Resources.repeat, MusicPlayerProperties.Repeat != MusicRepeatState.Off ? Color.Green : Color.White, true, SoftButtons.Button4);
+            if (!IsLoading && Library != null && Library.SongCount > 0)
+            { 
+                g.AddButtonIcon(FIPToolKit.Properties.Resources.playlist, Color.Orange, true, SoftButtons.Button6);
+            }
+            base.DrawButtons(g);
         }
 
         internal virtual void UpdatePlayList()
@@ -2714,7 +2749,7 @@ namespace FIPToolKit.Models
 
         public bool CanPlay()
         {
-            FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs();
+            FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs(this);
             OnCanPlay?.Invoke(this, canPlay);
             if (!canPlay.CanPlay)
             {
@@ -2749,6 +2784,24 @@ namespace FIPToolKit.Models
             set
             {
                 MusicPlayerProperties.Volume = value;
+            }
+        }
+
+        public override void Inactive(bool sendEvent)
+        {
+            base.Inactive(false);
+        }
+
+        public override void Active(bool sendEvent)
+        {
+            base.Active(false);
+        }
+
+        public bool CanPlayOther
+        {
+            get
+            {
+                return !(MusicPlayerProperties.PauseOtherMedia && player != null && player.IsPlaying);
             }
         }
     }

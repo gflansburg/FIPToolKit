@@ -1,25 +1,14 @@
-﻿using FIPToolKit.Drawing;
-using FIPToolKit.FlightSim;
-using FIPToolKit.Threading;
-using Newtonsoft.Json;
-using Nito.AsyncEx;
-using Saitek.DirectOutput;
+﻿using FIPToolKit.FlightSim;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
     public abstract class FIPSimConnectNonLinearAnalogGauge : FIPSimConnectAnalogGauge
     {
-        [XmlIgnore]
-        [JsonIgnore]
         public List<NonLinearSetting> NonLinearSettings { get; set; }
 
         public FIPSimConnectNonLinearAnalogGauge(FIPAnalogGaugeProperties properties) : base(properties)

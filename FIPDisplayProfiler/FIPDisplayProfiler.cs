@@ -1,26 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Saitek.DirectOutput;
-using System.Threading;
-using System.Drawing.Drawing2D;
 using FIPToolKit.Models;
-using System.Drawing.Text;
 using System.IO;
-using System.Reflection;
 using FIPToolKit.Tools;
 using System.Diagnostics;
-using SpotifyAPI.Web.Models;
 using Microsoft.Web.WebView2.Core;
-using ProtoBuf.Meta;
-using ProtoBuf.WellKnownTypes;
-using System.Text.RegularExpressions;
 
 namespace FIPDisplayProfiler
 {
@@ -62,7 +48,7 @@ namespace FIPDisplayProfiler
                 Close();
                 return;
             }
-            FIPSimConnect.MainWindowHandle = this.Handle;
+            FIPToolKit.FlightSim.FlightSimProviders.FIPSimConnect.MainWindowHandle = this.Handle;
         }
 
         private void Engine_OnPageChanged(object sender, FIPDeviceActivePage page)
@@ -169,15 +155,17 @@ namespace FIPDisplayProfiler
             DeviceControl control = new DeviceControl(webView21);
             control.MainWindowHandle = this.Handle;
             control.Device = device;
-            control.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            control.OnVideoPlayerActive += Control_OnVideoPlayerActive;
-            control.OnVideoPlayerInactive += Control_OnVideoPlayerInactive;
+            control.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            control.OnMediaPlayerActive += Control_OnMediaPlayerActive;
+            control.OnMediaPlayerInactive += Control_OnMediaPlayerInactive;
             control.OnPlayerCanPlay += Control_OnPlayerCanPlay;
             control.OnMuteChanged += Control_OnMuteChanged;
             control.OnVolumeChanged += Control_OnVolumeChanged;
+            control.OnGetMute += Control_OnGetMute;
+            control.OnGetVolume += Control_OnGetVolume;
             TabPage tab = new TabPage(device.SerialNumber);
             tab.Size = control.Size;
-            tab.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            tab.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tab.Controls.Add(control);
             tabDevices.TabPages.Add(tab);
             if(makeActive)
@@ -254,8 +242,8 @@ namespace FIPDisplayProfiler
                 }
                 Engine.Dispose();
                 Engine = null;
-                FIPSimConnect.Deinitialize();
-                FIPFSUIPC.Deinitialize();
+                FIPToolKit.FlightSim.FlightSimProviders.FIPSimConnect.Deinitialize();
+                FIPToolKit.FlightSim.FlightSimProviders.FIPFSUIPC.Deinitialize();
             }
             if (Properties.Settings.Default.CloseFlightShareOnExit)
             {
@@ -523,7 +511,7 @@ namespace FIPDisplayProfiler
         {
             if (m.Msg == FIPToolKit.FlightSim.SimConnect.WM_USER_SIMCONNECT)
             {
-                FIPSimConnect.ReceiveMessage();
+                FIPToolKit.FlightSim.FlightSimProviders.FIPSimConnect.ReceiveMessage();
                 return;
             }
             else if (m.Msg == NativeMethods.WM_SYSCOMMAND)
@@ -725,26 +713,26 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void Control_OnVideoPlayerInactive(object sender, FIPPageEventArgs e)
+        private void Control_OnMediaPlayerInactive(object sender, FIPPageEventArgs e)
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
                 if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
-                    deviceControl.ResumeOtherMedia();
+                    deviceControl.ResumeOtherMedia(e.Page);
                 }
             }
         }
 
-        private void Control_OnVideoPlayerActive(object sender, FIPPageEventArgs e)
+        private void Control_OnMediaPlayerActive(object sender, FIPPageEventArgs e)
         {
             foreach (TabPage tab in tabDevices.TabPages)
             {
                 if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
-                    deviceControl.PauseOtherMedia();
+                    deviceControl.PauseOtherMedia(e.Page);
                 }
             }
         }
@@ -769,6 +757,30 @@ namespace FIPDisplayProfiler
                 {
                     DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
                     deviceControl.MuteChanged(e.Page);
+                }
+            }
+        }
+
+        private void Control_OnGetVolume(object sender, ref int value)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    value = deviceControl.GetVolume(value);
+                }
+            }
+        }
+
+        private void Control_OnGetMute(object sender, ref bool value)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    value = deviceControl.GetMute(value);
                 }
             }
         }

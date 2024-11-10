@@ -1,18 +1,10 @@
-﻿using FIPToolKit.Tools;
-using Newtonsoft.Json;
-using Saitek.DirectOutput;
-using SpotifyAPI.Web.Models;
+﻿using Saitek.DirectOutput;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
@@ -23,6 +15,13 @@ namespace FIPToolKit.Models
         X52Pro,
         X56RhinoStick,
         X56RhinoThrottle
+    }
+
+    public enum Direction
+    {
+        Up,
+        Down,
+        Delete
     }
 
     public class FIPDeviceEventArgs : EventArgs
@@ -44,22 +43,14 @@ namespace FIPToolKit.Models
 
     public class FIPDevice : IDisposable
     {
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDisposed { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public FIPEngine FIPEngine { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDisposing { get; private set; }
 
         private DeviceClient _deviceClient;
 
-        [XmlIgnore]
-        [JsonIgnore]
         public DeviceClient DeviceClient
         {
             get
@@ -86,20 +77,14 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public IntPtr DeviceId { get; private set; }
 
         public string SerialNumber { get; set; }
 
 
         [Browsable(false)]
-        [XmlElement(ElementName = "Pages")]
-        [JsonProperty(PropertyName = "Pages")]
         public List<FIPPage> _pages { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public IEnumerable<FIPPage> Pages
         {
             get
@@ -120,8 +105,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public int PageCount
         {
             get
@@ -130,13 +113,9 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool SoftButtonHandlerAttached { get; private set; }
 
         private bool _isDirty;
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDirty
         {
             get
@@ -167,12 +146,8 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public uint ActivePage { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public FIPPage CurrentPage
         {
             get
@@ -227,8 +202,6 @@ namespace FIPToolKit.Models
             DeviceClient = deviceClient;
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public DeviceType DeviceType
         {
             get
@@ -257,39 +230,73 @@ namespace FIPToolKit.Models
             }
         }
 
-        public void ReloadPages(FIPPage activePage = null)
+        public void ReloadPages(FIPPage activePage, Direction direction)
         {
             if (DeviceType == DeviceType.Fip)
             {
-                for (uint i = 0; i < this.PageCount; i++)
+                List<FIPPage> pages = Pages.OrderBy(p => p.Properties.Page).ToList();
+                int index = pages.IndexOf(activePage);
+                if (direction == Direction.Delete)
                 {
-                    // Temporarily remove from the FIP device
-                    try
-                    {
-                        DeviceClient.RemovePage(_pages[(int)i].Properties.Page);
-                    }
-                    catch
-                    {
-                    }
-                    // Reorder the page index
-                    _pages[(int)i].Properties.Page = i + 1;
+                    RemovePage(activePage);
+                    activePage.Dispose();
                     IsDirty = true;
                 }
-                foreach (FIPPage page in this.Pages)
+                else
                 {
-                    // Readd the page to the FIP device
-                    if (activePage != null)
+                    if (direction == Direction.Up)
                     {
-                        // Set a new active page. Not sure what happens if we add all pages without setting one as active.
-                        DeviceClient.AddPage(page.Properties.Page, activePage.Properties.Page == page.Properties.Page ? PageFlags.SetAsActive : PageFlags.None);
-                        page.IsAddedToDevice = true;
-                        CurrentPage = activePage;
+                        if (index > 0)
+                        {
+                            pages[index - 1].Properties.Page++;
+                        }
+                        activePage.Properties.Page--;
                     }
-                    else
+                    else if (direction == Direction.Down)
                     {
-                        // Restore the currently active page
-                        DeviceClient.AddPage(page.Properties.Page, CurrentPage != null && CurrentPage.Properties.Page == page.Properties.Page ? PageFlags.SetAsActive : PageFlags.None);
-                        page.IsAddedToDevice = true;
+                        if (index < pages.Count - 1)
+                        {
+                            pages[index + 1].Properties.Page--;
+                        }
+                        activePage.Properties.Page++;
+                    }
+                    foreach (FIPPage page in pages)
+                    {
+                        // Temporarily remove from the FIP device
+                        int i = pages.IndexOf(page);
+                        if (i >= (direction == Direction.Up ? index - 1 : index))
+                        {
+                            try
+                            {
+                                DeviceClient.RemovePage(page.Properties.Page);
+                            }
+                            catch
+                            {
+                            }
+                        }
+                    }
+                    IsDirty = true;
+                }
+                pages = Pages.OrderBy(p => p.Properties.Page).ToList();
+                foreach (FIPPage page in Pages.OrderBy(p => p.Properties.Page))
+                {
+                    int i = pages.IndexOf(page);
+                    if (i >= (direction == Direction.Up ? index - 1 : index))
+                    {
+                        // Readd the page to the FIP device
+                        if (page == activePage)
+                        {
+                            // Set a new active page. Not sure what happens if we add all pages without setting one as active.
+                            DeviceClient.AddPage(page.Properties.Page, activePage.Properties.Page == page.Properties.Page ? PageFlags.SetAsActive : PageFlags.None);
+                            page.IsAddedToDevice = true;
+                            CurrentPage = activePage;
+                        }
+                        else
+                        {
+                            // Restore the currently active page
+                            DeviceClient.AddPage(page.Properties.Page, CurrentPage != null && CurrentPage.Properties.Page == page.Properties.Page ? PageFlags.SetAsActive : PageFlags.None);
+                            page.IsAddedToDevice = true;
+                        }
                     }
                 }
             }
@@ -301,10 +308,15 @@ namespace FIPToolKit.Models
             {
                 if (page != null)
                 {
+                    FIPPage currentPage = CurrentPage;
                     _pages.Add(page);
                     page.Properties.Page = (uint)PageCount;
                     if (isActive)
                     {
+                        if (currentPage != null)
+                        {
+                            currentPage.Inactive();
+                        }
                         CurrentPage = page;
                     }
                     DeviceClient.AddPage(page.Properties.Page, isActive ? PageFlags.SetAsActive : PageFlags.None);
@@ -325,7 +337,7 @@ namespace FIPToolKit.Models
                         page.Active();
                         foreach (FIPPage p in Pages)
                         {
-                            if (p != page)
+                            if (p != page && p != currentPage)
                             {
                                 p.Inactive();
                             }
@@ -377,8 +389,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public Bitmap GetDefaultPageImage
         {
             get

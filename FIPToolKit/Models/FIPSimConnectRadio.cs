@@ -1,33 +1,20 @@
-﻿using FIPToolKit.Drawing;
-using FIPToolKit.FlightSim;
+﻿using FIPToolKit.FlightSim;
 using FIPToolKit.Tools;
-using GMap.NET.MapProviders;
-using LibVLCSharp.Shared;
-using Newtonsoft.Json;
-using RestSharp;
-using Saitek.DirectOutput;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Threading;
-using System.Web;
 
 namespace FIPToolKit.Models
 {
     public class FIPSimConnectRadio : FIPRadioPlayer, IFIPSimConnect
     {
-        public FIPSimConnect FIPSimConnect { get; set; } = new FIPSimConnect();
+        public SimConnectProvider FIPSimConnect => FlightSimProviders.FIPSimConnect;
 
         public FIPSimConnectRadio(FIPRadioProperties properties) : base(properties) 
         {
             properties.ControlType = GetType().FullName;
-            properties.Name = "Radio (SimConnect)";
+            properties.Name = "SimConnect Radio";
             properties.IsDirty = false;
+            CanPlayFirstSong = FIPSimConnect.IsConnected;
             FIPSimConnect.OnFlightDataReceived += FIPSimConnect_OnFlightDataReceived;
+            FIPSimConnect.OnFlightDataByTypeReceived += FIPSimConnect_OnFlightDataByTypeReceived;
             FIPSimConnect.OnConnected += FIPSimConnect_OnConnected;
         }
 
@@ -36,10 +23,20 @@ namespace FIPToolKit.Models
             CanPlayFirstSong = true;
         }
 
-        private LatLong cachedLocation = null;
         private void FIPSimConnect_OnFlightDataReceived(SimConnect.FULL_DATA data)
         {
-            LatLong location = new LatLong(data.PLANE_LATITUDE, data.PLANE_LONGITUDE);
+            SetListenerLocation(data.PLANE_LATITUDE, data.PLANE_LONGITUDE);
+        }
+
+        private void FIPSimConnect_OnFlightDataByTypeReceived(SimConnect.FLIGHT_DATA data)
+        {
+            SetListenerLocation(data.PLANE_LATITUDE, data.PLANE_LONGITUDE);
+        }
+
+        private LatLong cachedLocation = null;
+        private void SetListenerLocation(double latitude, double longitude)
+        {
+            LatLong location = new LatLong(latitude, longitude);
             if (location.IsEmpty())
             {
                 ListenerLocation = LocalLocation;

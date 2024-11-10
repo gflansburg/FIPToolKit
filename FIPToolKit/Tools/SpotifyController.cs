@@ -1,6 +1,4 @@
-﻿using FIPToolKit.Models;
-using FIPToolKit.Threading;
-using Newtonsoft.Json;
+﻿using FIPToolKit.Threading;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Enums;
 using SpotifyAPI.Web.Models;
@@ -9,13 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Windows.Forms;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Tools
 {
@@ -28,23 +21,28 @@ namespace FIPToolKit.Tools
         Running = Playing | Paused
     }
 
-    [Serializable]
     public class SpotifyController : IDisposable
     {
         private AbortableBackgroundWorker timer;
         private AbortableBackgroundWorker lazyLoader;
         private bool stop = false;
         private bool stopLazyLoader = false;
-        private int _volumePercent = 0;
+        private int _volumePercent = -1;  //For Mute Fuction
         private DateTime? lastFullRequestTime = null;
         private List<Bitmap> _albumArtwork = new List<Bitmap>();
         private PlaybackContext _playbackContext;
         private SpotifyStateType _spotifyState = SpotifyStateType.Closed;
         public event TrackStateChangedEventHandler TrackStateChanged;
         public event ImageStateChangedEventHandler ImageStateChanged;
+        public event PlayerStateChangedEventHandler PlayerStateChanged;
+        public event VolumeChangedEventHandler VolumeChanged;
+        public event MuteChangedEventHandler MuteChanged;
         public event ErrorEventHandler OnError;
         public delegate void TrackStateChangedEventHandler(PlaybackContext playback, SpotifyStateType state);
         public delegate void ImageStateChangedEventHandler(List<Bitmap> image);
+        public delegate void PlayerStateChangedEventHandler(SpotifyStateType state);
+        public delegate void VolumeChangedEventHandler(int volume);
+        public delegate void MuteChangedEventHandler(bool mute);
         public delegate void ErrorEventHandler(string message);
 
         private const int REFRESH_RATE = 2000;
@@ -69,8 +67,6 @@ namespace FIPToolKit.Tools
         public bool CacheArtwork { get; set; }
         public SpotifyWebAPI SpotifyWebAPI { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public int RetryAfter
         {
             get
@@ -83,8 +79,6 @@ namespace FIPToolKit.Tools
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public SpotifyStateType SpotifyState
         {
             get
@@ -97,13 +91,11 @@ namespace FIPToolKit.Tools
                 if (value != _spotifyState)
                 {
                     _spotifyState = value;
-                    TrackStateChanged?.Invoke(_playbackContext, _spotifyState);
+                    PlayerStateChanged?.Invoke(_spotifyState);
                 }
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public string Error
         {
             get
@@ -112,12 +104,10 @@ namespace FIPToolKit.Tools
                 {
                     return _playbackContext.Error.Message;
                 }
-                return String.Empty;
+                return string.Empty;
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public string TrackTitle
         {
             get
@@ -126,12 +116,10 @@ namespace FIPToolKit.Tools
                 {
                     return _playbackContext.Item.Name;
                 }
-                return String.Empty;
+                return string.Empty;
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public List<Bitmap> AlbumArtwork
         {
             get
@@ -140,8 +128,6 @@ namespace FIPToolKit.Tools
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public string TrackArtist
         {
             get
@@ -153,14 +139,12 @@ namespace FIPToolKit.Tools
                     {
                         artists.Add(artist.Name);
                     }
-                    return String.Join(", ", artists);
+                    return string.Join(", ", artists);
                 }
-                return String.Empty;
+                return string.Empty;
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public string TrackAlbum
         {
             get
@@ -169,7 +153,26 @@ namespace FIPToolKit.Tools
                 {
                     return _playbackContext.Item.Album.Name;
                 }
-                return String.Empty;
+                return string.Empty;
+            }
+        }
+
+        public int Volume
+        {
+            get
+            {
+                return (SpotifyWebAPI != null && _playbackContext != null && _playbackContext.Device != null ? _playbackContext.Device.VolumePercent : 100);
+            }
+            set
+            {
+                if (SpotifyWebAPI != null && _playbackContext != null && _playbackContext.Device != null)
+                {
+                    if (_playbackContext.Device.VolumePercent != value)
+                    {
+                        _playbackContext.Device.VolumePercent = value;
+                        SpotifyWebAPI.SetVolumeAsync(_playbackContext.Device.VolumePercent);
+                    }
+                }
             }
         }
 
@@ -184,8 +187,6 @@ namespace FIPToolKit.Tools
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsPlaying
         {
             get
@@ -202,23 +203,32 @@ namespace FIPToolKit.Tools
         {
             get
             {
-                return (_playbackContext != null && _playbackContext.Device != null && _playbackContext.Device.VolumePercent == 0);
+                return (_playbackContext != null && _playbackContext.Device != null && _playbackContext.Device.VolumePercent == 0 && _volumePercent > 0);
             }
             set
             {
-                if (SpotifyWebAPI != null)
+                if (SpotifyWebAPI != null && _playbackContext != null && _playbackContext.Device != null)
                 {
                     if (value == true)
                     {
-                        SpotifyWebAPI.SetVolume(0);
-                        _playbackContext.Device.VolumePercent = 0;
-                        TrackStateChanged?.Invoke(_playbackContext, _spotifyState);
+                        if (_playbackContext.Device.VolumePercent != 0)
+                        {
+                            SpotifyWebAPI.SetVolumeAsync(0);
+                            _volumePercent = _playbackContext.Device.VolumePercent;
+                            _playbackContext.Device.VolumePercent = 0;
+                            TrackStateChanged?.Invoke(_playbackContext, _spotifyState);
+                            MuteChanged.Invoke(true);
+                        }
                     }
                     else
                     {
-                        SpotifyWebAPI.SetVolume(_volumePercent == 0 ? 100 : _volumePercent);
-                        _playbackContext.Device.VolumePercent = _volumePercent == 0 ? 100 : _volumePercent;
+                        SpotifyWebAPI.SetVolumeAsync(_volumePercent);
+                        _playbackContext.Device.VolumePercent = _volumePercent != 0 ? _volumePercent : 100;
                         TrackStateChanged?.Invoke(_playbackContext, _spotifyState);
+                        if (_volumePercent != 0)
+                        {
+                            MuteChanged.Invoke(false);
+                        }
                     }
                 }
             }
@@ -234,7 +244,7 @@ namespace FIPToolKit.Tools
 
         public void PlayPause()
         {
-            if (SpotifyWebAPI != null)
+            if (SpotifyWebAPI != null && _playbackContext != null)
             {
                 if (_playbackContext.IsPlaying)
                 {
@@ -335,8 +345,6 @@ namespace FIPToolKit.Tools
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public Device ActiveDevice
         {
             get
@@ -504,13 +512,13 @@ namespace FIPToolKit.Tools
                             isChanged = true;
                             Debug.WriteLine("Repeat State: {0}, Shuffle State: {1}", playBack.RepeatState, playBack.ShuffleState);
                         }
+                        if (playBack != null && playBack.Device != null && _playbackContext != null && _playbackContext.Device != null && (_volumePercent == -1 || playBack.Device.VolumePercent != _playbackContext.Device.VolumePercent))
+                        {
+                            VolumeChanged?.Invoke(playBack.Device.VolumePercent);
+                        }
                         if (playBack.Error == null)
                         {
                             _playbackContext = playBack;
-                        }
-                        if (_playbackContext != null && _playbackContext.Device != null && _playbackContext.Device.VolumePercent > 0)
-                        {
-                            _volumePercent = _playbackContext.Device.VolumePercent;
                         }
                         if (playBack.Error != null)
                         {
@@ -525,7 +533,7 @@ namespace FIPToolKit.Tools
                         {
                             StopLazyLoader();
                             _albumArtwork.Clear();
-                            _spotifyState = currentState;
+                            SpotifyState = currentState;
                             TrackStateChanged?.Invoke(_playbackContext, _spotifyState);
                             StartLazyLoader(_playbackContext.Item);
                         }

@@ -30,6 +30,7 @@ namespace FIPDisplayProfiler
             Radio.FontColor = btnFontColor.BackColor;
             Radio.AutoPlay = cbAutoPlay.Checked;
             Radio.Resume = cbResume.Checked;
+            Radio.PauseOtherMedia = cbPauseOtherMedia.Checked;
             Radio.RadioDistance = rb50.Checked ? RadioDistance.NM50 : rb100.Checked ? RadioDistance.NM100 : rb250.Checked ? RadioDistance.NM500 : RadioDistance.NM500;
             Radio.IsDirty = true;
             DialogResult = DialogResult.OK;
@@ -73,6 +74,7 @@ namespace FIPDisplayProfiler
             rb500.Checked = Radio.RadioDistance == RadioDistance.NM500;
             cbAutoPlay.Checked = Radio.AutoPlay;
             cbResume.Checked = Radio.Resume;
+            cbPauseOtherMedia.Checked = Radio.PauseOtherMedia;
             btnFontColor.BackColor = Radio.FontColor;
         }
 

@@ -1,7 +1,4 @@
 ﻿using FIPToolKit.Drawing;
-using FIPToolKit.FlightSim;
-using FIPToolKit.Tools;
-using GMap.NET.MapProviders;
 using LibVLCSharp.Shared;
 using Newtonsoft.Json;
 using RestSharp;
@@ -12,7 +9,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Web;
 
@@ -49,6 +45,30 @@ namespace FIPToolKit.Models
             }
         }
 
+        public override void ExternalResume()
+        {
+            if (Player != null && !Player.IsPlaying && !Opening && CanPlay() && Library != null && !IsLoading && Resume)
+            {
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    if (Player != null && !Player.IsPlaying && !Opening && CanPlay() && Library != null && !IsLoading)
+                    {
+                        Opening = true;
+                        if (CurrentSong != null)
+                        {
+                            Play(CurrentSong);
+                        }
+                        else
+                        {
+                            PlayFirstSong(true, MusicPlayerProperties.Resume);
+                        }
+                    }
+                    UpdatePage();
+                });
+            }
+            Resume = false;
+        }
+
         public override void OnRadioDistanceChanged()
         {
             if (Library != null)
@@ -80,8 +100,8 @@ namespace FIPToolKit.Models
                         {
                             Title = station.Name,
                             Artist = "Playlists",
-                            Album = Properties.Name,
-                            Playlist = Properties.Name,
+                            Album = "Stations",
+                            Playlist = "Stations",
                             Genre = station.Tags,
                             Filename = station.Url,
                             StreamLocation = new FlightSim.LatLong(station.Geo_Lat, station.Geo_Long),
@@ -96,7 +116,7 @@ namespace FIPToolKit.Models
                         {
                             song.Artwork = new Bitmap(FIPToolKit.Properties.Resources.Radio.ChangeToColor(SystemColors.Highlight));
                         }
-                        FIPMusicAlbum album = Library.GetAlbum("Playlists", Properties.Name, RadioProperties.RadioDistance);
+                        FIPMusicAlbum album = Library.GetAlbum("Playlists", "Stations", RadioProperties.RadioDistance);
                         album.IsPlaylist = true;
                         album.AddSong(song);
                     }

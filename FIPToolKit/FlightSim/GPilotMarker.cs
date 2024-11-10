@@ -94,7 +94,7 @@ namespace FIPToolKit.FlightSim
         public int AmbientWindVelocity { get; set; }
         public float AmbientWindDirection { get; set; }
         public int AmbientTemperature { get; set; }
-        public double KollsmanInchesMercury { get; set; }
+        public double KohlsmanInchesMercury { get; set; }
         public int Altitude { get; set; }
         public int Airspeed { get; set; }
 
@@ -275,7 +275,7 @@ namespace FIPToolKit.FlightSim
                         //graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 225 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 240 - textSize.Height));
 
-                        text = string.Format("{0:0.00}\"", KollsmanInchesMercury);
+                        text = string.Format("{0:0.00}\"", KohlsmanInchesMercury);
                         textSize = graphics.MeasureString(text, Font);
                         //graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 210 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 225 - textSize.Height));

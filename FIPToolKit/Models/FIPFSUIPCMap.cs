@@ -7,7 +7,7 @@ namespace FIPToolKit.Models
 {
     public class FIPFSUIPCMap : FIPMap, IFIPFSUIPC
     {
-        public FIPFSUIPC FIPFSUIPC { get; set; } = new FIPFSUIPC();
+        public FSUIPCProvider FIPFSUIPC => FlightSimProviders.FIPFSUIPC;
 
         public override Dictionary<string, Aircraft> Traffic => FIPFSUIPC.Traffic;
 
@@ -45,7 +45,7 @@ namespace FIPToolKit.Models
 
         public override double AmbientWindSpeedKnots => FIPFSUIPC.AmbientWindSpeedKnots;
 
-        public override double KollsmanInchesMercury => FIPFSUIPC.KollsmanInchesMercury;
+        public override double KohlsmanInchesMercury => FIPFSUIPC.KohlsmanInchesMercury;
 
         public override ReadyToFly ReadyToFly => FIPFSUIPC.ReadyToFly;
 
@@ -115,7 +115,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.Nav1RelativeBearing = 0;
                         airplaneMarker.Nav2RelativeBearing = 0;
                         airplaneMarker.AdfRelativeBearing = 0;
-                        airplaneMarker.KollsmanInchesMercury = 29.92d;
+                        airplaneMarker.KohlsmanInchesMercury = 29.92d;
                         airplaneMarker.GPSHeading = 0;
                         airplaneMarker.GPSIsActive = false;
                         airplaneMarker.GPSTrackDistance = 0;
@@ -153,7 +153,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.AmbientTemperature = AmbientTemperatureCelcius;
                         airplaneMarker.AmbientWindDirection = (float)AmbientWindDirectionDegrees;
                         airplaneMarker.AmbientWindVelocity = (int)AmbientWindSpeedKnots;
-                        airplaneMarker.KollsmanInchesMercury = KollsmanInchesMercury;
+                        airplaneMarker.KohlsmanInchesMercury = KohlsmanInchesMercury;
                         airplaneMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? GPSRequiredMagneticHeadingRadians : GPSRequiredTrueHeadingRadians);
                         airplaneMarker.GPSIsActive = HasActiveWaypoint;
                         airplaneMarker.GPSTrackDistance = (float)GPSCrossTrackErrorMeters;
@@ -199,7 +199,7 @@ namespace FIPToolKit.Models
                         airplaneMarker.Nav1RelativeBearing = 0;
                         airplaneMarker.Nav2RelativeBearing = 0;
                         airplaneMarker.AdfRelativeBearing = 0;
-                        airplaneMarker.KollsmanInchesMercury = 29.92d;
+                        airplaneMarker.KohlsmanInchesMercury = 29.92d;
                         airplaneMarker.GPSHeading = 0;
                         airplaneMarker.GPSIsActive = false;
                         airplaneMarker.GPSTrackDistance = 0;

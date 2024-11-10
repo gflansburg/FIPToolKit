@@ -1,18 +1,8 @@
 ﻿using FIPToolKit.Drawing;
-using FIPToolKit.Tools;
-using Newtonsoft.Json;
 using Saitek.DirectOutput;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
@@ -52,36 +42,20 @@ namespace FIPToolKit.Models
 
     public abstract class FIPPage : IDisposable
     {
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsActive { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDisposed { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsDisposing { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         protected bool ShowKnobIcons { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsAddedToDevice { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public FIPPageProperties Properties { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public virtual bool Reload { get; set; } // used for recaching video frames when the button labels have changed.
 
-        [XmlIgnore]
-        [JsonIgnore]
         public Bitmap Image
         {
             get
@@ -90,8 +64,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public IEnumerable<FIPButton> Buttons
         {
             get
@@ -112,8 +84,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public int ButtonCount
         {
             get
@@ -124,8 +94,6 @@ namespace FIPToolKit.Models
 
         private FIPDevice _device;
 
-        [XmlIgnore]
-        [JsonIgnore]
         public FIPDevice Device  // Reference back owner. Set from FIPDevice.AddPage. Do not dispose.
         {
             get
@@ -150,6 +118,8 @@ namespace FIPToolKit.Models
         public event FIPPageEventHandler OnStateChange;
         public event FIPPageEventHandler OnSoftButton;
         public event FIPPageEventHandler OnSettingsChanged;
+        public event FIPPageEventHandler OnActive;
+        public event FIPPageEventHandler OnInactive;
 
         public FIPPage(FIPPageProperties properties)
         {
@@ -201,18 +171,21 @@ namespace FIPToolKit.Models
                 if (bmp.PixelFormat != System.Drawing.Imaging.PixelFormat.Format24bppRgb)
                 {
                     Bitmap newBmp = bmp.ConvertTo24bpp();
-                    if (Device != null && Device.CurrentPage != null && Properties.Page == Device.CurrentPage.Properties.Page)
+                    if (newBmp != null)
                     {
-                        try
+                        if (Device != null && Device.CurrentPage != null && Properties.Page == Device.CurrentPage.Properties.Page)
                         {
-                            Device.DeviceClient.SetImage(Properties.Page, 0, newBmp.ImageToByte());
+                            try
+                            {
+                                Device.DeviceClient.SetImage(Properties.Page, 0, newBmp.ImageToByte());
+                            }
+                            catch
+                            {
+                            }
                         }
-                        catch
-                        {
-                        }
+                        SetImage(newBmp, sendChangeEvent);
+                        newBmp.Dispose();
                     }
-                    SetImage(newBmp, sendChangeEvent);
-                    newBmp.Dispose();
                 }
                 else
                 {
@@ -445,7 +418,7 @@ namespace FIPToolKit.Models
             return false;
         }
 
-        protected void DrawButtons(Graphics g)
+        protected virtual void DrawButtons(Graphics g)
         {
             foreach (FIPButton button in Buttons)
             {
@@ -495,16 +468,34 @@ namespace FIPToolKit.Models
             return size;
         }
 
-        public virtual void Active()
+        public virtual void Active(bool sendEvent = true)
         {
             IsActive = true;
             StartTimer();
+            if (sendEvent)
+            {
+                SendActive();
+            }
         }
 
-        public virtual void Inactive()
+        public virtual void Inactive(bool sendEvent = true)
         {
             IsActive = false;
             StopTimer();
+            if (sendEvent)
+            {
+                SendInactive();
+            }
+        }
+
+        public void SendActive()
+        {
+            OnActive?.Invoke(this, new FIPPageEventArgs(this));
+        }
+
+        public void SendInactive()
+        {
+            OnInactive?.Invoke(this, new FIPPageEventArgs(this));
         }
 
         public virtual void Dispose()

@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace FIPToolKit.Drawing
 {
@@ -189,16 +190,23 @@ namespace FIPToolKit.Drawing
 
         public static Bitmap ConvertTo24bpp(this Image img)
         {
-            if (img.PixelFormat != PixelFormat.Format24bppRgb)
+            try
             {
-                var bmp = new Bitmap(img.Width, img.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                using (var gr = Graphics.FromImage(bmp))
+                if (img.PixelFormat != PixelFormat.Format24bppRgb)
                 {
-                    gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel);
+                        var bmp = new Bitmap(img.Width, img.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                        using (var gr = Graphics.FromImage(bmp))
+                        {
+                            gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height), 0, 0, img.Width, img.Height, GraphicsUnit.Pixel);
+                        }
+                        return bmp;
                 }
-                return bmp;
+                return new Bitmap(img);
             }
-            return new Bitmap(img);
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         static public byte[] ImageToByte(this Bitmap img)

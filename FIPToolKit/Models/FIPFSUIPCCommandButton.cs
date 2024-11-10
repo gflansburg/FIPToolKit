@@ -1,17 +1,8 @@
-﻿using FIPToolKit.Threading;
-using FIPToolKit.Tools;
+﻿using FIPToolKit.Tools;
 using FSUIPC;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Media;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
@@ -189,7 +180,7 @@ namespace FIPToolKit.Models
 
         public override void Execute()
         {
-            if (FIPFSUIPC.IsConnected)
+            if (FlightSim.FlightSimProviders.FIPFSUIPC.IsConnected)
             {
                 if (Control.HasValue && ControlSet == FIPFSUIPCControlSet.FsControl)
                 {
@@ -215,7 +206,7 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return (!string.IsNullOrEmpty(Label) && FIPFSUIPC.IsConnected && FIPFSUIPC.ReadyToFly == FlightSim.ReadyToFly.Ready &&
+                return (!string.IsNullOrEmpty(Label) && FlightSim.FlightSimProviders.FIPFSUIPC.IsConnected && FlightSim.FlightSimProviders.FIPFSUIPC.ReadyToFly == FlightSim.ReadyToFly.Ready &&
                     ((Control.HasValue && ControlSet == FIPFSUIPCControlSet.FsControl) ||
                      (FSUIPCControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcControl) ||
                      (FSUIPCAutoPilotControl.HasValue && ControlSet == FIPFSUIPCControlSet.FsuipcAutoPilotControl) ||

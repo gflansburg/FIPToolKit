@@ -1,29 +1,22 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.FlightSim;
-using FIPToolKit.Threading;
-using Newtonsoft.Json;
 using Nito.AsyncEx;
-using Saitek.DirectOutput;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
     public abstract class FIPFSUIPCAnalogGauge : FIPPage, IFIPFSUIPC
     {
+        public FSUIPCProvider FIPFSUIPC => FlightSimProviders.FIPFSUIPC;
+
         protected Bitmap gauge;
         protected AsyncLock _lock = new AsyncLock();
 
         public FIPFSUIPCAnalogGauge(FIPAnalogGaugeProperties properties) : base(properties)
         {
-            FIPFSUIPC = new FIPFSUIPC();
             Properties.ControlType = GetType().FullName;
             properties.OnUpdateGauge += Properties_OnUpdateGauge;
             FIPFSUIPC.OnConnected += FIPCessnaAirspeedLinear_OnConnected;
@@ -38,8 +31,6 @@ namespace FIPToolKit.Models
                 return Properties as FIPAnalogGaugeProperties;
             }
         }
-
-        public FIPFSUIPC FIPFSUIPC { get; set; }
 
         private void Properties_OnUpdateGauge(object sender, EventArgs e)
         {

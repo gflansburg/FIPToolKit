@@ -1,23 +1,12 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.Threading;
 using FIPToolKit.Tools;
-using Newtonsoft.Json;
-using Nito.AsyncEx;
-using Saitek.DirectOutput;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
-using System.Globalization;
-using System.Linq;
-using System.Resources;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
@@ -136,8 +125,6 @@ namespace FIPToolKit.Models
 		/// The Background thread used to render the clock
 		/// </summary>
 		/// <remarks>Using a large image will result in poor performance and increased memory consumption.</remarks>
-		[XmlIgnore]
-		[JsonIgnore]
 		public AbortableBackgroundWorker Timer { get; set; }
 		#endregion
 
@@ -731,7 +718,6 @@ namespace FIPToolKit.Models
 			base.Dispose();
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockParis
 		{
 			get
@@ -784,7 +770,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockSydney
 		{
 			get
@@ -837,7 +822,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockDenver
 		{
 			get
@@ -891,7 +875,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockMoscow
 		{
 			get
@@ -945,7 +928,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockLondon
 		{
 			get
@@ -999,7 +981,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockTokyo
 		{
 			get
@@ -1053,7 +1034,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockShanghai
 		{
 			get
@@ -1107,7 +1087,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		public static FIPAnalogClockProperties FIPAnalogClockChicago
 		{
 			get
@@ -1161,7 +1140,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		public static FIPAnalogClockProperties FIPAnalogClockKarachi
 		{
 			get
@@ -1215,7 +1193,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		public static FIPAnalogClockProperties FIPAnalogClockHonolulu
 		{
 			get
@@ -1269,7 +1246,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		public static FIPAnalogClockProperties FIPAnalogClockHongKong
 		{
 			get
@@ -1323,7 +1299,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		public static FIPAnalogClockProperties FIPAnalogClockNewYork
 		{
 			get
@@ -1429,7 +1404,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		public static FIPAnalogClockProperties FIPAnalogClockLosAngeles
 		{
 			get
@@ -1482,7 +1456,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockCessnaClock1
 		{
 			get
@@ -1533,7 +1506,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockCessnaClock2
 		{
 			get
@@ -1585,7 +1557,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockCessnaAirspeed
 		{
 			get
@@ -1639,7 +1610,6 @@ namespace FIPToolKit.Models
 			}
 		}
 
-		[XmlIgnore]
 		static public FIPAnalogClockProperties FIPAnalogClockCessnaAltimeter
 		{
 			get

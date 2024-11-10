@@ -144,7 +144,7 @@ namespace FIPDisplayProfiler
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(btnBrowse.Text))
+            if (string.IsNullOrEmpty(tbFilename.Text))
             {
                 openFileDialog1.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
                 openFileDialog1.FileName = string.Empty;

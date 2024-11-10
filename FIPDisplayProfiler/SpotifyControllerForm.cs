@@ -30,6 +30,7 @@ namespace FIPDisplayProfiler
             SpotifyController.FontColor = btnFontColor.BackColor;
             SpotifyController.ClientId = tbClientId.Text;
             SpotifyController.SecretId = tbSecretId.Text;
+            SpotifyController.PauseOtherMedia = cbPauseOtherMedia.Checked;
             SpotifyController.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
@@ -68,6 +69,7 @@ namespace FIPDisplayProfiler
             tbArtistFont.Text = SpotifyController.ArtistFont.FontFamily.Name;
             tbClientId.Text = SpotifyController.ClientId;
             tbSecretId.Text = SpotifyController.SecretId;
+            cbPauseOtherMedia.Checked = SpotifyController.PauseOtherMedia;
             btnFontColor.BackColor = SpotifyController.FontColor;
         }
 

@@ -53,6 +53,7 @@ namespace FIPDisplayProfiler
             this.rb100 = new System.Windows.Forms.RadioButton();
             this.rb250 = new System.Windows.Forms.RadioButton();
             this.rb500 = new System.Windows.Forms.RadioButton();
+            this.cbPauseOtherMedia = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnCancel
@@ -197,7 +198,7 @@ namespace FIPDisplayProfiler
             // cbAutoPlay
             // 
             this.cbAutoPlay.AutoSize = true;
-            this.cbAutoPlay.Location = new System.Drawing.Point(242, 95);
+            this.cbAutoPlay.Location = new System.Drawing.Point(212, 95);
             this.cbAutoPlay.Name = "cbAutoPlay";
             this.cbAutoPlay.Size = new System.Drawing.Size(71, 17);
             this.cbAutoPlay.TabIndex = 55;
@@ -207,7 +208,7 @@ namespace FIPDisplayProfiler
             // cbResume
             // 
             this.cbResume.AutoSize = true;
-            this.cbResume.Location = new System.Drawing.Point(319, 95);
+            this.cbResume.Location = new System.Drawing.Point(289, 95);
             this.cbResume.Name = "cbResume";
             this.cbResume.Size = new System.Drawing.Size(65, 17);
             this.cbResume.TabIndex = 56;
@@ -279,6 +280,16 @@ namespace FIPDisplayProfiler
             this.rb500.Text = "500 NM";
             this.rb500.UseVisualStyleBackColor = true;
             // 
+            // cbPauseOtherMedia
+            // 
+            this.cbPauseOtherMedia.AutoSize = true;
+            this.cbPauseOtherMedia.Location = new System.Drawing.Point(360, 95);
+            this.cbPauseOtherMedia.Name = "cbPauseOtherMedia";
+            this.cbPauseOtherMedia.Size = new System.Drawing.Size(117, 17);
+            this.cbPauseOtherMedia.TabIndex = 63;
+            this.cbPauseOtherMedia.Text = "Pause Other Media";
+            this.cbPauseOtherMedia.UseVisualStyleBackColor = true;
+            // 
             // MusicPlayerForm
             // 
             this.AcceptButton = this.btnOK;
@@ -286,6 +297,7 @@ namespace FIPDisplayProfiler
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(482, 180);
+            this.Controls.Add(this.cbPauseOtherMedia);
             this.Controls.Add(this.rb500);
             this.Controls.Add(this.rb250);
             this.Controls.Add(this.rb100);
@@ -345,5 +357,6 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.RadioButton rb100;
         private System.Windows.Forms.RadioButton rb250;
         private System.Windows.Forms.RadioButton rb500;
+        private System.Windows.Forms.CheckBox cbPauseOtherMedia;
     }
 }

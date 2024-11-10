@@ -5,15 +5,10 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Numerics;
 using System.Threading;
-using System.Xml.Linq;
-using System.Xml.Serialization;
 using FIPToolKit.Drawing;
 using FIPToolKit.Threading;
 using FIPToolKit.Tools;
-using LibVLCSharp.Shared;
-using Newtonsoft.Json;
 using Saitek.DirectOutput;
 using SpotifyAPI.Web;
 using SpotifyAPI.Web.Auth;
@@ -24,7 +19,13 @@ namespace FIPToolKit.Models
 {
     public class FIPCanPlayEventArgs : EventArgs
     {
+        public FIPPage Page { get; private set; }
         public bool CanPlay { get; set; } = true;
+
+        public FIPCanPlayEventArgs(FIPPage page)
+        {
+            Page = page;
+        }
     }
 
     public enum SpotifyPlayerPage
@@ -60,17 +61,13 @@ namespace FIPToolKit.Models
 
     public class FIPSpotifyPlayer : FIPPage
     {
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsAuthenticating { get; set; } = false;
         
         private AuthorizationCodeAuth authorizationCodeAuth;
         private bool _showArtistImages = true;
         private bool _cacheArtwork = true;
-        private System.Threading.Timer Timer;
+        private Timer Timer;
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsConfigured
         {
             get
@@ -79,8 +76,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsAuthorized
         {
             get
@@ -90,8 +85,6 @@ namespace FIPToolKit.Models
         }
 
         private Microsoft.Web.WebView2.WinForms.WebView2 _browser;
-        [XmlIgnore]
-        [JsonIgnore]
         public Microsoft.Web.WebView2.WinForms.WebView2 Browser 
         { 
             get
@@ -111,20 +104,12 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public SpotifyWebAPI SpotifyAPI { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public int PlayListIndex { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool AutoPlayLastPlaylist { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool ShowArtistImages
         { 
             get
@@ -145,8 +130,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool CacheArtwork
         {
             get
@@ -166,23 +149,15 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public List<SpotifyPlaylist> PlayLists { get; private set; }
 
         private AbortableBackgroundWorker LazyLoader { get; set; }
         private bool Stop { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public bool IsRunning { get; private set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public SpotifyPlayerPage CurrentPage { get; set; }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public PlaybackContext CurrentPlaybackContext { get; set; }
 
         private SpotifyController SpotifyController { get; set; }
@@ -199,6 +174,8 @@ namespace FIPToolKit.Models
         public event FIPPageEventHandler OnBeginAuthentication;
         public event FIPPageEventHandler OnEndAuthentication;
         public event FIPCanPlayEventHandler OnCanPlay;
+        public event FIPPageEventHandler OnMuteChanged;
+        public event FIPPageEventHandler OnVolumeChanged;
 
         public FIPSpotifyPlayer(FIPSpotifyPlayerProperties properties) : base(properties)
         {
@@ -206,16 +183,62 @@ namespace FIPToolKit.Models
             properties.OnTokenExpired += Properties_OnTokenExpired;
             properties.OnTokenChanged += Properties_OnTokenChanged;
             properties.OnTokenCleared += Properties_OnTokenCleared;
+            properties.OnVolumeChanged += Properties_OnVolumeChanged;
+            properties.OnMuteChanged += Properties_OnMuteChanged;
             PlayLists = new List<SpotifyPlaylist>();
             Properties_OnTokenChanged(this, EventArgs.Empty);
             SpotifyController = new SpotifyController();
             SpotifyController.SpotifyWebAPI = SpotifyAPI;
             SpotifyController.AddArtistImages = ShowArtistImages;
             SpotifyController.TrackStateChanged += SpotifyController_TrackStateChanged;
-            SpotifyController.ImageStateChanged += SpotifyController_ImageStateChanged;
+            SpotifyController.PlayerStateChanged += SpotifyController_PlayerStateChanged;
+            SpotifyController.VolumeChanged += SpotifyController_VolumeChanged;
+            SpotifyController.MuteChanged += SpotifyController_MuteChanged;
             SpotifyController.OnError += SpotifyController_OnError;
             PlayListIndex = -1;
             UpdatePage();
+        }
+
+        private void SpotifyController_MuteChanged(bool mute)
+        {
+            SpotifyPlayerProperties.SetMute(mute);
+            OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
+        }
+
+        private void SpotifyController_VolumeChanged(int volume)
+        {
+            SpotifyPlayerProperties.SetVolume(volume);
+            OnVolumeChanged.Invoke(this, new FIPPageEventArgs(this));
+        }
+
+        private void Properties_OnMuteChanged(object sender, EventArgs e)
+        {
+            if (SpotifyController != null && SpotifyController.Mute != SpotifyPlayerProperties.Mute)
+            {
+                SpotifyController.Mute = SpotifyPlayerProperties.Mute;
+            }
+            OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
+        }
+
+        private void Properties_OnVolumeChanged(object sender, EventArgs e)
+        {
+            if (SpotifyController != null && SpotifyController.Volume != SpotifyPlayerProperties.Volume)
+            {
+                SpotifyController.Volume = SpotifyPlayerProperties.Volume;
+            }
+            OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
+        }
+
+        private void SpotifyController_PlayerStateChanged(SpotifyStateType state)
+        {
+            if (state == SpotifyStateType.Playing && SpotifyPlayerProperties.PauseOtherMedia)
+            {
+                SendActive();
+            }
+            else if (state == SpotifyStateType.Paused && SpotifyPlayerProperties.PauseOtherMedia)
+            {
+                SendInactive();
+            }
         }
 
         private FIPSpotifyPlayerProperties SpotifyPlayerProperties
@@ -238,22 +261,32 @@ namespace FIPToolKit.Models
 
         private void Properties_OnTokenChanged(object sender, EventArgs e)
         {
-            if (SpotifyAPI == null)
+            if (SpotifyPlayerProperties.Token != null)
             {
-                SpotifyAPI = new SpotifyWebAPI
+                if (SpotifyAPI == null)
                 {
-                    AccessToken = SpotifyPlayerProperties.Token.AccessToken,
-                    TokenType = SpotifyPlayerProperties.Token.TokenType
-                };
+                    SpotifyAPI = new SpotifyWebAPI
+                    {
+                        AccessToken = SpotifyPlayerProperties.Token.AccessToken,
+                        TokenType = SpotifyPlayerProperties.Token.TokenType
+                    };
+                }
+                else
+                {
+                    SpotifyAPI.AccessToken = SpotifyPlayerProperties.Token.AccessToken;
+                    SpotifyAPI.TokenType = SpotifyPlayerProperties.Token.TokenType;
+                }
             }
-            else
+            else if (SpotifyAPI != null)
             {
-                SpotifyAPI.AccessToken = SpotifyPlayerProperties.Token.AccessToken;
-                SpotifyAPI.TokenType = SpotifyPlayerProperties.Token.TokenType;
+                SpotifyAPI.Dispose();
+                SpotifyAPI = null;
             }
             if (SpotifyController != null)
             {
                 SpotifyController.SpotifyWebAPI = SpotifyAPI;
+                SpotifyController.Volume = SpotifyPlayerProperties.Volume;
+                SpotifyController.Mute = SpotifyPlayerProperties.Mute;
             }
             OnTokenChanged?.Invoke(SpotifyPlayerProperties.Token);
         }
@@ -326,14 +359,11 @@ namespace FIPToolKit.Models
                 UpdatePlayer();
             }
             SetLEDs();
-            OnTrackStateChanged?.Invoke(playbackContext, state);
-            FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs();
-            OnCanPlay?.Invoke(this, canPlay);
-            if (SpotifyController.IsPlaying && !canPlay.CanPlay)
+            if (SpotifyController.IsPlaying && !CanPlay())
             {
-                resume = true;
                 SpotifyController.PlayPause();
             }
+            OnTrackStateChanged?.Invoke(playbackContext, state);
         }
 
         private void SpotifyController_OnError(string message)
@@ -522,8 +552,6 @@ namespace FIPToolKit.Models
             }
         }
 
-        [XmlIgnore]
-        [JsonIgnore]
         public override bool Reload 
         { 
             get => base.Reload;
@@ -633,6 +661,17 @@ namespace FIPToolKit.Models
             });
         }
 
+        public bool CanPlay()
+        {
+            FIPCanPlayEventArgs canPlay = new FIPCanPlayEventArgs(this);
+            OnCanPlay?.Invoke(this, canPlay);
+            if (!canPlay.CanPlay)
+            {
+                resume = true;
+            }
+            return canPlay.CanPlay;
+        }
+
         private bool resume = false;
         public void ExternalPause()
         {
@@ -641,18 +680,26 @@ namespace FIPToolKit.Models
                 resume = true;
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    SpotifyController.PlayPause();
+                    if (SpotifyController != null && SpotifyController.SpotifyState == SpotifyStateType.Playing)
+                    {
+                        SpotifyController.PlayPause();
+                        UpdatePage();
+                    }
                 });
             }
         }
 
         public void ExternalResume()
         {
-            if (SpotifyController != null && SpotifyController.SpotifyState == SpotifyStateType.Paused && resume)
+            if (SpotifyController != null && SpotifyController.SpotifyState == SpotifyStateType.Paused && CanPlay() && resume)
             {
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    SpotifyController.PlayPause();
+                    if (SpotifyController != null && SpotifyController.SpotifyState == SpotifyStateType.Paused && CanPlay())
+                    {
+                        SpotifyController.PlayPause();
+                        UpdatePage();
+                    }
                 });
             }
             resume = false;
@@ -1079,6 +1126,48 @@ namespace FIPToolKit.Models
             }
             StopTimer();
             base.Dispose();
+        }
+
+        public bool Mute
+        {
+            get
+            {
+                return SpotifyPlayerProperties.Mute;
+            }
+            set
+            {
+                SpotifyPlayerProperties.Mute = value;
+            }
+        }
+
+        public int Volume
+        {
+            get
+            {
+                return SpotifyPlayerProperties.Volume;
+            }
+            set
+            {
+                SpotifyPlayerProperties.Volume = value;
+            }
+        }
+
+        public override void Inactive(bool sendEvent)
+        {
+            base.Inactive(false);
+        }
+
+        public override void Active(bool sendEvent)
+        {
+            base.Active(false);
+        }
+
+        public bool CanPlayOther
+        {
+            get
+            {
+                return !(SpotifyPlayerProperties.PauseOtherMedia && SpotifyController != null && SpotifyController.IsPlaying);
+            }
         }
     }
 }

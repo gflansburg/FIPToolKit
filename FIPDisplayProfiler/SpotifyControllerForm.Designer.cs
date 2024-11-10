@@ -46,6 +46,7 @@ namespace FIPDisplayProfiler
             this.tbSecretId = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.lnkSpotifyDeveloper = new System.Windows.Forms.LinkLabel();
+            this.cbPauseOtherMedia = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // btnCancel
@@ -202,6 +203,16 @@ namespace FIPDisplayProfiler
             this.lnkSpotifyDeveloper.Text = "Spotify Developer Portal";
             this.lnkSpotifyDeveloper.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.lnkSpotifyDeveloper_LinkClicked);
             // 
+            // cbPauseOtherMedia
+            // 
+            this.cbPauseOtherMedia.AutoSize = true;
+            this.cbPauseOtherMedia.Location = new System.Drawing.Point(68, 155);
+            this.cbPauseOtherMedia.Name = "cbPauseOtherMedia";
+            this.cbPauseOtherMedia.Size = new System.Drawing.Size(117, 17);
+            this.cbPauseOtherMedia.TabIndex = 57;
+            this.cbPauseOtherMedia.Text = "Pause Other Media";
+            this.cbPauseOtherMedia.UseVisualStyleBackColor = true;
+            // 
             // SpotifyControllerForm
             // 
             this.AcceptButton = this.btnOK;
@@ -209,6 +220,7 @@ namespace FIPDisplayProfiler
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
             this.ClientSize = new System.Drawing.Size(482, 183);
+            this.Controls.Add(this.cbPauseOtherMedia);
             this.Controls.Add(this.lnkSpotifyDeveloper);
             this.Controls.Add(this.tbSecretId);
             this.Controls.Add(this.label3);
@@ -255,5 +267,6 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.TextBox tbSecretId;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.LinkLabel lnkSpotifyDeveloper;
+        private System.Windows.Forms.CheckBox cbPauseOtherMedia;
     }
 }

@@ -33,6 +33,21 @@ namespace FIPDisplayProfiler
     {
         public PageType PageType { get; set; }
 
+        private void UncheckRadioButtons(Control ctrl)
+        {
+            foreach (Control c in ctrl.Controls)
+            {
+                if (c is RadioButton)
+                {
+                    ((RadioButton)c).Checked = false;
+                }
+                else if (c.HasChildren)
+                {
+                    UncheckRadioButtons(c);
+                }
+            }
+        }
+
         public bool Settable
         {
             get
@@ -159,6 +174,11 @@ namespace FIPDisplayProfiler
             PageType= PageType.FSUIPCRadio;
             btnOK.Enabled = true;
             cbSettable.Enabled = false;
+        }
+
+        private void AddPageDialog_Load(object sender, EventArgs e)
+        {
+            UncheckRadioButtons(this);
         }
     }
 }

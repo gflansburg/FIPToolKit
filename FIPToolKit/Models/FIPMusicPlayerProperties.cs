@@ -9,7 +9,6 @@ namespace FIPToolKit.Models
         Library,
         Artist,
         Album,
-        Song
     }
 
     public enum RadioDistance

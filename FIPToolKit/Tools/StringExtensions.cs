@@ -12,6 +12,16 @@ namespace FIPToolKit.Tools
 {
     public static class StringExtensions
     {
+        public static bool IsStream(this string str)
+        {
+            return str.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || str.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsPlaylist(this string str)
+        {
+            return Path.GetExtension(str).Equals(".m3u", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(str).Equals(".m3u8", StringComparison.OrdinalIgnoreCase);
+        }
+
         public static bool IsAudio(this string str)
         {
             if (str.Contains(".mp3", StringComparison.OrdinalIgnoreCase)
@@ -21,6 +31,24 @@ namespace FIPToolKit.Tools
                 || str.Contains(".ogg", StringComparison.OrdinalIgnoreCase)
                 || str.Contains(".flac", StringComparison.OrdinalIgnoreCase)
                 || str.Contains(".aac", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool IsVideo(this string str)
+        {
+            if (str.Contains(".mp4", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".wmv", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".mov", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".wav", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".avi", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".flv", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".ogm", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".3gp", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".asf", StringComparison.OrdinalIgnoreCase)
+                || str.Contains(".mkv", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

@@ -96,11 +96,9 @@ namespace FIPToolKit.Models
                 {
                     foreach (FIPRadioStation station in stations)
                     {
-                        FIPMusicSong song = new FIPMusicSong()
+                        FIPMusicSong song = new FIPMusicSong("Playlists", "Stations")
                         {
                             Title = station.Name,
-                            Artist = "Playlists",
-                            Album = "Stations",
                             Playlist = "Stations",
                             Genre = station.Tags,
                             Filename = station.Url,
@@ -110,12 +108,12 @@ namespace FIPToolKit.Models
                         if (!string.IsNullOrEmpty(station.Favicon))
                         {
                             song.LogoUrl = station.Favicon;
-                            song.ArtworkDownloaded += Song_ArtworkDownloaded;
                         }
                         else
                         {
                             song.Artwork = new Bitmap(FIPToolKit.Properties.Resources.Radio.ChangeToColor(SystemColors.Highlight));
                         }
+                        song.OnArtworkDownloaded += Song_OnArtworkDownloaded;
                         FIPMusicAlbum album = Library.GetAlbum("Playlists", "Stations", RadioProperties.RadioDistance);
                         album.IsPlaylist = true;
                         album.AddSong(song);
@@ -192,7 +190,7 @@ namespace FIPToolKit.Models
             }
         }
 
-        private void Song_ArtworkDownloaded(object sender, EventArgs e)
+        private void Song_OnArtworkDownloaded(object sender, EventArgs e)
         {
             UpdatePage();
         }
@@ -580,18 +578,6 @@ namespace FIPToolKit.Models
                 }
             }
             return base.IsButtonAssignable(softButton);
-        }
-
-        public override void Play(FIPMusicSong song, bool play = true)
-        {
-            if (song != CurrentSong)
-            {
-                CurrentSong = song;
-                CurrentArtist = Library.Artists.First();
-                CurrentAlbum = CurrentArtist.Albums.First();
-                SongChanged();
-            }
-            base.Play(CurrentSong, play);
         }
 
         public override void Media_MetaChanged(object sender, MediaMetaChangedEventArgs e)

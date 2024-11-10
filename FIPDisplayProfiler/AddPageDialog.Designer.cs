@@ -75,7 +75,7 @@ namespace FIPDisplayProfiler
             this.pnlPageType.Location = new System.Drawing.Point(13, 12);
             this.pnlPageType.Name = "pnlPageType";
             this.pnlPageType.Size = new System.Drawing.Size(190, 370);
-            this.pnlPageType.TabIndex = 4;
+            this.pnlPageType.TabIndex = 18;
             // 
             // rbSimConnectRadio
             // 
@@ -83,7 +83,7 @@ namespace FIPDisplayProfiler
             this.rbSimConnectRadio.Location = new System.Drawing.Point(3, 256);
             this.rbSimConnectRadio.Name = "rbSimConnectRadio";
             this.rbSimConnectRadio.Size = new System.Drawing.Size(116, 17);
-            this.rbSimConnectRadio.TabIndex = 16;
+            this.rbSimConnectRadio.TabIndex = 12;
             this.rbSimConnectRadio.TabStop = true;
             this.rbSimConnectRadio.Text = "Sim Connect Radio";
             this.rbSimConnectRadio.UseVisualStyleBackColor = true;
@@ -95,7 +95,7 @@ namespace FIPDisplayProfiler
             this.rbFSUIPCRadio.Location = new System.Drawing.Point(3, 349);
             this.rbFSUIPCRadio.Name = "rbFSUIPCRadio";
             this.rbFSUIPCRadio.Size = new System.Drawing.Size(94, 17);
-            this.rbFSUIPCRadio.TabIndex = 15;
+            this.rbFSUIPCRadio.TabIndex = 16;
             this.rbFSUIPCRadio.TabStop = true;
             this.rbFSUIPCRadio.Text = "FSUIPC Radio";
             this.rbFSUIPCRadio.UseVisualStyleBackColor = true;
@@ -107,7 +107,7 @@ namespace FIPDisplayProfiler
             this.rbMusicPlayer.Location = new System.Drawing.Point(3, 96);
             this.rbMusicPlayer.Name = "rbMusicPlayer";
             this.rbMusicPlayer.Size = new System.Drawing.Size(85, 17);
-            this.rbMusicPlayer.TabIndex = 14;
+            this.rbMusicPlayer.TabIndex = 5;
             this.rbMusicPlayer.Text = "Music Player";
             this.rbMusicPlayer.UseVisualStyleBackColor = true;
             this.rbMusicPlayer.CheckedChanged += new System.EventHandler(this.rbMusicPlayer_CheckedChanged);
@@ -118,7 +118,7 @@ namespace FIPDisplayProfiler
             this.rbScreenMirror.Location = new System.Drawing.Point(3, 142);
             this.rbScreenMirror.Name = "rbScreenMirror";
             this.rbScreenMirror.Size = new System.Drawing.Size(88, 17);
-            this.rbScreenMirror.TabIndex = 6;
+            this.rbScreenMirror.TabIndex = 7;
             this.rbScreenMirror.Text = "Screen Mirror";
             this.rbScreenMirror.UseVisualStyleBackColor = true;
             this.rbScreenMirror.CheckedChanged += new System.EventHandler(this.rbScreenMirror_CheckedChanged);
@@ -129,7 +129,7 @@ namespace FIPDisplayProfiler
             this.rbFSUIPCAltimeter.Location = new System.Drawing.Point(3, 325);
             this.rbFSUIPCAltimeter.Name = "rbFSUIPCAltimeter";
             this.rbFSUIPCAltimeter.Size = new System.Drawing.Size(106, 17);
-            this.rbFSUIPCAltimeter.TabIndex = 13;
+            this.rbFSUIPCAltimeter.TabIndex = 15;
             this.rbFSUIPCAltimeter.Text = "FSUIPC Altimeter";
             this.rbFSUIPCAltimeter.UseVisualStyleBackColor = true;
             this.rbFSUIPCAltimeter.CheckedChanged += new System.EventHandler(this.rbFSUIPCAltimeter_CheckedChanged);
@@ -140,7 +140,7 @@ namespace FIPDisplayProfiler
             this.rbSimConnectAltimeter.Location = new System.Drawing.Point(3, 233);
             this.rbSimConnectAltimeter.Name = "rbSimConnectAltimeter";
             this.rbSimConnectAltimeter.Size = new System.Drawing.Size(125, 17);
-            this.rbSimConnectAltimeter.TabIndex = 10;
+            this.rbSimConnectAltimeter.TabIndex = 11;
             this.rbSimConnectAltimeter.Text = "SimConnect Altimeter";
             this.rbSimConnectAltimeter.UseVisualStyleBackColor = true;
             this.rbSimConnectAltimeter.CheckedChanged += new System.EventHandler(this.rbSimConnectAltimeter_CheckedChanged);
@@ -151,7 +151,7 @@ namespace FIPDisplayProfiler
             this.rbSimConnectAirspeed.Location = new System.Drawing.Point(3, 211);
             this.rbSimConnectAirspeed.Name = "rbSimConnectAirspeed";
             this.rbSimConnectAirspeed.Size = new System.Drawing.Size(126, 17);
-            this.rbSimConnectAirspeed.TabIndex = 9;
+            this.rbSimConnectAirspeed.TabIndex = 10;
             this.rbSimConnectAirspeed.Text = "SimConnect Airspeed";
             this.rbSimConnectAirspeed.UseVisualStyleBackColor = true;
             this.rbSimConnectAirspeed.CheckedChanged += new System.EventHandler(this.rbSimConnectAirspeed_CheckedChanged);
@@ -162,7 +162,7 @@ namespace FIPDisplayProfiler
             this.rbFSUIPCMap.Location = new System.Drawing.Point(3, 279);
             this.rbFSUIPCMap.Name = "rbFSUIPCMap";
             this.rbFSUIPCMap.Size = new System.Drawing.Size(87, 17);
-            this.rbFSUIPCMap.TabIndex = 11;
+            this.rbFSUIPCMap.TabIndex = 13;
             this.rbFSUIPCMap.Text = "FSUIPC Map";
             this.rbFSUIPCMap.UseVisualStyleBackColor = true;
             this.rbFSUIPCMap.CheckedChanged += new System.EventHandler(this.rbFSUIPCMap_CheckedChanged);
@@ -173,7 +173,7 @@ namespace FIPDisplayProfiler
             this.rbFSUIPCAirspeed.Location = new System.Drawing.Point(3, 302);
             this.rbFSUIPCAirspeed.Name = "rbFSUIPCAirspeed";
             this.rbFSUIPCAirspeed.Size = new System.Drawing.Size(107, 17);
-            this.rbFSUIPCAirspeed.TabIndex = 12;
+            this.rbFSUIPCAirspeed.TabIndex = 14;
             this.rbFSUIPCAirspeed.Text = "FSUIPC Airspeed";
             this.rbFSUIPCAirspeed.UseVisualStyleBackColor = true;
             this.rbFSUIPCAirspeed.CheckedChanged += new System.EventHandler(this.rbFSUIPCAirspeed_CheckedChanged);
@@ -195,7 +195,7 @@ namespace FIPDisplayProfiler
             this.rbSimConnectMap.Location = new System.Drawing.Point(3, 188);
             this.rbSimConnectMap.Name = "rbSimConnectMap";
             this.rbSimConnectMap.Size = new System.Drawing.Size(106, 17);
-            this.rbSimConnectMap.TabIndex = 8;
+            this.rbSimConnectMap.TabIndex = 9;
             this.rbSimConnectMap.Text = "SimConnect Map";
             this.rbSimConnectMap.UseVisualStyleBackColor = true;
             this.rbSimConnectMap.CheckedChanged += new System.EventHandler(this.rbSimConnectMap_CheckedChanged);
@@ -206,7 +206,7 @@ namespace FIPDisplayProfiler
             this.rbFlightShare.Location = new System.Drawing.Point(3, 165);
             this.rbFlightShare.Name = "rbFlightShare";
             this.rbFlightShare.Size = new System.Drawing.Size(81, 17);
-            this.rbFlightShare.TabIndex = 7;
+            this.rbFlightShare.TabIndex = 8;
             this.rbFlightShare.Text = "Flight Share";
             this.rbFlightShare.UseVisualStyleBackColor = true;
             this.rbFlightShare.CheckedChanged += new System.EventHandler(this.rbFlightShare_CheckedChanged);
@@ -217,7 +217,7 @@ namespace FIPDisplayProfiler
             this.rbSpotifyPlayer.Location = new System.Drawing.Point(3, 119);
             this.rbSpotifyPlayer.Name = "rbSpotifyPlayer";
             this.rbSpotifyPlayer.Size = new System.Drawing.Size(89, 17);
-            this.rbSpotifyPlayer.TabIndex = 5;
+            this.rbSpotifyPlayer.TabIndex = 6;
             this.rbSpotifyPlayer.Text = "Spotify Player";
             this.rbSpotifyPlayer.UseVisualStyleBackColor = true;
             this.rbSpotifyPlayer.CheckedChanged += new System.EventHandler(this.rbSpotifyPlayer_CheckedChanged);
@@ -274,7 +274,7 @@ namespace FIPDisplayProfiler
             this.btnCancel.Location = new System.Drawing.Point(47, 388);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 14;
+            this.btnCancel.TabIndex = 17;
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
@@ -295,6 +295,7 @@ namespace FIPDisplayProfiler
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Add New Page";
+            this.Load += new System.EventHandler(this.AddPageDialog_Load);
             this.pnlPageType.ResumeLayout(false);
             this.pnlPageType.PerformLayout();
             this.ResumeLayout(false);

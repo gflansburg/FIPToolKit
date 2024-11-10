@@ -899,25 +899,20 @@ namespace FIPToolKit.Models
                                         break;
                                     }
                                     SpotifyPlaylist spotifyPlaylist = PlayLists[i + (page * 8)];
+                                    if (spotifyPlaylist == PlayLists[PlayListIndex])
+                                    {
+                                        graphics.FillRectangle(SystemBrushes.Highlight, new Rectangle(34, (40 * (i + 1)), 288, 40));
+                                    }
                                     if (spotifyPlaylist.AlbumArtwork != null)
                                     {
                                         destRect = new Rectangle(34, (30 * i) + 1, 28, 28);
                                         graphics.DrawImage(spotifyPlaylist.AlbumArtwork, destRect, 0, 0, spotifyPlaylist.AlbumArtwork.Width, spotifyPlaylist.AlbumArtwork.Height, GraphicsUnit.Pixel);
                                     }
                                     destRect = new Rectangle(64, (30 * i), 256, 30);
-                                    graphics.DrawString(spotifyPlaylist.SimplePlaylist.Name, SpotifyPlayerProperties.Font, brush, destRect, format);
-                                }
-                                //Draw currently selectd playlist
-                                SpotifyPlaylist playList = PlayLists[PlayListIndex];
-                                int selectOffset = (PlayListIndex % 8) * 30;
-                                destRect = new Rectangle(32, selectOffset, 288, 30);
-                                graphics.FillRectangle(SystemBrushes.Highlight, destRect);
-                                destRect = new Rectangle(64, selectOffset, 256, 30);
-                                graphics.DrawString(playList.SimplePlaylist.Name, SpotifyPlayerProperties.Font, brush, destRect, format);
-                                if (playList.AlbumArtwork != null)
-                                {
-                                    destRect = new Rectangle(34, selectOffset + 1, 28, 28);
-                                    graphics.DrawImage(playList.AlbumArtwork, destRect, 0, 0, playList.AlbumArtwork.Width, playList.AlbumArtwork.Height, GraphicsUnit.Pixel);
+                                    using (SolidBrush brush2 = new SolidBrush(spotifyPlaylist == PlayLists[PlayListIndex] ? SystemColors.HighlightText : SpotifyPlayerProperties.FontColor.Color))
+                                    {
+                                        graphics.DrawString(spotifyPlaylist.SimplePlaylist.Name, SpotifyPlayerProperties.Font, brush2, destRect, format);
+                                    }
                                 }
                             }
                         }
@@ -1085,7 +1080,7 @@ namespace FIPToolKit.Models
 
         private void Init()
         {
-            if (SpotifyPlayerProperties.Playlist != null && !String.IsNullOrEmpty(SpotifyPlayerProperties.Playlist.PlaylistId) && !String.IsNullOrEmpty(SpotifyPlayerProperties.Playlist.UserId) && AutoPlayLastPlaylist)
+            if (SpotifyPlayerProperties.Playlist != null && !string.IsNullOrEmpty(SpotifyPlayerProperties.Playlist.PlaylistId) && !String.IsNullOrEmpty(SpotifyPlayerProperties.Playlist.UserId) && AutoPlayLastPlaylist)
             {
                 SpotifyController.PlayUserPlaylist(SpotifyPlayerProperties.Playlist.PlaylistId, SpotifyPlayerProperties.Playlist.PlaylistId);
             }

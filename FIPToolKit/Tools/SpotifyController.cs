@@ -596,8 +596,8 @@ namespace FIPToolKit.Tools
                         }
                         if (index != -1 && !stopLazyLoader && index < track.Album.Images.Count)
                         {
-                            string filename = String.Format("{0}\\Images\\{1}.bmp", FIPToolKit.FlightSim.Tools.GetExecutingDirectory(), System.IO.Path.GetFileName(track.Album.Images[index].Url));
-                            if (CacheArtwork && System.IO.File.Exists(filename))
+                            string filename = string.Format("{0}\\Images\\{1}.bmp", FlightSim.Tools.GetExecutingDirectory(), Path.GetFileName(track.Album.Images[index].Url));
+                            if (CacheArtwork && File.Exists(filename))
                             {
                                 try
                                 {
@@ -628,9 +628,9 @@ namespace FIPToolKit.Tools
                                             _albumArtwork.Add(new Bitmap(bitmap));
                                             if (CacheArtwork)
                                             {
-                                                if (!System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(filename)))
+                                                if (!Directory.Exists(Path.GetDirectoryName(filename)))
                                                 {
-                                                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(filename));
+                                                    Directory.CreateDirectory(Path.GetDirectoryName(filename));
                                                 }
                                                 bitmap.Save(filename, System.Drawing.Imaging.ImageFormat.Bmp);
                                             }

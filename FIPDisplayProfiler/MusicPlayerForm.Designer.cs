@@ -194,6 +194,7 @@ namespace FIPDisplayProfiler
             // folderBrowserDialog1
             // 
             this.folderBrowserDialog1.RootFolder = System.Environment.SpecialFolder.MyMusic;
+            this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
             // cbAutoPlay
             // 

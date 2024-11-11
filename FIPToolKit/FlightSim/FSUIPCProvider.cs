@@ -13,6 +13,7 @@ using System.Xml.Serialization;
 using FSUIPC;
 using FIPToolKit.Threading;
 using FIPToolKit.FlightSim;
+using GMap.NET.MapProviders;
 
 namespace FIPToolKit.FlightSim
 {
@@ -102,7 +103,7 @@ namespace FIPToolKit.FlightSim
         {
             get
             {
-                return (ReadyToFly)readyToFly.Value;
+                return !Location.IsEmpty() ? (ReadyToFly)readyToFly.Value : FlightSim.ReadyToFly.Loading;
             }
         }
 
@@ -922,6 +923,8 @@ namespace FIPToolKit.FlightSim
             }
         }
 
+        private string _currentATCType = string.Empty;
+        private string _currentATCModel = string.Empty;
         private void ProcessMain(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
             while (IsConnected && !stop)
@@ -938,65 +941,26 @@ namespace FIPToolKit.FlightSim
                     {
                         ReadyToFly(IsReadyToFly);
                     }
-                    if (string.IsNullOrEmpty(_atcModel) || aircraftModel.ValueChanged || !_atcModel.Equals(aircraftModel.Value))
+                    if (string.IsNullOrEmpty(_currentATCModel) || aircraftModel.ValueChanged || !_currentATCModel.Equals(aircraftModel.Value) || string.IsNullOrEmpty(_currentATCType) || aircraftType.ValueChanged || !_currentATCType.Equals(aircraftType.Value))
                     {
-                        _atcModel = aircraftModel.Value;
-                        _atcType = aircraftType.Value;
+                        _atcModel = _currentATCModel = aircraftModel.Value;
+                        _atcType = _currentATCType = aircraftType.Value;
                         AircraftData data = Tools.LoadAircraft(aircraftType.Value, aircraftModel.Value);
-                        if (data != null)
+                        if (data == null)
                         {
-                            _aircraftId = data.AircraftId;
-                            _aircraftName = data.Name;
-                            _atcType = data.Type;
-                            _atcModel = data.Model;
-                            _engineType = data.EngineType;
-                            _isHeavy = data.IsHeavy;
-                            _isHelo = data.IsHelo;
-                            AircraftChange(_aircraftId);
+                            data = Tools.DefaultAircraft(aircraftType.Value, aircraftModel.Value);
+                            data.Name = title.Value;
+                            data.EngineType = (EngineType)engineType.Value;
+                            data.Helo = data.EngineType == EngineType.Helo;
                         }
-                        else
-                        {
-                            _aircraftId = 0;
-                            _isHeavy = false;
-                            _aircraftName = title.Value;
-                            _engineType = (EngineType)engineType.Value;
-                            _isHelo = _engineType == EngineType.Helo;
-                            _atcType = aircraftType.Value;
-                            try
-                            {
-                                if (aircraftType.Value.Contains('\u005F'))
-                                {
-                                    _atcType = (aircraftType.Value.Split(new char[] { '\u005F' })[2].Split(new char[] { '.' })[0]);
-                                }
-                                else if (aircraftType.Value.Contains(' '))
-                                {
-                                    _atcType = (aircraftType.Value.Split(new char[] { ' ' })[1].Split(new char[] { '.' })[0]);
-                                }
-                            }
-                            catch
-                            {
-                            }
-                            _atcModel = aircraftModel.Value;
-                            try
-                            {
-                                if (aircraftModel.Value.Contains(' '))
-                                {
-                                    _atcModel = (aircraftModel.Value.Split(new char[] { '.' })[1].Split(new char[] { ' ' })[1]);
-                                }
-                                else if (aircraftModel.Value.Contains('_'))
-                                {
-                                    _atcModel = (aircraftModel.Value.Split(new char[] { '.' })[1].Split(new char[] { '\u005F' })[2]);
-                                }
-                                else if (aircraftModel.Value.Contains(':'))
-                                {
-                                    _atcModel = (aircraftModel.Value.Split(new char[] { ':' })[1]);
-                                }
-                            }
-                            catch
-                            {
-                            }
-                            AircraftChange(_aircraftId);
-                        }
+                        _aircraftId = data.AircraftId;
+                        _aircraftName = data.FriendlyName;
+                        _atcType = data.FriendlyType;
+                        _atcModel = data.FriendlyModel;
+                        _engineType = data.EngineType;
+                        _isHeavy = data.Heavy;
+                        _isHelo = data.Helo;
+                        AircraftChange(_aircraftId);
                         ReadyToFly(IsReadyToFly);
                     }
                     FlightDataReceived();

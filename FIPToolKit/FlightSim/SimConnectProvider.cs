@@ -40,7 +40,7 @@ namespace FIPToolKit.FlightSim
 
         public override double KohlsmanInchesMercury => FlightData.KOHLSMAN_SETTING_HG;
 
-        public override ReadyToFly IsReadyToFly => IsRunning ? FlightSim.ReadyToFly.Ready : FlightSim.ReadyToFly.Loading;
+        public override ReadyToFly IsReadyToFly => IsRunning && !Location.IsEmpty() ? FlightSim.ReadyToFly.Ready : FlightSim.ReadyToFly.Loading;
 
         public override double GPSRequiredMagneticHeadingRadians => (AircraftId == 50 ? FlightData.GPS_WP_BEARING + Math.PI : FlightData.GPS_WP_BEARING);
 
@@ -189,8 +189,8 @@ namespace FIPToolKit.FlightSim
             SimConnect.Instance.OnConnected += SimConnect_OnConnected;
             SimConnect.Instance.OnQuit += SimConnect_OnQuit;
             SimConnect.Instance.OnFlightDataReceived += SimConnect_OnFlightDataReceived;
-            SimConnect.Instance.OnFlightDataByTypeReceived += SimConnect_OnFlightDataByTypeReceived;
             SimConnect.Instance.OnTrafficReceived += SimConnect_OnTrafficReceived;
+            SimConnect.Instance.OnSim += SimConnect_OnSim;
         }
 
         protected void SimConnect_OnTrafficReceived(uint objectId, Aircraft aircraft, TrafficEvent eventType)
@@ -255,67 +255,42 @@ namespace FIPToolKit.FlightSim
             Error(error);
         }
 
-        protected void SimConnect_OnFlightDataReceived(FULL_DATA data)
-        {
-            FlightData = new FLIGHT_DATA()
-            {
-                PLANE_LATITUDE = data.PLANE_LATITUDE,
-                PLANE_LONGITUDE = data.PLANE_LONGITUDE,
-                PLANE_ALTITUDE = data.PLANE_ALTITUDE,
-                PRESSURE_ALTITUDE = data.PRESSURE_ALTITUDE,
-                PLANE_HEADING_DEGREES_MAGNETIC = data.PLANE_HEADING_DEGREES_MAGNETIC,
-                PLANE_HEADING_DEGREES_TRUE = data.PLANE_HEADING_DEGREES_TRUE,
-                PLANE_PITCH_DEGREES = data.PLANE_PITCH_DEGREES,
-                PLANE_BANK_DEGREES = data.PLANE_BANK_DEGREES,
-                VERTICAL_SPEED = data.VERTICAL_SPEED,
-                AIRSPEED_INDICATED = data.AIRSPEED_INDICATED,
-                AIRSPEED_TRUE = data.AIRSPEED_TRUE,
-                FUEL_TANK_RIGHT_MAIN_QUANTITY = data.FUEL_TANK_RIGHT_MAIN_QUANTITY,
-                FUEL_TANK_LEFT_MAIN_QUANTITY = data.FUEL_TANK_LEFT_MAIN_QUANTITY,
-                SIM_ON_GROUND = data.SIM_ON_GROUND,
-                GROUND_ALTITUDE = data.GROUND_ALTITUDE,
-                GROUND_VELOCITY = data.GROUND_VELOCITY,
-                AMBIENT_WIND_VELOCITY = data.AMBIENT_WIND_VELOCITY,
-                AMBIENT_WIND_DIRECTION = data.AMBIENT_WIND_DIRECTION,
-                AMBIENT_TEMPERATURE = data.AMBIENT_TEMPERATURE,
-                GPS_WP_TRUE_REQ_HDG = data.GPS_WP_TRUE_REQ_HDG,
-                GPS_WP_BEARING = data.GPS_WP_BEARING,
-                GPS_WP_CROSS_TRK = data.GPS_WP_CROSS_TRK,
-                GPS_IS_ACTIVE_WAY_POINT = data.GPS_IS_ACTIVE_WAY_POINT,
-                NAV_RELATIVE_BEARING_TO_STATION_1 = data.NAV_RELATIVE_BEARING_TO_STATION_1,
-                NAV_RELATIVE_BEARING_TO_STATION_2 = data.NAV_RELATIVE_BEARING_TO_STATION_2,
-                KOHLSMAN_SETTING_HG = data.KOHLSMAN_SETTING_HG,
-                ADF_RADIAL = data.ADF_RADIAL,
-                NAV1_AVAILABLE = data.NAV1_AVAILABLE,
-                NAV2_AVAILABLE = data.NAV2_AVAILABLE
-            };
-            AircraftData aircraftData = Tools.LoadAircraft(data.ATC_TYPE, data.ATC_MODEL);
-            if(aircraftData != null)
-            {
-                _aircraftName = aircraftData.Name;
-                _aircraftId = aircraftData.AircraftId;
-                _engineType = aircraftData.EngineType;
-                _isHeavy = aircraftData.IsHeavy;
-                _isHelo = aircraftData.IsHelo;
-                _atcModel = aircraftData.Model;
-                _atcType = aircraftData.Type;
-                _atcIdentifier = aircraftData.ATCIdentifier;
-                _isGearFloats = aircraftData.IsGearFloats;
-                _isHelo = aircraftData.IsHelo;
-                AircraftChange(_aircraftId);
-            }
-            if (data.ATC_MODEL.Equals("Airbus-H135") || data.ATC_MODEL.Equals("EC135P3H"))
-            {
-                _engineType = EngineType.Helo;
-                _isHelo = true;
-                _isGearFloats = false;
-            }
-            FlightDataReceived();
-        }
-
-        protected void SimConnect_OnFlightDataByTypeReceived(FLIGHT_DATA data)
+        private string _currentATCType = string.Empty;
+        private string _currentATCModel = string.Empty;
+        protected void SimConnect_OnFlightDataReceived(FLIGHT_DATA data)
         {
             FlightData = data;
+            if (!data.ATC_TYPE.Equals(_currentATCType, StringComparison.OrdinalIgnoreCase) || !data.ATC_MODEL.Equals(_currentATCModel, StringComparison.OrdinalIgnoreCase))
+            {
+                _currentATCType = data.ATC_TYPE;
+                _currentATCModel = data.ATC_MODEL;
+                AircraftData aircraftData = Tools.LoadAircraft(data.ATC_TYPE, data.ATC_MODEL);
+                if (aircraftData == null)
+                {
+                    aircraftData = Tools.DefaultAircraft(data.ATC_TYPE, data.ATC_MODEL);
+                    aircraftData.EngineType = (EngineType)data.ENGINE_TYPE;
+                    aircraftData.Heavy = Convert.ToBoolean(data.ATC_HEAVY);
+                    aircraftData.Helo = _engineType == EngineType.Helo;
+                    aircraftData.IsGearFloats = Convert.ToBoolean(data.IS_GEAR_FLOATS);
+                }
+                _aircraftName = aircraftData.FriendlyName;
+                _aircraftId = aircraftData.AircraftId;
+                _engineType = aircraftData.EngineType;
+                _isHeavy = aircraftData.Heavy;
+                _isHelo = aircraftData.Helo;
+                _atcModel = aircraftData.FriendlyModel;
+                _atcType = aircraftData.FriendlyType;
+                _atcIdentifier = aircraftData.ATCIdentifier;
+                _isGearFloats = aircraftData.IsGearFloats;
+                aircraftData.ATCIdentifier = data.ATC_IDENTIFIER;
+                if (data.ATC_MODEL.Equals("Airbus-H135") || data.ATC_MODEL.Equals("EC135P3H"))
+                {
+                    _engineType = EngineType.Helo;
+                    _isHelo = true;
+                    _isGearFloats = false;
+                }
+                AircraftChange(_aircraftId);
+            }
             FlightDataReceived();
         }
 

@@ -31,6 +31,10 @@ namespace FIPToolKit.Models
             CanPlayFirstSong = flightSimProvider.IsConnected;
             flightSimProvider.OnFlightDataReceived += FlightSimProvider_OnFlightDataReceived;
             flightSimProvider.OnConnected += FlightSimProvider_OnConnected;
+            if (flightSimProvider.IsConnected)
+            {
+                flightSimProvider.Connected();
+            }
         }
 
         private void FlightSimProvider_OnConnected(FlightSimProviderBase sender)
@@ -59,12 +63,19 @@ namespace FIPToolKit.Models
 
         private List<FIPRadioStation> GetStations()
         {
-            RestClient client = new RestClient("https://cloud.gafware.com/Home");
-            RestRequest request = new RestRequest("GetAllStations", Method.Get);
-            RestResponse response = client.Execute(request);
-            if (response.IsSuccessful)
+            try
             {
-                return JsonConvert.DeserializeObject<List<FIPRadioStation>>(response.Content);
+                RestClient client = new RestClient("https://cloud.gafware.com/Home");
+                RestRequest request = new RestRequest("GetAllStations", Method.Get);
+                RestResponse response = client.Execute(request);
+                if (response.IsSuccessful)
+                {
+                    return JsonConvert.DeserializeObject<List<FIPRadioStation>>(response.Content);
+                }
+            }
+            catch (Exception)
+            {
+                // Offline?
             }
             return null;
         }

@@ -578,10 +578,16 @@ namespace FIPToolKit.Models
                     ThreadPool.QueueUserWorkItem(_ =>
                     {
 
-                        Image img = LogoUrl.DownloadImageFromUrl();
+                        Bitmap img = LogoUrl.DownloadImageFromUrl();
                         if (img != null)
                         {
-                            _artwork = new Bitmap(img);
+                            try
+                            {
+                                _artwork = img;
+                            }
+                            catch(Exception)
+                            {
+                            }
                             if (MetaData != null)
                             {
                                 MetaData.Artwork = new Bitmap(_artwork);
@@ -745,10 +751,19 @@ namespace FIPToolKit.Models
             properties.OnRepeatChanged += Properties_OnRepeatChanged;
             properties.OnRadioDistanceChanged += Properties_OnRadioDistanceChanged;
             properties.OnMuteChanged += Properties_OnMuteChanged;
-            Core.Initialize();
-            libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-sout-video", "--quiet", "--no-video" });
             CreatePlayer();
             SetLocalLocation();
+        }
+
+        public static void InitializeCore()
+        {
+            try
+            {
+                Core.Initialize(FlightSim.Tools.GetExecutingDirectory() + "\\libvlc\\win-x64");
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private void Properties_OnMuteChanged(object sender, EventArgs e)
@@ -928,74 +943,92 @@ namespace FIPToolKit.Models
 
         private void CreatePlayer()
         {
+            if (libVLC == null)
+            {
+                try
+                {
+                    Core.Initialize(FlightSim.Tools.GetExecutingDirectory() + "\\libvlc\\win-x64");
+                    libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-sout-video", "--quiet", "--no-video" });
+                    CreatePlayer();
+                }
+                catch (Exception)
+                {
+                }
+            }
             if (player == null && libVLC != null)
             {
-                player = new MediaPlayer(libVLC);
-                player.EnableHardwareDecoding = true;
-                player.Mute = MusicPlayerProperties.Mute;
-                player.Volume = MusicPlayerProperties.Volume;
-                player.EncounteredError += (s, e) =>
+                try
                 {
-                    Error = "An Error Has Occured";
-                    UpdatePage();
-                };
-                player.Muted += (s, e) =>
-                {
-                    if (player != null)
+                    player = new MediaPlayer(libVLC);
+                    player.EnableHardwareDecoding = true;
+                    player.Mute = MusicPlayerProperties.Mute;
+                    player.Volume = MusicPlayerProperties.Volume;
+                    player.EncounteredError += (s, e) =>
                     {
-                        MusicPlayerProperties.SetMute(player.Mute);
-                        OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
-                    }
-                };
-                player.VolumeChanged += (s, e) =>
-                {
-                    if (player != null)
+                        Error = "An Error Has Occured";
+                        UpdatePage();
+                    };
+                    player.Muted += (s, e) =>
                     {
-                        MusicPlayerProperties.SetVolume(player.Volume);
-                        OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
-                    }
-                };
-                player.Opening += (s, e) =>
-                {
-                    Error = null;
-                    Opening = true;
-                    UpdatePage();
-                };
-                player.Playing += (s, e) =>
-                {
-                    IsPlaying = true;
-                    if (Opening)
-                    {
-                        Opening = false;
-                        if (Resume)
+                        if (player != null)
                         {
-                            ThreadPool.QueueUserWorkItem(_ => 
-                            { 
-                                if (player != null) 
-                                { 
-                                    player.Pause(); 
-                                } 
-                            });
+                            MusicPlayerProperties.SetMute(player.Mute);
+                            OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
                         }
-                    }
-                    if (MusicPlayerProperties.PauseOtherMedia)
+                    };
+                    player.VolumeChanged += (s, e) =>
                     {
-                        SendActive();
-                    }
-                    UpdatePage();
-                };
-                player.Paused += (s, e) =>
-                {
-                    if (MusicPlayerProperties.PauseOtherMedia)
+                        if (player != null)
+                        {
+                            MusicPlayerProperties.SetVolume(player.Volume);
+                            OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
+                        }
+                    };
+                    player.Opening += (s, e) =>
                     {
-                        SendInactive();
-                    }
-                    UpdatePage();
-                };
-                player.EndReached += (s, e) =>
+                        Error = null;
+                        Opening = true;
+                        UpdatePage();
+                    };
+                    player.Playing += (s, e) =>
+                    {
+                        IsPlaying = true;
+                        if (Opening)
+                        {
+                            Opening = false;
+                            if (Resume)
+                            {
+                                ThreadPool.QueueUserWorkItem(_ =>
+                                {
+                                    if (player != null)
+                                    {
+                                        player.Pause();
+                                    }
+                                });
+                            }
+                        }
+                        if (MusicPlayerProperties.PauseOtherMedia)
+                        {
+                            SendActive();
+                        }
+                        UpdatePage();
+                    };
+                    player.Paused += (s, e) =>
+                    {
+                        if (MusicPlayerProperties.PauseOtherMedia)
+                        {
+                            SendInactive();
+                        }
+                        UpdatePage();
+                    };
+                    player.EndReached += (s, e) =>
+                    {
+                        PlayNextTrack(true);
+                    };
+                }
+                catch(Exception)
                 {
-                    PlayNextTrack(true);
-                };
+                }
             }
         }
 
@@ -1009,8 +1042,11 @@ namespace FIPToolKit.Models
                     Media = null;
                 }
                 Stop();
-                libVLC.Dispose();
-                libVLC = null;
+                if (libVLC != null)
+                {
+                    libVLC.Dispose();
+                    libVLC = null;
+                }
             });
             if (Library != null)
             {
@@ -2093,58 +2129,68 @@ namespace FIPToolKit.Models
 
         public virtual void Play(FIPMusicSong song, bool play = true)
         {
-            Stop();
-            while (!_stopped)
+            if (libVLC != null)
             {
-                Thread.Sleep(100);
-            }
-            if (song != CurrentSong)
-            {
-                CurrentSong = song;
-                CurrentAlbum = FindAlbum(!string.IsNullOrEmpty(CurrentSong.Playlist) ? "Playlists" : CurrentSong.Artist, !string.IsNullOrEmpty(CurrentSong.Playlist) ? CurrentSong.Playlist : CurrentSong.Album);
-                CurrentArtist = Library.Artists.FirstOrDefault(a => a.ArtistName.Equals(CurrentAlbum.IsPlaylist ? "Playlists" : CurrentSong.Artist, StringComparison.OrdinalIgnoreCase));
-                SongChanged();
-            }
-            if (Media != null)
-            {
-                Media.Dispose();
-                Media = null;
-            }
-            if (song != null && !string.IsNullOrEmpty(song.Filename))
-            {
-                CreatePlayer();
-                UpdatePlayer();
-                MusicPlayerProperties.LastSong = song.Filename;
-                if (song.IsStream)
+                Stop();
+                while (!_stopped)
                 {
-                    Media = new Media(libVLC, song.Filename, FromType.FromLocation);
+                    Thread.Sleep(100);
                 }
-                else if (File.Exists(song.Filename))
+                if (song != CurrentSong)
                 {
-                    Media = new Media(libVLC, song.Filename);
+                    CurrentSong = song;
+                    CurrentAlbum = FindAlbum(!string.IsNullOrEmpty(CurrentSong.Playlist) ? "Playlists" : CurrentSong.Artist, !string.IsNullOrEmpty(CurrentSong.Playlist) ? CurrentSong.Playlist : CurrentSong.Album);
+                    CurrentArtist = Library.Artists.FirstOrDefault(a => a.ArtistName.Equals(CurrentAlbum.IsPlaylist ? "Playlists" : CurrentSong.Artist, StringComparison.OrdinalIgnoreCase));
+                    SongChanged();
                 }
                 if (Media != null)
                 {
-                    try
+                    Media.Dispose();
+                    Media = null;
+                }
+                if (song != null && !string.IsNullOrEmpty(song.Filename))
+                {
+                    CreatePlayer();
+                    UpdatePlayer();
+                    MusicPlayerProperties.LastSong = song.Filename;
+                    if (song.IsStream)
                     {
-                        Media.MetaChanged += Media_MetaChanged;
-                        if (!Resume)
+                        Media = new Media(libVLC, song.Filename, FromType.FromLocation);
+                    }
+                    else if (File.Exists(song.Filename))
+                    {
+                        Media = new Media(libVLC, song.Filename);
+                    }
+                    if (Media != null)
+                    {
+                        try
                         {
-                            if (player != null && play)
+                            Media.MetaChanged += Media_MetaChanged;
+                            if (!Resume)
                             {
-                                IsPlaying = true;
-                                player.Play(Media);
+                                if (player != null && play)
+                                {
+                                    IsPlaying = true;
+                                    player.Play(Media);
+                                }
                             }
                         }
+                        catch (Exception)
+                        {
+                        }
                     }
-                    catch (Exception)
+                }
+                else
+                {
+                    using (Bitmap bmp = ImageHelper.GetErrorImage("Select a song to play."))
                     {
+                        SendImage(bmp);
                     }
                 }
             }
             else
             {
-                using (Bitmap bmp = ImageHelper.GetErrorImage("Select a song to play."))
+                using (Bitmap bmp = ImageHelper.GetErrorImage("LibVLC failed to initialize."))
                 {
                     SendImage(bmp);
                 }
@@ -2705,14 +2751,14 @@ namespace FIPToolKit.Models
             }
         }
 
-        public override void Inactive(bool sendEvent)
-        {
-            base.Inactive(false);
-        }
-
-        public override void Active(bool sendEvent)
+        public override void Active(bool sendEvent = true)
         {
             base.Active(false);
+        }
+
+        public override void Inactive(bool sendEvent = true)
+        {
+            base.Inactive(false);
         }
 
         public bool CanPlayOther

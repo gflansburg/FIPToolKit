@@ -52,6 +52,7 @@ namespace FIPDisplayMSFS2020
             this.btnOK.TabIndex = 1;
             this.btnOK.Text = "&OK";
             this.btnOK.UseVisualStyleBackColor = true;
+            this.btnOK.Visible = false;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // label1
@@ -126,7 +127,6 @@ namespace FIPDisplayMSFS2020
             this.Controls.Add(this.webView21);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MinimizeBox = false;
             this.Name = "FIPDisplay";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FIPDisplayMSFS2020";

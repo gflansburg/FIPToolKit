@@ -2,17 +2,11 @@
 using FIPToolKit.FlightSim;
 using FIPToolKit.Models;
 using FIPToolKit.Tools;
-using Microsoft.Web.WebView2.Core;
 using Saitek.DirectOutput;
 using System;
 using System.Drawing;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Telerik.Collections.Generic;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace FIPDisplayProfiler
 {
@@ -21,7 +15,6 @@ namespace FIPDisplayProfiler
         private global::FIPDisplayProfiler.ToolStripSubMenu leftToolStripMenuItem;
         private global::FIPDisplayProfiler.ToolStripSubMenu rightToolStripMenuItem;
 
-        private delegate Bitmap BitmapDelegate();
         public delegate void FIPGetIntEventHandler(object sender, ref int value);
         public delegate void FIPGetBoolEventHandler(object sender, ref bool value);
         public event FIPPage.FIPPageEventHandler OnMediaPlayerActive;
@@ -32,7 +25,6 @@ namespace FIPDisplayProfiler
         public event FIPGetBoolEventHandler OnGetMute;
         public event FIPGetIntEventHandler OnGetVolume;
 
-        public GMap.NET.WindowsForms.GMapControl Map { get; set; }
         public IntPtr MainWindowHandle { get; set; }
         private FIPDevice _device;
         public FIPPageProperties SelectedPage { get; private set; }
@@ -101,8 +93,6 @@ namespace FIPDisplayProfiler
 
         private void Device_OnPageAdded(object sender, FIPDeviceEventArgs e)
         {
-            //lbPages.Items.Insert(InsertIndex(e.Page.Properties.Page), e.Page.Properties);
-            lbPages.Items.Add(e.Page.Properties);
             e.Page.OnImageChange += Page_OnImageChange;
             e.Page.OnStateChange += Page_OnStateChange;
             if (typeof(FIPSpotifyPlayer).IsAssignableFrom(e.Page.GetType()))
@@ -138,83 +128,23 @@ namespace FIPDisplayProfiler
                 ((FIPVideoPlayer)e.Page).Volume = GetInitialVolume(((FIPVideoPlayer)e.Page).Volume);
                 ((FIPVideoPlayer)e.Page).Mute = GetInitialMute(((FIPVideoPlayer)e.Page).Mute);
             }
-            else if (typeof(FIPMap).IsAssignableFrom(e.Page.GetType()))
+            Invoke((Action)delegate
             {
-                ((FIPMap)e.Page).OnInitMap += Map_OnInitMap;
-                ((FIPMap)e.Page).OnGetMapBitmap += Map_OnGetMapBitmap;
-            }
-            if (e.IsActive)
-            {
-                lbPages.SelectedItem = e.Page.Properties;
-            }
-            pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
-            btnDelete.Enabled = lbPages.SelectedIndex != -1;
-            btnMoveUp.Enabled = lbPages.SelectedIndex > 0;
-            btnMoveDown.Enabled = lbPages.SelectedIndex < (lbPages.Items.Count - 1);
-            if (lbPages.Items.Count == 0)
-            {
-                SetFIPImage(Device.GetDefaultPageImage);
-            }
-        }
-
-        private void Map_OnGetMapBitmap(object sender, ref Bitmap bmp)
-        {
-            bmp = GetMapBitmap();
-        }
-
-        private void Map_OnInitMap(object sender, ref GMap.NET.WindowsForms.GMapControl map, int width, int height)
-        {
-            if (map == null)
-            {
-                map = new GMap.NET.WindowsForms.GMapControl()
+                //lbPages.Items.Insert(InsertIndex(e.Page.Properties.Page), e.Page.Properties);
+                lbPages.Items.Add(e.Page.Properties);
+                if (e.IsActive)
                 {
-                    Bearing = 0f,
-                    CanDragMap = true,
-                    ForceDoubleBuffer = true,
-                    EmptyTileColor = Color.AliceBlue,
-                    GrayScaleMode = false,
-                    HelperLineOption = GMap.NET.WindowsForms.HelperLineOptions.DontShow,
-                    LevelsKeepInMemory = 5,
-                    Location = new Point(0, 0),
-                    MapProvider = GMap.NET.MapProviders.OpenStreetMapProvider2.Instance,
-                    MarkersEnabled = true,
-                    MaxZoom = 18,
-                    MinZoom = 2,
-                    MouseWheelZoomEnabled = true,
-                    NegativeMode = false,
-                    PolygonsEnabled = true,
-                    Position = new GMap.NET.PointLatLng(0, 0),
-                    RetryLoadTile = 0,
-                    RoutesEnabled = true,
-                    ScaleMode = GMap.NET.WindowsForms.ScaleModes.Integer,
-                    SelectedAreaFillColor = Color.FromArgb(33, 65, 105, 225),
-                    ShowTileGridLines = false,
-                    ShowCenter = false,
-                    Size = new Size(width, height),
-                    DragButton = MouseButtons.Left,
-                    MouseWheelZoomType = GMap.NET.MouseWheelZoomType.MousePositionAndCenter
-                };
-                Map = map;
-            }
-        }
-
-        public Bitmap GetMapBitmap()
-        {
-            if (Map != null)
-            {
-                if (InvokeRequired)
-                {
-                    return (Bitmap)Invoke(new BitmapDelegate(GetMapBitmap), new object[] { });
+                    lbPages.SelectedItem = e.Page.Properties;
                 }
-                else
+                pbPageButtonsOn.Visible = lbPages.Items.Count > 0;
+                btnDelete.Enabled = lbPages.SelectedIndex != -1;
+                btnMoveUp.Enabled = lbPages.SelectedIndex > 0;
+                btnMoveDown.Enabled = lbPages.SelectedIndex < (lbPages.Items.Count - 1);
+                if (lbPages.Items.Count == 0)
                 {
-                    Bitmap map = new Bitmap(480, 480, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                    Rectangle mapRect = new Rectangle(0, 0, 480, 480);
-                    Map.DrawToBitmap(map, mapRect);
-                    return map;
+                    SetFIPImage(Device.GetDefaultPageImage);
                 }
-            }
-            return null;
+            });
         }
 
         private void SpotifyPlayer_OnMuteChanged(object sender, FIPPageEventArgs e)
@@ -373,11 +303,6 @@ namespace FIPDisplayProfiler
                 ((FIPVideoPlayer)page).OnMuteChanged += VideoPlayer_OnMuteChanged;
                 ((FIPVideoPlayer)page).Volume = GetInitialVolume(((FIPVideoPlayer)page).Volume);
                 ((FIPVideoPlayer)page).Mute = GetInitialMute(((FIPVideoPlayer)page).Mute);
-            }
-            else if (typeof(FIPMap).IsAssignableFrom(page.GetType()))
-            {
-                ((FIPMap)page).OnInitMap += Map_OnInitMap;
-                ((FIPMap)page).OnGetMapBitmap += Map_OnGetMapBitmap;
             }
             return index;
         }
@@ -620,10 +545,7 @@ namespace FIPDisplayProfiler
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                FIPSimConnectMap page = new FIPSimConnectMap(form.SimMap);
-                                page.OnInitMap += Map_OnInitMap;
-                                page.OnGetMapBitmap += Map_OnGetMapBitmap;
-                                Device.AddPage(page, true);
+                                Device.AddPage(new FIPSimConnectMap(form.SimMap), true);
                             }
                         }
                         break;
@@ -732,12 +654,9 @@ namespace FIPDisplayProfiler
                             {
                                 FSUIPCMap = new FIPMapProperties()
                             };
-                            FIPFSUIPCMap page = new FIPFSUIPCMap(form.FSUIPCMap);
-                            page.OnInitMap += Map_OnInitMap;
-                            page.OnGetMapBitmap += Map_OnGetMapBitmap;
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(page, true);
+                                Device.AddPage(new FIPFSUIPCMap(form.FSUIPCMap), true);
                             }
                         }
                         break;

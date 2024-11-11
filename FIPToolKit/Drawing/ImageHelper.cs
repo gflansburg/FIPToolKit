@@ -34,7 +34,7 @@ namespace FIPToolKit.Drawing
             }
         }
 
-        public static Image DownloadImageFromUrl(this string imageUrl)
+        public static Bitmap DownloadImageFromUrl(this string imageUrl)
         {
             Image image = null;
             try
@@ -74,7 +74,7 @@ namespace FIPToolKit.Drawing
             {
                 return null;
             }
-            return image;
+            return new Bitmap(image);
         }
 
         public static bool IsImageTransparent(this Bitmap image, string optionalBgColorGhost = null)

@@ -178,7 +178,7 @@
     <Compile Include="FlightSim\FlightSimProviders.cs" />
     <Compile Include="GMap\Google\GoogleHybridMapProvider.cs" />
     <Compile Include="Models\FIPAnalogGauge.cs" />
-    <Compile Include="Models\FIPFAirspeed.cs" />
+    <Compile Include="Models\FIPAirspeed.cs" />
     <Compile Include="Models\FIPAltimeter.cs" />
     <Compile Include="Models\FIPCommandButton.cs" />
     <Compile Include="Models\FIPFSUIPCMap.cs" />
@@ -254,7 +254,6 @@
     <Compile Include="FlightSim\EngineType.cs" />
     <Compile Include="FlightSim\FlightShare.cs" />
     <Compile Include="FlightSim\GMPAircraftMarker.cs" />
-    <Compile Include="FlightSim\GAirportMarker.cs" />
     <Compile Include="FlightSim\GAircraftMarker.cs" />
     <Compile Include="FlightSim\GPilotMarker.cs" />
     <Compile Include="FlightSim\GImageMarker.cs" />
@@ -344,9 +343,6 @@
     <Compile Include="Tools\VolumeMixer.cs" />
     <Compile Include="Tools\WindowHandleInfo.cs" />
     <None Include="app.config" />
-    <None Include="FIPToolKit.sqlite">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="SpotifyAPI.Web\PlayerClient.cs" />
     <Compile Include="SpotifyAPI.Web\ProxyConfig.cs" />
     <Compile Include="SpotifyAPI.Web\SpotifyWebAPI.cs" />

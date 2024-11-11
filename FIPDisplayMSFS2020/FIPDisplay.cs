@@ -21,9 +21,6 @@ namespace FIPDisplayMSFS2020
     {
         private FIPEngine Engine;
 
-        private delegate Bitmap BitmapDelegate();
-        public GMap.NET.WindowsForms.GMapControl Map { get; set; }
-
         //private const int WM_MY_CLOSE = (0x400 + 1000);
 
         public string Message 
@@ -38,7 +35,7 @@ namespace FIPDisplayMSFS2020
                 if(!string.IsNullOrEmpty(label1.Text))
                 {
                     Visible = true;
-                    ShowInTaskbar = true;
+                    btnOK.Visible = true;
                 }
             }
         }
@@ -335,6 +332,7 @@ namespace FIPDisplayMSFS2020
             {
                 LoadActivePages(Engine);
             }
+            FIPMusicPlayer.InitializeCore();
             Engine.Initialize();
         }
 
@@ -443,71 +441,6 @@ namespace FIPDisplayMSFS2020
                 ((FIPVideoPlayer)e.Page).Volume = GetInitialVolume(((FIPVideoPlayer)e.Page).Volume);
                 ((FIPVideoPlayer)e.Page).Mute = GetInitialMute(((FIPVideoPlayer)e.Page).Mute);
             }
-            else if (typeof(FIPMap).IsAssignableFrom(e.Page.GetType()))
-            {
-                ((FIPMap)e.Page).OnInitMap += Map_OnInitMap;
-                ((FIPMap)e.Page).OnGetMapBitmap += Map_OnGetMapBitmap;
-            }
-        }
-
-        private void Map_OnGetMapBitmap(object sender, ref Bitmap bmp)
-        {
-            bmp = GetMapBitmap();
-        }
-
-        private void Map_OnInitMap(object sender, ref GMap.NET.WindowsForms.GMapControl map, int width, int height)
-        {
-            if (map == null)
-            {
-                map = new GMap.NET.WindowsForms.GMapControl()
-                {
-                    Bearing = 0f,
-                    CanDragMap = true,
-                    ForceDoubleBuffer = true,
-                    EmptyTileColor = Color.AliceBlue,
-                    GrayScaleMode = false,
-                    HelperLineOption = GMap.NET.WindowsForms.HelperLineOptions.DontShow,
-                    LevelsKeepInMemory = 5,
-                    Location = new Point(0, 0),
-                    MapProvider = GMap.NET.MapProviders.OpenStreetMapProvider2.Instance,
-                    MarkersEnabled = true,
-                    MaxZoom = 18,
-                    MinZoom = 2,
-                    MouseWheelZoomEnabled = true,
-                    NegativeMode = false,
-                    PolygonsEnabled = true,
-                    Position = new GMap.NET.PointLatLng(0, 0),
-                    RetryLoadTile = 0,
-                    RoutesEnabled = true,
-                    ScaleMode = GMap.NET.WindowsForms.ScaleModes.Integer,
-                    SelectedAreaFillColor = Color.FromArgb(33, 65, 105, 225),
-                    ShowTileGridLines = false,
-                    ShowCenter = false,
-                    Size = new Size(width, height),
-                    DragButton = MouseButtons.Left,
-                    MouseWheelZoomType = GMap.NET.MouseWheelZoomType.MousePositionAndCenter
-                };
-                Map = map;
-            }
-        }
-
-        public Bitmap GetMapBitmap()
-        {
-            if (Map != null)
-            {
-                if (InvokeRequired)
-                {
-                    return (Bitmap)Invoke(new BitmapDelegate(GetMapBitmap), new object[] { });
-                }
-                else
-                {
-                    Bitmap map = new Bitmap(Map.Size.Width, Map.Size.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                    Rectangle mapRect = new Rectangle(0, 0, Map.Size.Width, Map.Size.Height);
-                    Map.DrawToBitmap(map, mapRect);
-                    return map;
-                }
-            }
-            return null;
         }
 
         private void Player_OnInactive(object sender, FIPPageEventArgs e)
@@ -827,7 +760,8 @@ namespace FIPDisplayMSFS2020
             //Stupid glitch with it not pumping the message queue if it loads hidden
             if ((string.IsNullOrEmpty(Message) || Message.Equals("Loading...") || !string.IsNullOrEmpty(Options.Settings)) && Visible == true && !webView21.Visible)
             {
-                Visible = false;
+                WindowState = FormWindowState.Minimized;
+                btnOK.Visible = false;
             }
         }
 

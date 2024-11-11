@@ -205,7 +205,7 @@ namespace FIPDisplayProfiler
             // 
             this.tbAIPClientToken.Location = new System.Drawing.Point(108, 145);
             this.tbAIPClientToken.Name = "tbAIPClientToken";
-            this.tbAIPClientToken.Size = new System.Drawing.Size(181, 20);
+            this.tbAIPClientToken.Size = new System.Drawing.Size(199, 20);
             this.tbAIPClientToken.TabIndex = 58;
             // 
             // FSUIPCMapForm

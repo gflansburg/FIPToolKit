@@ -240,7 +240,6 @@ namespace FIPToolKit.Models
                 {
                     RemovePage(activePage);
                     activePage.Dispose();
-                    IsDirty = true;
                 }
                 else
                 {
@@ -260,28 +259,32 @@ namespace FIPToolKit.Models
                         }
                         activePage.Properties.Page++;
                     }
-                    foreach (FIPPage page in pages)
+                }
+                foreach (FIPPage page in pages)
+                {
+                    // Temporarily remove from the FIP device
+                    int i = pages.IndexOf(page);
+                    if (i >= (direction == Direction.Up ? index - 1 : direction == Direction.Delete ? index + 1 : index))
                     {
-                        // Temporarily remove from the FIP device
-                        int i = pages.IndexOf(page);
-                        if (i >= (direction == Direction.Up ? index - 1 : index))
+                        try
                         {
-                            try
+                            DeviceClient.RemovePage(page.Properties.Page);
+                            if (direction == Direction.Delete)
                             {
-                                DeviceClient.RemovePage(page.Properties.Page);
-                            }
-                            catch
-                            {
+                                pages[i].Properties.Page--;
                             }
                         }
+                        catch
+                        {
+                        }
                     }
-                    IsDirty = true;
                 }
+                IsDirty = true;
                 pages = Pages.OrderBy(p => p.Properties.Page).ToList();
                 foreach (FIPPage page in Pages.OrderBy(p => p.Properties.Page))
                 {
                     int i = pages.IndexOf(page);
-                    if (i >= (direction == Direction.Up ? index - 1 : index))
+                    if (i >= (direction == Direction.Up ? index - 1 : direction == Direction.Delete ? index + 1 : index))
                     {
                         // Readd the page to the FIP device
                         if (page == activePage)

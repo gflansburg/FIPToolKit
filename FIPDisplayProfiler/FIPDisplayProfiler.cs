@@ -7,6 +7,7 @@ using System.IO;
 using FIPToolKit.Tools;
 using System.Diagnostics;
 using Microsoft.Web.WebView2.Core;
+using System.Threading;
 
 namespace FIPDisplayProfiler
 {
@@ -36,6 +37,7 @@ namespace FIPDisplayProfiler
             InitializeComponent();
             try
             {
+                FIPMusicPlayer.InitializeCore();
                 Engine = new FIPEngine();
                 Engine.OnDeviceAdded += Engine_OnDeviceAdded;
                 Engine.OnDeviceRemoved += Engine_OnDeviceRemoved;

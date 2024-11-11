@@ -115,7 +115,7 @@ namespace FIPToolKit.FlightSim
                 AircraftName = data.Name;
                 AircraftType = data.Type;
                 AircraftModel = data.Model;
-                IsHeavy = data.IsHeavy;
+                IsHeavy = data.Heavy;
             }
             else
             {
@@ -208,7 +208,7 @@ namespace FIPToolKit.FlightSim
                 AircraftType = aircraft.Type;
                 AircraftModel = aircraft.Model;
                 EngineType = aircraft.EngineType;
-                IsHeavy = aircraft.IsHeavy;
+                IsHeavy = aircraft.Heavy;
             }
             else
             {

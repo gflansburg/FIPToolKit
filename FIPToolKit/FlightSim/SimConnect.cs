@@ -46,7 +46,6 @@ namespace FIPToolKit.FlightSim
 
         enum DATA_DEFINE_ID : uint
         {
-            FULLDATA,
             FLIGHTDATA,
             AIRCRAFT
         }
@@ -68,7 +67,7 @@ namespace FIPToolKit.FlightSim
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct FULL_DATA
+        public struct FLIGHT_DATA
         {
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x100)]
             public string TITLE;
@@ -120,41 +119,6 @@ namespace FIPToolKit.FlightSim
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        public struct FLIGHT_DATA
-        {
-            public double PLANE_LATITUDE;
-            public double PLANE_LONGITUDE;
-            public double PLANE_ALTITUDE;
-            public double PRESSURE_ALTITUDE;
-            public double AUTOPILOT_HEADING_LOCK_DIR;
-            public double PLANE_HEADING_DEGREES_MAGNETIC;
-            public double PLANE_HEADING_DEGREES_TRUE;
-            public double PLANE_PITCH_DEGREES;
-            public double PLANE_BANK_DEGREES;
-            public double VERTICAL_SPEED;
-            public double AIRSPEED_INDICATED;
-            public double AIRSPEED_TRUE;
-            public double GROUND_ALTITUDE;
-            public double GROUND_VELOCITY;
-            public double KOHLSMAN_SETTING_HG;
-            public double AMBIENT_WIND_VELOCITY;
-            public double AMBIENT_WIND_DIRECTION;
-            public double AMBIENT_TEMPERATURE;
-            public double FUEL_TANK_RIGHT_MAIN_QUANTITY;
-            public double FUEL_TANK_LEFT_MAIN_QUANTITY;
-            public double ADF_RADIAL;
-            public double NAV_RELATIVE_BEARING_TO_STATION_1;
-            public double NAV_RELATIVE_BEARING_TO_STATION_2;
-            public double GPS_WP_TRUE_REQ_HDG;
-            public double GPS_WP_BEARING;
-            public double GPS_WP_CROSS_TRK;
-            public int GPS_IS_ACTIVE_WAY_POINT;
-            public int NAV1_AVAILABLE;
-            public int NAV2_AVAILABLE;
-            public int SIM_ON_GROUND;
-        }
-
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
         public struct AIRCRAFT_DATA
         {
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x100)]
@@ -191,11 +155,8 @@ namespace FIPToolKit.FlightSim
         public bool Error { get; private set; }
         public string ErrorMessage { get; private set; }
 
-        public delegate void SimConnectFlightDataEventHandler(FULL_DATA data);
+        public delegate void SimConnectFlightDataEventHandler(FLIGHT_DATA data);
         public event SimConnectFlightDataEventHandler OnFlightDataReceived;
-
-        public delegate void SimConnectFlightDataByTypeEventHandler(FLIGHT_DATA data);
-        public event SimConnectFlightDataByTypeEventHandler OnFlightDataByTypeReceived;
 
         public delegate void SimConnectConnectEventHandler();
         public event SimConnectConnectEventHandler OnConnected;
@@ -424,7 +385,7 @@ namespace FIPToolKit.FlightSim
                 IsRunning = Convert.ToBoolean(data.dwData);
                 if (IsRunning)
                 {
-                    RequestFullData();
+                    RequestFlightData();
                     if (MicrosoftSimConnect != null)
                     {
                         MicrosoftSimConnect.RequestDataOnSimObject(DATA_REQUEST_ID.NONSUBSCRIBE_REQ, DATA_DEFINE_ID.FLIGHTDATA, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.SECOND, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
@@ -507,7 +468,7 @@ namespace FIPToolKit.FlightSim
                 if (data.dwDefineID == (uint)DATA_DEFINE_ID.FLIGHTDATA)
                 {
                     FLIGHT_DATA flightData = (FLIGHT_DATA)data.dwData[0];
-                    OnFlightDataByTypeReceived?.Invoke(flightData);
+                    OnFlightDataReceived?.Invoke(flightData);
                 }
                 else if(data.dwRequestID == (uint)DATA_REQUEST_ID.TRAFFIC_REQ)
                 {
@@ -543,13 +504,6 @@ namespace FIPToolKit.FlightSim
                 if(data.dwDefineID == (int)DATA_DEFINE_ID.FLIGHTDATA)
                 {
                     FLIGHT_DATA flightData = (FLIGHT_DATA)data.dwData[0];
-                    CurrentAircraft.UpdateData(flightData);
-                    CurrentWeather.UpdateWeather(flightData);
-                    OnFlightDataByTypeReceived?.Invoke(flightData);
-                }
-                else if (data.dwDefineID == (uint)DATA_DEFINE_ID.FULLDATA)
-                {
-                    FULL_DATA flightData = (FULL_DATA)data.dwData[0];
                     CurrentAircraft.UpdateData(flightData);
                     CurrentWeather.UpdateWeather(flightData);
                     OnFlightDataReceived?.Invoke(flightData);
@@ -608,49 +562,13 @@ namespace FIPToolKit.FlightSim
                 ClearError();
                 if (MicrosoftSimConnect != null)
                 {
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "TITLE", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ATC AIRLINE", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ATC FLIGHT NUMBER", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ATC MODEL", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ATC TYPE", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ATC ID", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "CATEGORY", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PLANE LATITUDE", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PLANE LONGITUDE", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PLANE ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PRESSURE ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "AUTOPILOT HEADING LOCK DIR", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PLANE HEADING DEGREES MAGNETIC", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PLANE HEADING DEGREES TRUE", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PLANE PITCH DEGREES", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "PLANE BANK DEGREES", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "VERTICAL SPEED", "feet/second", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "AIRSPEED INDICATED", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "AIRSPEED TRUE", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "GROUND ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "GROUND VELOCITY", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "KOHLSMAN SETTING HG:1", "inHg", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "AMBIENT WIND VELOCITY", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "AMBIENT WIND DIRECTION", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "AMBIENT TEMPERATURE", "celsius", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ADF RADIAL MAG:1", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "NAV RELATIVE BEARING TO STATION:1", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "NAV RELATIVE BEARING TO STATION:2", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "GPS WP TRUE REQ HDG", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "GPS WP BEARING", "radians", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "GPS WP CROSS TRK", "meters", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "FUEL TANK RIGHT MAIN QUANTITY", "gallons", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "FUEL TANK LEFT MAIN QUANTITY", "gallons", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "GPS IS ACTIVE WAY POINT", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "NAV AVAILABLE:1", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "NAV AVAILABLE:2", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ENGINE TYPE", "Enum", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "SIM ON GROUND", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "ATC HEAVY", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FULLDATA, "IS GEAR FLOATS", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-
-                    MicrosoftSimConnect.RegisterDataDefineStruct<FULL_DATA>(DATA_DEFINE_ID.FULLDATA);
-
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "TITLE", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ATC AIRLINE", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ATC FLIGHT NUMBER", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ATC MODEL", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ATC TYPE", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ATC ID", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "CATEGORY", null, SIMCONNECT_DATATYPE.STRING256, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE LATITUDE", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE LONGITUDE", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
@@ -681,6 +599,10 @@ namespace FIPToolKit.FlightSim
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "NAV AVAILABLE:1", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "NAV AVAILABLE:2", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "SIM ON GROUND", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ENGINE TYPE", "Enum", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "SIM ON GROUND", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ATC HEAVY", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "IS GEAR FLOATS", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
 
                     MicrosoftSimConnect.RegisterDataDefineStruct<FLIGHT_DATA>(DATA_DEFINE_ID.FLIGHTDATA);
 
@@ -761,15 +683,15 @@ namespace FIPToolKit.FlightSim
                 }
                 MicrosoftSimConnect.RequestDataOnSimObjectType(DATA_REQUEST_ID.TRAFFIC_REQ, DATA_DEFINE_ID.AIRCRAFT, SearchRadius, SIMCONNECT_SIMOBJECT_TYPE.AIRCRAFT);
                 MicrosoftSimConnect.RequestDataOnSimObjectType(DATA_REQUEST_ID.TRAFFIC_REQ, DATA_DEFINE_ID.AIRCRAFT, SearchRadius, SIMCONNECT_SIMOBJECT_TYPE.HELICOPTER);
-                MicrosoftSimConnect.RequestDataOnSimObject(DATA_REQUEST_ID.NONSUBSCRIBE_REQ, DATA_DEFINE_ID.FULLDATA, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.ONCE, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
+                MicrosoftSimConnect.RequestDataOnSimObject(DATA_REQUEST_ID.NONSUBSCRIBE_REQ, DATA_DEFINE_ID.FLIGHTDATA, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.ONCE, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
             }
         }
 
-        public void RequestFullData()
+        public void RequestFlightData()
         {
             if (MicrosoftSimConnect != null && IsConnected && IsRunning)
             {
-                MicrosoftSimConnect.RequestDataOnSimObject(DATA_REQUEST_ID.NONSUBSCRIBE_REQ, DATA_DEFINE_ID.FULLDATA, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.ONCE, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
+                MicrosoftSimConnect.RequestDataOnSimObject(DATA_REQUEST_ID.NONSUBSCRIBE_REQ, DATA_DEFINE_ID.FLIGHTDATA, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD.ONCE, SIMCONNECT_DATA_REQUEST_FLAG.DEFAULT, 0, 0, 0);
             }
         }
 

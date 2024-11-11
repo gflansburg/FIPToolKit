@@ -24,8 +24,8 @@ namespace FIPToolKit.FlightSim
         public string ATCIdentifier { get; set; }
         public string Name { get; set; }
         public EngineType EngineType { get; set; }
-        public bool IsHeavy { get; set; }
-        public bool IsHelo { get; set; }
+        public bool Heavy { get; set; }
+        public bool Helo { get; set; }
         public PointLatLng Position { get; set; }
         public bool IsOnGround { get; set; }
         public int GroundSpeed { get; set; }
@@ -52,17 +52,15 @@ namespace FIPToolKit.FlightSim
         public bool HasActiveWaypoint { get; set; }
         public double GPSCrossTrackErrorMeters { get; set; }
         public double HeadingBug { get; set; }
+        public string FriendlyName { get; set; }
+        public string FriendlyType { get; set; }
+        public string FriendlyModel { get; set; }
 
         public AircraftData()
         {
             EngineType = EngineType.Piston;
             Model = "None";
             Position = new PointLatLng(0, 0);
-        }
-
-        public AircraftData(SimConnect.FULL_DATA flightData)
-        {
-            UpdateData(flightData);
         }
 
         public AircraftData(SimConnect.FLIGHT_DATA flightData)
@@ -87,8 +85,8 @@ namespace FIPToolKit.FlightSim
             Name = string.Empty;
             ATCIdentifier = string.Empty;
             EngineType = EngineType.Piston;
-            IsHeavy = false;
-            IsHelo = false;
+            Heavy = false;
+            Helo = false;
             IsOnGround = true;
             GroundAltitude = 0;
             GroundSpeed = 0;
@@ -110,40 +108,7 @@ namespace FIPToolKit.FlightSim
             GPSCrossTrackErrorMeters = 0;
         }
 
-    public void UpdateData(SimConnect.FLIGHT_DATA flightData)
-        {
-            Position = new PointLatLng(flightData.PLANE_LATITUDE, flightData.PLANE_LONGITUDE);
-            Altitude = (int)flightData.PLANE_ALTITUDE;
-            PressureAltitude = (int)flightData.PRESSURE_ALTITUDE;
-            IndicatedSpeed = (int)flightData.AIRSPEED_INDICATED;
-            TrueSpeed = (int)flightData.AIRSPEED_TRUE;
-            HeadingTrue = (int)flightData.PLANE_HEADING_DEGREES_TRUE;
-            HeadingMagnetic = (int)flightData.PLANE_HEADING_DEGREES_MAGNETIC;
-            IsOnGround = Convert.ToBoolean(flightData.SIM_ON_GROUND);
-            GroundSpeed = (int)flightData.GROUND_VELOCITY;
-            PitchDegrees = flightData.PLANE_PITCH_DEGREES;
-            BankDegrees = flightData.PLANE_BANK_DEGREES;
-            VerticalSpeed = flightData.VERTICAL_SPEED;
-            GroundAltitude = (int)flightData.GROUND_ALTITUDE;
-            FuelTankLeftMainQuantity = flightData.FUEL_TANK_LEFT_MAIN_QUANTITY;
-            FuelTankRightMainQuantity = flightData.FUEL_TANK_RIGHT_MAIN_QUANTITY;
-            AdfRelativeBearing = flightData.ADF_RADIAL;
-            Nav1Available = Convert.ToBoolean(flightData.NAV1_AVAILABLE);
-            Nav2Available = Convert.ToBoolean(flightData.NAV2_AVAILABLE);
-            Nav1Radial = flightData.NAV_RELATIVE_BEARING_TO_STATION_1;
-            Nav2Radial = flightData.NAV_RELATIVE_BEARING_TO_STATION_2;
-            AmbientTemperatureCelcius = (int)flightData.AMBIENT_TEMPERATURE;
-            AmbientWindDirectionDegrees = flightData.AMBIENT_WIND_DIRECTION;
-            AmbientWindSpeedKnots = flightData.AMBIENT_WIND_VELOCITY;
-            KollsmanInchesMercury = flightData.KOHLSMAN_SETTING_HG;
-            GPSRequiredMagneticHeadingRadians = flightData.GPS_WP_BEARING;
-            GPSRequiredTrueHeadingRadians = flightData.GPS_WP_TRUE_REQ_HDG;
-            HasActiveWaypoint = Convert.ToBoolean(flightData.GPS_IS_ACTIVE_WAY_POINT);
-            GPSCrossTrackErrorMeters = flightData.GPS_WP_CROSS_TRK;
-            HeadingBug = flightData.AUTOPILOT_HEADING_LOCK_DIR;
-        }
-
-        public void UpdateData(SimConnect.FULL_DATA flightData)
+        public void UpdateData(SimConnect.FLIGHT_DATA flightData)
         {
             AircraftData data = FlightSim.Tools.LoadAircraft(flightData.ATC_TYPE, flightData.ATC_MODEL);
             if (data == null)
@@ -183,17 +148,17 @@ namespace FIPToolKit.FlightSim
                 {
                 }
                 EngineType = (EngineType)flightData.ENGINE_TYPE;
-                IsHeavy = Convert.ToBoolean(flightData.ATC_HEAVY);
-                IsHelo = EngineType == EngineType.Helo;
+                Heavy = Convert.ToBoolean(flightData.ATC_HEAVY);
+                Helo = EngineType == EngineType.Helo;
                 Name = flightData.TITLE;
             }
             else
             {
                 Type = data.Type;
                 Model = data.Model;
-                IsHeavy = data.IsHeavy;
+                Heavy = data.Heavy;
                 EngineType = data.EngineType;
-                IsHelo = EngineType == data.EngineType;
+                Helo = EngineType == data.EngineType;
                 Name = data.Name;
             }
             ATCModel = flightData.ATC_MODEL;

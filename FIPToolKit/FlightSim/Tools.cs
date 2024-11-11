@@ -1,4 +1,6 @@
 ﻿using FIPToolKit.Tools;
+using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -102,7 +104,7 @@ namespace FIPToolKit.FlightSim
             double theta = lon1 - lon2;
             double rtheta = Math.PI * theta / 180;
             double dist = Math.Sin(rlat1) * Math.Sin(rlat2) + Math.Cos(rlat1) * Math.Cos(rlat2) * Math.Cos(rtheta);
-            
+
             dist = Math.Acos(dist);
             dist = dist * 180 / Math.PI;
             dist = dist * 60 * 1.1515;
@@ -128,60 +130,89 @@ namespace FIPToolKit.FlightSim
 
         internal static AircraftData LoadAircraft(string atcType, string atcModel)
         {
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", GetExecutingDirectory());
-            if (System.IO.File.Exists(cs))
+            try
             {
-                using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
+                RestClient client = new RestClient("https://cloud.gafware.com/Home");
+                RestRequest request = new RestRequest("GetAircraft", Method.Post);
+                request.AddParameter("type", atcType);
+                request.AddParameter("model", atcModel);
+                RestResponse response = client.Execute(request);
+                if (response.IsSuccessful)
                 {
-                    sqlConnection.Open();
-                    SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT Aircraft.AircraftID, Aircraft.FriendlyName, Aircraft.FriendlyType, Aircraft.FriendlyModel, Aircraft.EngineType, Aircraft.Heavy FROM Aircraft INNER JOIN AircraftTypes ON AircraftTypes.AircraftID = Aircraft.AircraftID INNER JOIN AircraftModels ON AircraftModels.AircraftID = Aircraft.AircraftID WHERE AircraftTypes.ATCType = '{0}' AND AircraftModels.ATCModel = '{1}'", (atcType ?? string.Empty).Left(23).Replace("'", "''"), (atcModel ?? string.Empty).Left(23).Replace("'", "''")), sqlConnection);
-                    using (SQLiteDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            AircraftData aircraftData = new AircraftData();
-                            aircraftData.AircraftId = reader.GetInt32(0);
-                            aircraftData.Name = reader.GetString(1);
-                            aircraftData.Type = reader.GetString(2);
-                            aircraftData.Model = reader.GetString(3);
-                            aircraftData.EngineType = (EngineType)reader.GetInt32(4);
-                            aircraftData.IsHeavy = reader.GetBoolean(5);
-                            return aircraftData;
-                        }
-                    }
-                    sqlConnection.Close();
+                    return JsonConvert.DeserializeObject<AircraftData>(response.Content);
                 }
+            }
+            catch(Exception)
+            {
+                // Offline?
             }
             return null;
         }
 
         internal static AircraftData LoadAircraft(string atcModel)
         {
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", GetExecutingDirectory());
-            if (System.IO.File.Exists(cs))
+            try
             {
-                using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
+                RestClient client = new RestClient("https://cloud.gafware.com/Home");
+                RestRequest request = new RestRequest("GetAircraftByModel", Method.Post);
+                request.AddParameter("model", atcModel);
+                RestResponse response = client.Execute(request);
+                if (response.IsSuccessful)
                 {
-                    sqlConnection.Open();
-                    SQLiteCommand cmd = new SQLiteCommand(string.Format("SELECT Aircraft.AircraftID, FriendlyName, FriendlyType, FriendlyModel, EngineType, Heavy FROM Aircraft WHERE FriendlyModel = '{0}'", (atcModel ?? string.Empty).Left(23).Replace("'", "''")), sqlConnection);
-                    using (SQLiteDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            AircraftData aircraftData = new AircraftData();
-                            aircraftData.AircraftId = reader.GetInt32(0);
-                            aircraftData.Name = reader.GetString(1);
-                            aircraftData.Type = reader.GetString(2);
-                            aircraftData.Model = reader.GetString(3);
-                            aircraftData.EngineType = (EngineType)reader.GetInt32(4);
-                            aircraftData.IsHeavy = reader.GetBoolean(5);
-                            return aircraftData;
-                        }
-                    }
-                    sqlConnection.Close();
+                    return JsonConvert.DeserializeObject<AircraftData>(response.Content);
                 }
             }
+            catch(Exception)
+            {
+                // Offline?
+            }
             return null;
+        }
+
+
+        public static AircraftData DefaultAircraft(string atcType, string atcModel)
+        {
+            AircraftData aircraft = new AircraftData()
+            {
+                ATCType = atcType,
+                ATCModel = atcModel
+            };
+            try
+            {
+                if (atcType.Contains('\u005F'))
+                {
+                    aircraft.ATCType = (atcType.Split(new char[] { '\u005F' })[2].Split(new char[] { '.' })[0]);
+                }
+                else if (atcType.Contains(' '))
+                {
+                    aircraft.ATCType = (atcType.Split(new char[] { ' ' })[1].Split(new char[] { '.' })[0]);
+                }
+            }
+            catch
+            {
+            }
+            try
+            {
+                if (atcModel.Contains(' '))
+                {
+                    aircraft.ATCModel = (atcModel.Split(new char[] { '.' })[1].Split(new char[] { ' ' })[1]);
+                }
+                else if (atcModel.Contains('_'))
+                {
+                    aircraft.ATCModel = (atcModel.Split(new char[] { '.' })[1].Split(new char[] { '\u005F' })[2]);
+                }
+                else if (atcModel.Contains(':'))
+                {
+                    aircraft.ATCModel = (atcModel.Split(new char[] { ':' })[1]);
+                }
+            }
+            catch
+            {
+            }
+            aircraft.FriendlyName = aircraft.Name = string.Format("{0} {1}", aircraft.ATCType, aircraft.ATCModel);
+            aircraft.FriendlyModel = aircraft.ATCModel;
+            aircraft.FriendlyType = aircraft.ATCType;
+            return aircraft;
         }
     }
 }

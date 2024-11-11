@@ -32,6 +32,7 @@ namespace FIPToolKit.FlightSim
 
         public abstract string Name { get; }
         public abstract Dictionary<string, Aircraft> Traffic { get; }
+        public LatLong Location => new LatLong(Latitude, Longitude);
         public abstract int AircraftId { get; }
         public abstract string AircraftName { get; }
         public abstract double AltitudeFeet { get; }

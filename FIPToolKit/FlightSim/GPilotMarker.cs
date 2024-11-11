@@ -270,25 +270,25 @@ namespace FIPToolKit.FlightSim
                 {
                     using (Brush brush = new SolidBrush(OverlayColor))
                     {
-                        string text = string.Format("{0} ft.", Altitude);
+                        string text = string.Format("{0} ft.", IsRunning ? Altitude : 0);
                         SizeF textSize = graphics.MeasureString(text, Font);
                         //graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 225 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 240 - textSize.Height));
 
-                        text = string.Format("{0:0.00}\"", KohlsmanInchesMercury);
+                        text = string.Format("{0:0.00}\"", IsRunning ? KohlsmanInchesMercury : 29.92d);
                         textSize = graphics.MeasureString(text, Font);
                         //graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 210 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 225 - textSize.Height));
 
-                        text = string.Format("{0} kts.", Airspeed);
+                        text = string.Format("{0} kts.", IsRunning ? Airspeed : 0);
                         textSize = graphics.MeasureString(text, Font);
                         //graphics.DrawString(text, Font, brush, new PointF(5, 225 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(5, 240 - textSize.Height));
 
-                        text = string.Format("{0}° {1}", TemperatureUnit == TemperatureUnit.Celsius ? AmbientTemperature : (((AmbientTemperature / 5) * 9) + 32), TemperatureUnit == TemperatureUnit.Celsius ? "C" : "F");
+                        text = string.Format("{0}° {1}", TemperatureUnit == TemperatureUnit.Celsius ? (IsRunning ? AmbientTemperature : 0) : ((((IsRunning ? AmbientTemperature : 0) / 5) * 9) + 32), TemperatureUnit == TemperatureUnit.Celsius ? "C" : "F");
                         graphics.DrawString(text, Font, brush, new PointF(5, 5));
 
-                        int heading = (int)Math.Round(Heading, 0);
+                        int heading = IsRunning ? (int)Math.Round(Heading, 0) : 0;
                         if (heading == 0)
                         {
                             heading = 360;
@@ -312,7 +312,7 @@ namespace FIPToolKit.FlightSim
                             }
                         }
 
-                        int headingBug = HeadingBug;
+                        int headingBug = IsRunning ? HeadingBug : 0;
                         if (headingBug == 0)
                         {
                             headingBug = 360;
@@ -336,17 +336,17 @@ namespace FIPToolKit.FlightSim
 
                         using (Font atcFont = new System.Drawing.Font(Font.FontFamily, 6, Font.Style, GraphicsUnit.Point))
                         {
-                            text = string.Format("{0} {1}", (ATCType ?? string.Empty).ToUpper(), (ATCModel ?? string.Empty).ToUpper());
+                            text = IsRunning ? string.Format("{0} {1}", (ATCType ?? string.Empty).ToUpper(), (ATCModel ?? string.Empty).ToUpper()) : string.Empty;
                             textSize = graphics.MeasureString(text, atcFont);
                             //graphics.DrawString(text, Font, brush, new PointF(5, 225 - textSize.Height));
-                            graphics.DrawString(text, atcFont, brush, new PointF(143 - (textSize.Width / 2), 240 - textSize.Height));
+                            graphics.DrawString(text, atcFont, brush, new PointF(143 - (textSize.Width / 2), 240 - (textSize.Height + 2)));
 
-                            text = string.Format("{0}", ATCIdentifier);
+                            text = IsRunning ? string.Format("{0}", ATCIdentifier) : string.Empty;
                             textSize = graphics.MeasureString(text, atcFont);
                             graphics.DrawString(text, atcFont, brush, new PointF(143 - (textSize.Width / 2), 5));
                         }
 
-                        text = string.Format("{0} kts.", AmbientWindVelocity);
+                        text = string.Format("{0} kts.", IsRunning ? AmbientWindVelocity : 0);
                         textSize = graphics.MeasureString(text, Font);
                         PointF p = new PointF(266 - (textSize.Width / 2), 40);
                         float windX = 266;
@@ -361,7 +361,7 @@ namespace FIPToolKit.FlightSim
 
                         graphics.TranslateTransform(windX, 20);
                         int radius = 15;
-                        float radians = (float)(((ShowHeading ? AmbientWindDirection - Heading + 180 : AmbientWindDirection + 180) * Math.PI) / 180f);
+                        float radians = (float)(((ShowHeading ? (IsRunning ? AmbientWindDirection : 0) - (IsRunning ? Heading : 0) + 180 : (IsRunning ? AmbientWindDirection : 0) + 180) * Math.PI) / 180f);
                         Point endPoint = new Point((int)((radius - 2) * Math.Sin(radians)), (int)(-(radius - 2) * Math.Cos(radians)));
                         Point startPoint = new Point(-endPoint.X, -endPoint.Y);
                         using (Pen pen2 = new Pen(OverlayColor, 2f))
@@ -374,7 +374,7 @@ namespace FIPToolKit.FlightSim
 
                         using (Brush gpsBrush = new SolidBrush(Color.Magenta))
                         {
-                            heading = (int)Math.Round(GPSHeading * 180 / Math.PI, 0);
+                            heading = IsRunning ? (int)Math.Round(GPSHeading * 180 / Math.PI, 0) : 0;
                             if (heading == 0)
                             {
                                 heading = 360;
@@ -439,7 +439,7 @@ namespace FIPToolKit.FlightSim
                     {
                         g.RotateTransform(-Heading);
                     }*/
-                    g.DrawImage(overlay, Offset.X, Offset.Y, Size.Width, Size.Height);
+                    g.DrawImage(overlay, Offset.X, Offset.Y - (!ShowHeading ? 15 : 0), Size.Width, Size.Height);
                     g.Restore(state);
                 }
                 if (!ShowHeading)
@@ -452,7 +452,7 @@ namespace FIPToolKit.FlightSim
                         g.ResetTransform();
                         //g.TranslateTransform(143, 120);
                         g.TranslateTransform(240, 240);
-                        g.DrawImage(data, Offset.X, Offset.Y, Size.Width, Size.Height);
+                        g.DrawImage(data, Offset.X, Offset.Y - 15, Size.Width, Size.Height);
                         g.Restore(state);
                     }
                 }
@@ -482,7 +482,7 @@ namespace FIPToolKit.FlightSim
                     {
                         Size = new Size(bmp.Width, bmp.Height);
                         Offset = new Point(-Size.Width / 2, -Size.Height / 2);
-                        g.DrawImage(bmp.ChangeToColor(Color.Navy), LocalPosition.X, LocalPosition.Y + (!ShowHeading ? 15 : 0), Size.Width, Size.Height);
+                        g.DrawImage(bmp.ChangeToColor(Color.Navy), LocalPosition.X, LocalPosition.Y, Size.Width, Size.Height);
                     }
                     airplane.Dispose();
                 }

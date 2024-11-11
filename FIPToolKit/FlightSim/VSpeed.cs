@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
@@ -34,58 +36,65 @@ namespace FIPToolKit.FlightSim
             NonLinearSettings = new List<NonLinearSetting>();
         }
 
-        public static List<VSpeed> LoadVSpeeds()
+        public static VSpeed GetVSpeed(int aircraftId)
         {
-            List<VSpeed> vSpeeds = new List<VSpeed>();
-            string cs = string.Format("{0}\\FIPToolKit.sqlite", FIPToolKit.FlightSim.Tools.GetExecutingDirectory());
-            if (System.IO.File.Exists(cs))
+            try
             {
-                using (SQLiteConnection sqlConnection = new SQLiteConnection(string.Format("Data Source={0};", cs)))
+                RestClient client = new RestClient("https://cloud.gafware.com/Home");
+                RestRequest request = new RestRequest("GetVSpeed", Method.Get);
+                request.AddParameter("aircraftId", aircraftId);
+                RestResponse response = client.Execute(request);
+                if (response.IsSuccessful)
                 {
-                    sqlConnection.Open();
-                    SQLiteCommand cmd = new SQLiteCommand("SELECT [VSpeeds].AircraftID, Aircraft.FriendlyName, [VSpeeds].[Min], [VSpeeds].[LowLimit], [VSpeeds].[WhiteStart], [VSpeeds].[WhiteEnd], [VSpeeds].[GreenStart], [VSpeeds].[GreenEnd], [VSpeeds].[YellowStart], [VSpeeds].[YellowEnd], [VSpeeds].[RedStart], [VSpeeds].[RedEnd], [VSpeeds].[HighLimit], [VSpeeds].[Max], [VSpeeds].[TickSpan], [VSpeeds].[TickStart], [VSpeeds].[TickEnd], [VSpeeds].[ShowTrueAirspeed] FROM [VSpeeds] INNER JOIN Aircraft ON Aircraft.AircraftID = [VSpeeds].AircraftID ORDER BY Aircraft.FriendlyName", sqlConnection);
-                    using (SQLiteDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            VSpeed vSpeed = new VSpeed();
-                            vSpeed.AircraftId = reader.GetInt32(0);
-                            vSpeed.AircraftName = reader.GetString(1);
-                            vSpeed.MinSpeed = reader.GetInt32(2);
-                            vSpeed.LowLimit = reader.GetInt32(3);
-                            vSpeed.WhiteStart = reader.GetInt32(4);
-                            vSpeed.WhiteEnd = reader.GetInt32(5);
-                            vSpeed.GreenStart = reader.GetInt32(6);
-                            vSpeed.GreenEnd = reader.GetInt32(7);
-                            vSpeed.YellowStart = reader.GetInt32(8);
-                            vSpeed.YellowEnd = reader.GetInt32(9);
-                            vSpeed.RedStart = reader.GetInt32(10);
-                            vSpeed.RedEnd = reader.GetInt32(11);
-                            vSpeed.HighLimit = reader.GetInt32(12);
-                            vSpeed.MaxSpeed = reader.GetInt32(13);
-                            vSpeed.TickSpan = reader.GetInt32(14);
-                            vSpeed.TickStart = reader.GetInt32(15);
-                            vSpeed.TickEnd = reader.GetInt32(16);
-                            vSpeed.ShowTrueAirspeed = reader.GetBoolean(17);
-                            SQLiteCommand cmd2 = new SQLiteCommand(string.Format("SELECT Degree, Value, TickSpan FROM NonLinearVSpeeds WHERE AircraftID = {0} ORDER BY Degree", vSpeed.AircraftId), sqlConnection);
-                            using (SQLiteDataReader reader2 = cmd2.ExecuteReader())
-                            {
-                                while (reader2.Read())
-                                {
-                                    NonLinearSetting setting = new NonLinearSetting();
-                                    setting.Degrees = reader2.GetInt32(0);
-                                    setting.Value = reader2.GetInt32(1);
-                                    setting.TickSpan = reader2.GetInt32(2);
-                                    vSpeed.NonLinearSettings.Add(setting);
-                                }
-                            }
-                            vSpeeds.Add(vSpeed);
-                        }
-                    }
-                    sqlConnection.Close();
+                    return JsonConvert.DeserializeObject<VSpeed>(response.Content);
                 }
             }
-            return vSpeeds;
+            catch(Exception)
+            {
+                // Offline?
+            }
+            return null;
+        }
+
+        public static List<VSpeed> GetAllVSpeeds()
+        {
+            try
+            {
+                RestClient client = new RestClient("https://cloud.gafware.com/Home");
+                RestRequest request = new RestRequest("GetAllVSpeeds", Method.Get);
+                RestResponse response = client.Execute(request);
+                if (response.IsSuccessful)
+                {
+                    return JsonConvert.DeserializeObject<List<VSpeed>>(response.Content);
+                }
+            }
+            catch(Exception)
+            {
+                // Offline?
+                return new List<VSpeed>()
+                {
+                    new VSpeed()
+                    {
+                        AircraftName = "Cessna 172 Skyhawk",
+                        MinSpeed = 0,
+                        LowLimit = 0,
+                        WhiteStart = 40,
+                        WhiteEnd = 90,
+                        GreenStart = 48,
+                        GreenEnd = 130,
+                        YellowStart = 130,
+                        YellowEnd = 162,
+                        RedStart = 162,
+                        RedEnd = 164,
+                        MaxSpeed = 220,
+                        TickSpan = 20,
+                        TickStart = 40,
+                        TickEnd = 180,
+                        ShowTrueAirspeed = false
+                    }
+                };
+            }
+            return null;
         }
     }
 }

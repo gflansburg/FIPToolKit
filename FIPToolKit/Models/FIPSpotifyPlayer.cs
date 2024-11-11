@@ -208,7 +208,7 @@ namespace FIPToolKit.Models
         private void SpotifyController_VolumeChanged(int volume)
         {
             SpotifyPlayerProperties.SetVolume(volume);
-            OnVolumeChanged.Invoke(this, new FIPPageEventArgs(this));
+            OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
         }
 
         private void Properties_OnMuteChanged(object sender, EventArgs e)

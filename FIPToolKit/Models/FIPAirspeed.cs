@@ -7,13 +7,14 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Threading;
 
 namespace FIPToolKit.Models
 {
     public abstract class FIPAirspeed : FIPAnalogGauge
     {
-        private bool showName = false;
-        private DateTime showTime;
+        private bool ShowName { get; set; }
+        private DateTime ShowTime { get; set; }
 
         private List<VSpeed> vSpeeds = new List<VSpeed>();
 
@@ -25,9 +26,17 @@ namespace FIPToolKit.Models
             properties.OnSelectedAircraftChanged += Properties_OnSelectedAircraftChanged;
             properties.OnValueChanged += Properties_OnValueChanged;
             properties.OnSelectedVSpeedChanged += Properties_OnSelectedVSpeedChanged;
-            vSpeeds = VSpeed.LoadVSpeeds();
             flightSimProvider.OnFlightDataReceived += FlightSimProvider_OnFlightDataReceived;
             flightSimProvider.OnAircraftChange += FlightSimProvider_OnAircraftChange;
+            if (flightSimProvider.IsConnected)
+            {
+                flightSimProvider.AircraftChange(flightSimProvider.AircraftId);
+            }
+            if (flightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && flightSimProvider.AircraftId != 0)
+            {
+                AirspeedProperties.SelectedAircraftId = flightSimProvider.AircraftId;
+            }
+            Init(); 
         }
 
         private void FlightSimProvider_OnAircraftChange(FlightSimProviderBase sender, int aircraftId)
@@ -41,6 +50,10 @@ namespace FIPToolKit.Models
         private void FlightSimProvider_OnFlightDataReceived(FlightSimProviderBase sender)
         {
             AirspeedProperties.Value = FlightSimProvider.OnGround ? FlightSimProvider.GroundSpeedKnots : FlightSimProvider.AirSpeedIndicatedKnots;
+            if (ShowName && (DateTime.Now - ShowTime).TotalSeconds > 5)
+            {
+                UpdateGauge();
+            }
         }
 
         private void Properties_OnValueChanged(object sender, FIPValueChangedEventArgs e)
@@ -49,7 +62,7 @@ namespace FIPToolKit.Models
             {
                 double temp = Math.Min(e.Value, AirspeedProperties.SelectedVSpeed.HighLimit);
                 temp = Math.Max(temp, AirspeedProperties.SelectedVSpeed.LowLimit);
-                if (e.Value != temp || !AirspeedProperties.HasDrawnTheNeedle || showName)
+                if (e.Value != temp || !AirspeedProperties.HasDrawnTheNeedle || ShowName)
                 {
                     e.Value = temp;
                     e.DoOverride = true;
@@ -61,8 +74,8 @@ namespace FIPToolKit.Models
         private void Properties_OnSelectedVSpeedChanged(object sender, EventArgs e)
         {
             CreateGauge();
-            showName = true;
-            showTime = DateTime.Now;
+            ShowTime = DateTime.Now;
+            ShowName = true;
             UpdateGauge();
         }
 
@@ -76,17 +89,48 @@ namespace FIPToolKit.Models
 
         private void Properties_OnSelectedAircraftChanged(object sender, EventArgs e)
         {
-            AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
+            if (vSpeeds != null && vSpeeds.Count > 0)
+            {
+                AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
+                ShowTime = DateTime.Now;
+                ShowName = true;
+                UpdateGauge();
+            }
+        }
+
+        private bool Initializing { get; set; }
+
+        public virtual void Init()
+        {
+            if ((vSpeeds == null || vSpeeds.Count == 0) && !Initializing)
+            {
+                Initializing = true;
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    vSpeeds = VSpeed.GetAllVSpeeds();
+                    if (vSpeeds != null && vSpeeds.Count > 0 && AirspeedProperties.AutoSelectAircraft)
+                    {
+                        AirspeedProperties.SelectedAircraftId = FlightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && FlightSimProvider.AircraftId != 0 ? FlightSimProvider.AircraftId : 34; // Cessna 172 Skyhawk
+                        AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
+                        ShowTime = DateTime.Now;
+                        ShowName = true;
+                    }
+                    UpdateGauge();
+                    Initializing = false ;
+                });
+            }
         }
 
         public override void StartTimer()
         {
             base.StartTimer();
-            if (AirspeedProperties.SelectedVSpeed == null && vSpeeds.Count > 0)
+            Init();
+            if (AirspeedProperties.SelectedVSpeed == null && vSpeeds != null && vSpeeds.Count > 0 && (AirspeedProperties.AutoSelectAircraft || AirspeedProperties.SelectedAircraftId == 0))
             {
-                showName = true;
-                AirspeedProperties.SelectedAircraftId = vSpeeds[0].AircraftId;
+                AirspeedProperties.SelectedAircraftId = FlightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && FlightSimProvider.AircraftId != 0 ? FlightSimProvider.AircraftId : 34; // Cessna 172 Skyhawk
+                AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
             }
+            UpdateGauge();
         }
 
         public override bool IsButtonAssignable(SoftButtons softButton)
@@ -102,7 +146,7 @@ namespace FIPToolKit.Models
 
         public override void ExecuteSoftButton(SoftButtons softButton)
         {
-            if (vSpeeds.Count > 0)
+            if (vSpeeds != null && vSpeeds.Count > 0)
             {
                 int index = vSpeeds.FindIndex(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
                 switch (softButton)
@@ -133,9 +177,9 @@ namespace FIPToolKit.Models
         protected override Bitmap FinishGauge()
         {
             Bitmap bmp = base.FinishGauge();
-            if (showName)
+            if (ShowName)
             {
-                TimeSpan elapsed = DateTime.Now - showTime;
+                TimeSpan elapsed = DateTime.Now - ShowTime;
                 if (elapsed.TotalSeconds < 5)
                 {
                     if (AirspeedProperties.SelectedVSpeed != null)
@@ -167,7 +211,7 @@ namespace FIPToolKit.Models
                 }
                 else
                 {
-                    showName = false;
+                    ShowName = false;
                 }
             }
             return bmp;
@@ -177,7 +221,7 @@ namespace FIPToolKit.Models
         {
             if (AirspeedProperties.SelectedVSpeed != null)
             {
-                if (AirspeedProperties.SelectedVSpeed.NonLinearSettings != null)
+                if (AirspeedProperties.SelectedVSpeed.NonLinearSettings != null && AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0)
                 {
                     NonLinearSetting minSetting = null;
                     NonLinearSetting maxSetting = null;
@@ -210,97 +254,109 @@ namespace FIPToolKit.Models
 
         private int GetTicks(int speed)
         {
-            if (AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0)
+            if (AirspeedProperties.SelectedVSpeed != null)
             {
-                int tickSpeed = AirspeedProperties.SelectedVSpeed.NonLinearSettings.LastOrDefault(n => speed >= n.Value).TickSpan;
-                if(tickSpeed > 0)
+                if (AirspeedProperties.SelectedVSpeed.NonLinearSettings != null && AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0)
                 {
+                    int tickSpeed = AirspeedProperties.SelectedVSpeed.NonLinearSettings.LastOrDefault(n => speed >= n.Value).TickSpan;
+                    if (tickSpeed > 0)
+                    {
+                        return tickSpeed;
+                    }
+                }
+                if (AirspeedProperties.SelectedVSpeed.TickSpan == 0)
+                {
+                    int tickSpeed = 5;
+                    float angle1 = GetAngle(10);
+                    if (angle1 <= 40)
+                    {
+                        tickSpeed = 10;
+                    }
+                    if (angle1 <= 25)
+                    {
+                        tickSpeed = 20;
+                    }
+                    if (angle1 <= 10)
+                    {
+                        tickSpeed = 50;
+                    }
+                    if (angle1 <= 5)
+                    {
+                        tickSpeed = 100;
+                    }
+                    if (angle1 <= 1)
+                    {
+                        tickSpeed = 200;
+                    }
                     return tickSpeed;
                 }
+                return AirspeedProperties.SelectedVSpeed.TickSpan;
             }
-            if (AirspeedProperties.SelectedVSpeed.TickSpan == 0)
-            {
-                int tickSpeed = 5;
-                float angle1 = GetAngle(10);
-                if (angle1 <= 40)
-                {
-                    tickSpeed = 10;
-                }
-                if (angle1 <= 25)
-                {
-                    tickSpeed = 20;
-                }
-                if (angle1 <= 10)
-                {
-                    tickSpeed = 50;
-                }
-                if (angle1 <= 5)
-                {
-                    tickSpeed = 100;
-                }
-                if (angle1 <= 1)
-                {
-                    tickSpeed = 200;
-                }
-                return tickSpeed;
-            }
-            return AirspeedProperties.SelectedVSpeed.TickSpan;
+            return 0;
         }
 
         private float GetMinAngle(VSpeed vSpeed)
         {
-            if (AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0)
+            if (AirspeedProperties.SelectedVSpeed != null)
             {
-                return AirspeedProperties.SelectedVSpeed.NonLinearSettings.FirstOrDefault(n => n.Degrees > 0).Degrees;
+                if (AirspeedProperties.SelectedVSpeed.NonLinearSettings != null && AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0)
+                {
+                    return AirspeedProperties.SelectedVSpeed.NonLinearSettings.FirstOrDefault(n => n.Degrees > 0).Degrees;
+                }
+                float speed = 360;
+                if (vSpeed.WhiteEnd - vSpeed.WhiteStart > 0)
+                {
+                    speed = Math.Min(speed, vSpeed.WhiteStart);
+                }
+                if (vSpeed.GreenEnd - vSpeed.GreenStart > 0)
+                {
+                    speed = Math.Min(speed, vSpeed.GreenStart);
+                }
+                if (vSpeed.YellowEnd - vSpeed.YellowStart > 0)
+                {
+                    speed = Math.Min(speed, vSpeed.YellowStart);
+                }
+                if (vSpeed.RedEnd - vSpeed.RedStart > 0)
+                {
+                    speed = Math.Min(speed, vSpeed.RedStart);
+                }
+                int tickSpeed = GetTicks(0);
+                speed = Math.Min(speed, tickSpeed);
+                return GetAngle(speed);
             }
-            float speed = 360;
-            if (vSpeed.WhiteEnd - vSpeed.WhiteStart > 0)
-            {
-                speed = Math.Min(speed, vSpeed.WhiteStart);
-            }
-            if (vSpeed.GreenEnd - vSpeed.GreenStart > 0)
-            {
-                speed = Math.Min(speed, vSpeed.GreenStart);
-            }
-            if (vSpeed.YellowEnd - vSpeed.YellowStart > 0)
-            {
-                speed = Math.Min(speed, vSpeed.YellowStart);
-            }
-            if (vSpeed.RedEnd - vSpeed.RedStart > 0)
-            {
-                speed = Math.Min(speed, vSpeed.RedStart);
-            }
-            int tickSpeed = GetTicks(0);
-            speed = Math.Min(speed, tickSpeed);
-            return GetAngle(speed);
+            return 0;
         }
 
         private float GetMaxAngle(VSpeed vSpeed)
         {
-            if (AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0)
+            if (AirspeedProperties.SelectedVSpeed != null)
             {
-                return AirspeedProperties.SelectedVSpeed.NonLinearSettings[AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count - 1].Degrees;
+                if (AirspeedProperties.SelectedVSpeed.NonLinearSettings != null && AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count > 0)
+                {
+                    return AirspeedProperties.SelectedVSpeed.NonLinearSettings[AirspeedProperties.SelectedVSpeed.NonLinearSettings.Count - 1].Degrees;
+                }
+                float speed = 0;
+                if (vSpeed.WhiteEnd - vSpeed.WhiteStart > 0)
+                {
+                    speed = Math.Max(speed, vSpeed.WhiteEnd);
+                }
+                if (vSpeed.GreenEnd - vSpeed.GreenStart > 0)
+                {
+                    speed = Math.Max(speed, vSpeed.GreenEnd);
+                }
+                if (vSpeed.YellowEnd - vSpeed.YellowStart > 0)
+                {
+                    speed = Math.Max(speed, vSpeed.YellowEnd);
+                }
+                if (vSpeed.RedEnd - vSpeed.RedStart > 0)
+                {
+                    speed = Math.Max(speed, vSpeed.RedEnd);
+                }
+                int tickSpeed = (vSpeed.MaxSpeed - vSpeed.MinSpeed) - GetTicks(0);
+                speed = Math.Max(speed, tickSpeed);
+                return GetAngle(speed);
             }
-            float speed = 0;
-            if (vSpeed.WhiteEnd - vSpeed.WhiteStart > 0)
-            {
-                speed = Math.Max(speed, vSpeed.WhiteEnd);
-            }
-            if (vSpeed.GreenEnd - vSpeed.GreenStart > 0)
-            {
-                speed = Math.Max(speed, vSpeed.GreenEnd);
-            }
-            if (vSpeed.YellowEnd - vSpeed.YellowStart > 0)
-            {
-                speed = Math.Max(speed, vSpeed.YellowEnd);
-            }
-            if (vSpeed.RedEnd - vSpeed.RedStart > 0)
-            {
-                speed = Math.Max(speed, vSpeed.RedEnd);
-            }
-            int tickSpeed = (vSpeed.MaxSpeed - vSpeed.MinSpeed) - GetTicks(0);
-            speed = Math.Max(speed, tickSpeed);
-            return GetAngle(speed);
+            return 0;
         }
 
         private float GetX(float deg, float radius)

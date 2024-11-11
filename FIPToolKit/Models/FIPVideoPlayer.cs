@@ -173,8 +173,6 @@ namespace FIPToolKit.Models
             properties.OnFilenameChanged += Properties_OnFilenameChanged;
             properties.OnNameChanged += Properties_OnNameChanged;
             properties.OnMuteChanged += Properties_OnMuteChanged;
-            Core.Initialize();
-            libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-playlist-autostart", "--no-mouse-events", "--no-keyboard-events", "--quiet", "--no-sout-video", "--sout-transcode-scale=Auto", string.Format("--sout-transcode-width={0}", Width), string.Format("--sout-transcode-height={0}", Height), string.Format("--sout-transcode-maxwidth={0}", Width), string.Format("--sout-transcode-maxheight={0}", Height) });
             CreatePlayer();
             CreatePlaylist();
         }
@@ -318,108 +316,124 @@ namespace FIPToolKit.Models
 
         private void CreatePlayer()
         {
+            if (libVLC == null)
+            {
+                try
+                {
+                    libVLC = new LibVLC(true, new string[] { "--network-caching", "50", "--no-playlist-autostart", "--no-mouse-events", "--no-keyboard-events", "--quiet", "--no-sout-video", "--sout-transcode-scale=Auto", string.Format("--sout-transcode-width={0}", Width), string.Format("--sout-transcode-height={0}", Height), string.Format("--sout-transcode-maxwidth={0}", Width), string.Format("--sout-transcode-maxheight={0}", Height) });
+                }
+                catch(Exception)
+                {
+                }
+            }
             if (player == null && libVLC != null)
             {
-                player = new MediaPlayer(libVLC);
-                player.SetVideoCallbacks(Lock, null, Display);
-                player.Volume = VideoPlayerProperties.Volume;
-                player.Mute = VideoPlayerProperties.Mute;
-                player.EnableHardwareDecoding = true;
-                player.EncounteredError += (s, e) =>
+                try
                 {
-                    ThreadPool.QueueUserWorkItem(_ =>
+                    player = new MediaPlayer(libVLC);
+                    player.SetVideoCallbacks(Lock, null, Display);
+                    player.Volume = VideoPlayerProperties.Volume;
+                    player.Mute = VideoPlayerProperties.Mute;
+                    player.EnableHardwareDecoding = true;
+                    player.EncounteredError += (s, e) =>
                     {
-                        if (media != null)
+                        ThreadPool.QueueUserWorkItem(_ =>
                         {
-                            media.Dispose();
-                            media = null;
-                        }
-                        player.Media = null;
-                        if (Playlist.Count > 1)
-                        {
-                            PlayNextTrack();
-                        }
-                        else
-                        {
-                            Error = "An Error Has Occured";
-                            if (player.VideoTrack == -1)
+                            if (media != null)
                             {
-                                ThreadPool.QueueUserWorkItem(_ =>
-                                {
-                                    UpdatePage();
-                                });
+                                media.Dispose();
+                                media = null;
+                            }
+                            player.Media = null;
+                            if (Playlist.Count > 1)
+                            {
+                                PlayNextTrack();
                             }
                             else
                             {
-                                UpdateMessage("An Error Has Occured");
+                                Error = "An Error Has Occured";
+                                if (player.VideoTrack == -1)
+                                {
+                                    ThreadPool.QueueUserWorkItem(_ =>
+                                    {
+                                        UpdatePage();
+                                    });
+                                }
+                                else
+                                {
+                                    UpdateMessage("An Error Has Occured");
+                                }
                             }
-                        }
-                    });
-                };
-                player.Muted += (s, e) =>
-                {
-                    if (player != null)
+                        });
+                    };
+                    player.Muted += (s, e) =>
                     {
-                        VideoPlayerProperties.SetMute(player.Mute);
-                        OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
-                    }
-                };
-                player.VolumeChanged += (s, e) =>
-                {
-                    if (player != null)
-                    {
-                        VideoPlayerProperties.SetVolume(player.Volume);
-                        OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
-                    }
-                };
-                player.Opening += (s, e) =>
-                {
-                    opening = true;
-                    start = VideoPlayerProperties.Position;
-                    ThreadPool.QueueUserWorkItem(_ =>
-                    {
-                        SubTitle = null;
-                        if (CurrentTrack.Artwork != null)
+                        if (player != null)
                         {
-                            UpdatePage();
+                            VideoPlayerProperties.SetMute(player.Mute);
+                            OnMuteChanged?.Invoke(this, new FIPPageEventArgs(this));
                         }
-                        else
-                        {
-                            UpdateMessage(SubTitle);
-                        }
-                    });
-                };
-                player.Playing += (s, e) =>
-                {
-                    if (opening)
+                    };
+                    player.VolumeChanged += (s, e) =>
                     {
-                        opening = false;
+                        if (player != null)
+                        {
+                            VideoPlayerProperties.SetVolume(player.Volume);
+                            OnVolumeChanged?.Invoke(this, new FIPPageEventArgs(this));
+                        }
+                    };
+                    player.Opening += (s, e) =>
+                    {
+                        opening = true;
+                        start = VideoPlayerProperties.Position;
                         ThreadPool.QueueUserWorkItem(_ =>
                         {
-                            if (player != null && VideoPlayerProperties.ResumePlayback)
+                            SubTitle = null;
+                            if (CurrentTrack.Artwork != null)
                             {
-                                player.Position = start;
+                                UpdatePage();
                             }
-                            // May be an audio stream with no video.
-                            UpdatePage();
+                            else
+                            {
+                                UpdateMessage(SubTitle);
+                            }
                         });
-                    }
-                    if (VideoPlayerProperties.PauseOtherMedia)
+                    };
+                    player.Playing += (s, e) =>
                     {
-                        SendActive();
-                    }
-                };
-                player.Paused += (s, e) =>
-                {
-                    if (VideoPlayerProperties.PauseOtherMedia)
+                        if (opening)
+                        {
+                            opening = false;
+                            ThreadPool.QueueUserWorkItem(_ =>
+                            {
+                                if (player != null && VideoPlayerProperties.ResumePlayback)
+                                {
+                                    player.Position = start;
+                                }
+                                // May be an audio stream with no video.
+                                UpdatePage();
+                            });
+                        }
+                        if (VideoPlayerProperties.PauseOtherMedia)
+                        {
+                            SendActive();
+                        }
+                    };
+                    player.Paused += (s, e) =>
                     {
-                        SendInactive();
-                    }
-                };
-                player.EndReached += (s, e) =>
+                        if (VideoPlayerProperties.PauseOtherMedia)
+                        {
+                            SendInactive();
+                        }
+                    };
+                    player.EndReached += (s, e) =>
+                    {
+                        PlayNextTrack();
+                    };
+                }
+                catch(Exception)
                 {
-                    PlayNextTrack();
-                };
+                }
             }
         }
 
@@ -482,8 +496,11 @@ namespace FIPToolKit.Models
                     media = null;
                 }
                 Stop();
-                libVLC.Dispose();
-                libVLC = null;
+                if (libVLC != null)
+                {
+                    libVLC.Dispose();
+                    libVLC = null;
+                }
                 if (CurrentMappedViewAccessor != null)
                 {
                     CurrentMappedViewAccessor.Dispose();
@@ -933,107 +950,114 @@ namespace FIPToolKit.Models
 
         private void Play(FIPMediaFile track, float position)
         {
-            Stop();
-            while (!_stopped)
+            if (libVLC != null)
             {
-                Thread.Sleep(100);
-            }
-            if (media != null)
-            {
-                media.Dispose();
-                media = null;
-            }
-            if (track != null && !string.IsNullOrEmpty(track.Filename))
-            {
-                string title = track.MetaData != null && !string.IsNullOrEmpty(track.MetaData.Title) ? track.MetaData.Title : track.MetaData != null && track.MetaData.Attributes != null && !string.IsNullOrEmpty(track.MetaData.Attributes.TvgName) ? track.MetaData.Attributes.TvgName : track.MetaData != null && track.MetaData.Attributes != null && !string.IsNullOrEmpty(track.MetaData.Attributes.TvgId) ? track.MetaData.Attributes.TvgId : HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(track.Filename));
-                if (File.Exists(track.Filename))
+                Stop();
+                while (!_stopped)
                 {
-                    using (var file = TagLib.File.Create(track.Filename))
+                    Thread.Sleep(100);
+                }
+                if (media != null)
+                {
+                    media.Dispose();
+                    media = null;
+                }
+                if (track != null && !string.IsNullOrEmpty(track.Filename))
+                {
+                    string title = track.MetaData != null && !string.IsNullOrEmpty(track.MetaData.Title) ? track.MetaData.Title : track.MetaData != null && track.MetaData.Attributes != null && !string.IsNullOrEmpty(track.MetaData.Attributes.TvgName) ? track.MetaData.Attributes.TvgName : track.MetaData != null && track.MetaData.Attributes != null && !string.IsNullOrEmpty(track.MetaData.Attributes.TvgId) ? track.MetaData.Attributes.TvgId : HttpUtility.UrlDecode(Path.GetFileNameWithoutExtension(track.Filename));
+                    if (File.Exists(track.Filename))
                     {
-                        FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? file.Properties.VideoHeight : file.Properties.VideoWidth, VideoPlayerProperties.PortraitMode ? file.Properties.VideoWidth : file.Properties.VideoHeight);
-                        Duration = file.Properties.Duration;
-                        if (file.Tag != null && !string.IsNullOrEmpty(file.Tag.Title))
+                        using (var file = TagLib.File.Create(track.Filename))
                         {
-                            title = file.Tag.Title;
+                            FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? file.Properties.VideoHeight : file.Properties.VideoWidth, VideoPlayerProperties.PortraitMode ? file.Properties.VideoWidth : file.Properties.VideoHeight);
+                            Duration = file.Properties.Duration;
+                            if (file.Tag != null && !string.IsNullOrEmpty(file.Tag.Title))
+                            {
+                                title = file.Tag.Title;
+                            }
                         }
+                    }
+                    else
+                    {
+                        // Assume streaming at 16:9
+                        FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? 180 : 320, VideoPlayerProperties.PortraitMode ? 320 : 180);
+                        Duration = null;
+                    }
+                    if ((FrameSize.Width == 0 || FrameSize.Height == 0) && File.Exists(track.Filename))
+                    {
+                        var inputFile = new MediaToolkit.Model.MediaFile
+                        {
+                            Filename = track.Filename
+                        };
+                        using (var engine = new MediaToolkit.Engine())
+                        {
+                            engine.GetMetadata(inputFile);
+                            var size = inputFile.Metadata.VideoData.FrameSize.Split(new[] { 'x' }).Select(o => int.Parse(o)).ToArray();
+                            FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? size[1] : size[0], VideoPlayerProperties.PortraitMode ? size[0] : size[1]);
+                            if (!Duration.HasValue)
+                            {
+                                Duration = inputFile.Metadata.Duration;
+                            }
+                        }
+                    }
+                    if (FrameSize.Width == 0)
+                    {
+                        FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? 240 : 320, FrameSize.Height);
+                    }
+                    if (FrameSize.Height == 0)
+                    {
+                        FrameSize = new System.Drawing.SizeF(FrameSize.Width, VideoPlayerProperties.PortraitMode ? 320 : 240);
+                    }
+                    // Figure out the ratio
+                    double ratioX = 320 / FrameSize.Width;
+                    double ratioY = 240 / FrameSize.Height;
+                    // use whichever multiplier is smaller
+                    double ratio = ratioX < ratioY ? ratioX : ratioY;
+                    Height = Convert.ToUInt32(FrameSize.Height * ratio);
+                    Width = Convert.ToUInt32(FrameSize.Width * ratio);
+                    Pitch = Align(Width * BytePerPixel);
+                    Lines = Align(Height);
+                    CreatePlayer();
+                    try
+                    {
+                        VideoPlayerProperties.LastTrack = track.Filename;
+                        CurrentTrack = track;
+                        CurrentFrame = 0;
+                        if (player != null)
+                        {
+                            player.SetVideoFormat(VideoFormat, Width, Height, Pitch);
+                        }
+                        if (track.Filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || track.Filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                        {
+                            media = new Media(libVLC, track.Filename, FromType.FromLocation);
+                        }
+                        else if (System.IO.File.Exists(track.Filename))
+                        {
+                            media = new Media(libVLC, track.Filename);
+                        }
+                        media.MetaChanged += Media_MetaChanged;
+                        VideoPlayerProperties.SetPosition(position);
+                        Properties.Name = title;
+                        if (IsActive)
+                        {
+                            if (player != null)
+                            {
+                                player.Play(media);
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
                 else
                 {
-                    // Assume streaming at 16:9
-                    FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? 180 : 320, VideoPlayerProperties.PortraitMode ? 320 : 180);
-                    Duration = null;
-                }
-                if ((FrameSize.Width == 0 || FrameSize.Height == 0) && File.Exists(track.Filename))
-                {
-                    var inputFile = new MediaToolkit.Model.MediaFile
-                    {
-                        Filename = track.Filename
-                    };
-                    using (var engine = new MediaToolkit.Engine())
-                    {
-                        engine.GetMetadata(inputFile);
-                        var size = inputFile.Metadata.VideoData.FrameSize.Split(new[] { 'x' }).Select(o => int.Parse(o)).ToArray();
-                        FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? size[1] : size[0], VideoPlayerProperties.PortraitMode ? size[0] : size[1]);
-                        if (!Duration.HasValue)
-                        {
-                            Duration = inputFile.Metadata.Duration;
-                        }
-                    }
-                }
-                if (FrameSize.Width == 0)
-                {
-                    FrameSize = new System.Drawing.SizeF(VideoPlayerProperties.PortraitMode ? 240 : 320, FrameSize.Height);
-                }
-                if (FrameSize.Height == 0)
-                {
-                    FrameSize = new System.Drawing.SizeF(FrameSize.Width, VideoPlayerProperties.PortraitMode ? 320 : 240);
-                }
-                // Figure out the ratio
-                double ratioX = 320 / FrameSize.Width;
-                double ratioY = 240 / FrameSize.Height;
-                // use whichever multiplier is smaller
-                double ratio = ratioX < ratioY ? ratioX : ratioY;
-                Height = Convert.ToUInt32(FrameSize.Height * ratio);
-                Width = Convert.ToUInt32(FrameSize.Width * ratio);
-                Pitch = Align(Width * BytePerPixel);
-                Lines = Align(Height);
-                CreatePlayer();
-                try
-                {
-                    VideoPlayerProperties.LastTrack = track.Filename;
-                    CurrentTrack = track;
-                    CurrentFrame = 0;
-                    if (player != null)
-                    {
-                        player.SetVideoFormat(VideoFormat, Width, Height, Pitch);
-                    }
-                    if (track.Filename.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || track.Filename.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                    {
-                        media = new Media(libVLC, track.Filename, FromType.FromLocation);
-                    }
-                    else if (System.IO.File.Exists(track.Filename))
-                    {
-                        media = new Media(libVLC, track.Filename);
-                    }
-                    media.MetaChanged += Media_MetaChanged;
-                    VideoPlayerProperties.SetPosition(position);
-                    Properties.Name = title;
-                    if (IsActive)
-                    {
-                        if (player != null)
-                        {
-                            player.Play(media);
-                        }
-                    }
-                }
-                catch (Exception)
-                {
+                    UpdateMessage("Select a video to play");
                 }
             }
             else
             {
-                UpdateMessage("Select a video to play");
+                UpdateMessage("LibVLC failed to initialize.");
             }
         }
 

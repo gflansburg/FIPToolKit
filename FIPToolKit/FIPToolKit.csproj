@@ -182,6 +182,7 @@
     <Compile Include="Models\FIPAltimeter.cs" />
     <Compile Include="Models\FIPCommandButton.cs" />
     <Compile Include="Models\FIPFSUIPCMap.cs" />
+    <Compile Include="Models\FIPMapForm.cs" />
     <Compile Include="Models\FIPNonLinearAnalogGauge.cs" />
     <Compile Include="Models\FIPRadioPlayer.cs" />
     <Compile Include="FlightSim\CompassMode.cs" />

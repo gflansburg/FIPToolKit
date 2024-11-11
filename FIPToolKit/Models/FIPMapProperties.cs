@@ -18,7 +18,7 @@ namespace FIPToolKit.Models
             Font = new Font("Microsoft Sans Serif", 10.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
             FontColor = Color.Black;
             _followMyPlane = true;
-            _mapType = FlightSim.MapType.Normal;
+            _mapType = MapType.Normal;
             _maxAIAircraft = 100;
             _maxMPAircraft = 100;
             _searchRadius = SimConnect.Instance.SearchRadius = 200000;
@@ -380,6 +380,5 @@ namespace FIPToolKit.Models
                 }
             }
         }
-
     }
 }

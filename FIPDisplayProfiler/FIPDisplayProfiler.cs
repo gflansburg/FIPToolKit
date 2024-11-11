@@ -7,11 +7,10 @@ using System.IO;
 using FIPToolKit.Tools;
 using System.Diagnostics;
 using Microsoft.Web.WebView2.Core;
-using System.Threading;
 
 namespace FIPDisplayProfiler
 {
-    public partial class FIPDisplayProfiler : Form
+    public partial class FIPDisplayProfiler : FIPMapForm
     {
         public FIPEngine Engine { get; private set; }
 
@@ -23,18 +22,19 @@ namespace FIPDisplayProfiler
         { 
             get
             {
-                return global::FIPDisplayProfiler.Properties.Settings.Default.LastProfileName;
+                return Properties.Settings.Default.LastProfileName;
             }
             private set
             {
-                global::FIPDisplayProfiler.Properties.Settings.Default.LastProfileName = value;
-                global::FIPDisplayProfiler.Properties.Settings.Default.Save();
+                Properties.Settings.Default.LastProfileName = value;
+                Properties.Settings.Default.Save();
             }
         }
 
         public FIPDisplayProfiler()
         {
             InitializeComponent();
+            OnMapUpdated += FIPDisplayProfiler_OnMapUpdated;
             try
             {
                 FIPMusicPlayer.InitializeCore();
@@ -51,6 +51,18 @@ namespace FIPDisplayProfiler
                 return;
             }
             FIPToolKit.FlightSim.FlightSimProviders.SimConnect.MainWindowHandle = this.Handle;
+        }
+
+        private void FIPDisplayProfiler_OnMapUpdated(FIPMapForm sender)
+        {
+            foreach (TabPage tab in tabDevices.TabPages)
+            {
+                if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
+                {
+                    DeviceControl deviceControl = tab.Controls[0] as DeviceControl;
+                    deviceControl.UpdateMapControls();
+                }
+            }
         }
 
         private void Engine_OnPageChanged(object sender, FIPDeviceActivePage page)
@@ -165,6 +177,16 @@ namespace FIPDisplayProfiler
             control.OnVolumeChanged += Control_OnVolumeChanged;
             control.OnGetMute += Control_OnGetMute;
             control.OnGetVolume += Control_OnGetVolume;
+            control.OnCenterPlane += FIPMap_OnCenterPlane;
+            control.OnConnected += FIPMap_OnConnected;
+            control.OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+            control.OnInvalidateMap += FIPMap_OnInvalidateMap;
+            control.OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+            control.OnQuit += FIPMap_OnQuit;
+            control.OnReadyToFly += FIPMap_OnReadyToFly;
+            control.OnRequestMapForm += FIPMap_OnRequestMapForm;
+            control.OnRequestMapImage += FIPMap_OnRequestMapImage;
+            control.OnTrafficReceived += FIPMap_OnTrafficReceived;
             TabPage tab = new TabPage(device.SerialNumber);
             tab.Size = control.Size;
             tab.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -797,6 +819,56 @@ namespace FIPDisplayProfiler
                     deviceControl.CanPlayOther(e);
                 }
             }
+        }
+
+        private void FIPMap_OnTrafficReceived(FIPMap sender, Dictionary<string, FIPToolKit.FlightSim.Aircraft> traffic)
+        {
+            UpdateTraffic(traffic);
+        }
+
+        private void FIPMap_OnRequestMapImage(FIPMap sender, FIPMapImage map)
+        {
+            GetMapBitmap(map);
+        }
+
+        private GMap.NET.WindowsForms.GMapControl FIPMap_OnRequestMapForm(FIPMap sender)
+        {
+            return Map;
+        }
+
+        private void FIPMap_OnReadyToFly(FIPMap sender, FIPToolKit.FlightSim.FlightSimProviderBase flightSimProviderBase)
+        {
+            ReadyToFly(flightSimProviderBase);
+        }
+
+        private void FIPMap_OnPropertiesChanged(FIPMap sender, FIPMapProperties properties)
+        {
+            LoadProperties(properties);
+        }
+
+        private void FIPMap_OnInvalidateMap(FIPMap sender)
+        {
+            InvalidateMap();
+        }
+
+        private void FIPMap_OnFlightDataReceived(FIPMap sender, FIPToolKit.FlightSim.FlightSimProviderBase flightSimProviderBase)
+        {
+            FlightDataReceived(flightSimProviderBase);
+        }
+
+        private void FIPMap_OnConnected(FIPMap sender)
+        {
+            CenterPlane(true);
+        }
+
+        private void FIPMap_OnCenterPlane(FIPMap sender, bool center)
+        {
+            CenterPlane(center);
+        }
+
+        private void FIPMap_OnQuit(FIPMap sender)
+        {
+            QuitFlightSim();
         }
 
         private async Task InitializeWebView2Async(string tempDir = "")

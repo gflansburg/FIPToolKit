@@ -14,10 +14,11 @@ using FIPToolKit.FlightSim;
 using Microsoft.Web.WebView2.Core;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Linq;
 
 namespace FIPDisplayMSFS2020
 {
-    public partial class FIPDisplay : Form
+    public partial class FIPDisplay : FIPMapForm
     {
         private FIPEngine Engine;
 
@@ -295,6 +296,18 @@ namespace FIPDisplayMSFS2020
         public FIPDisplay()
         {
             InitializeComponent();
+            OnMapUpdated += FIPDisplay_OnMapUpdated;
+        }
+
+        private void FIPDisplay_OnMapUpdated(FIPMapForm sender)
+        {
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPMap mapPage in device.Pages.Where(p => typeof(FIPMap).IsAssignableFrom(p.GetType())))
+                {
+                    mapPage.UpdatePage();
+                }
+            }
         }
 
         private string ReplaceMultipleSpacesWithColonSpace(string text)
@@ -441,6 +454,86 @@ namespace FIPDisplayMSFS2020
                 ((FIPVideoPlayer)e.Page).Volume = GetInitialVolume(((FIPVideoPlayer)e.Page).Volume);
                 ((FIPVideoPlayer)e.Page).Mute = GetInitialMute(((FIPVideoPlayer)e.Page).Mute);
             }
+            else if (typeof(FIPMap).IsAssignableFrom(e.Page.GetType()))
+            {
+                ((FIPMap)e.Page).OnQuit += FIPMap_OnQuit;
+                ((FIPMap)e.Page).OnCenterPlane += FIPMap_OnCenterPlane;
+                ((FIPMap)e.Page).OnConnected += FIPMap_OnConnected;
+                ((FIPMap)e.Page).OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+                ((FIPMap)e.Page).OnInvalidateMap += FIPMap_OnInvalidateMap;
+                ((FIPMap)e.Page).OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+                ((FIPMap)e.Page).OnReadyToFly += FIPMap_OnReadyToFly;
+                ((FIPMap)e.Page).OnRequestMapForm += FIPMap_OnRequestMapForm;
+                ((FIPMap)e.Page).OnRequestMapImage += FIPMap_OnRequestMapImage;
+                ((FIPMap)e.Page).OnTrafficReceived += FIPMap_OnTrafficReceived;
+                ((FIPMap)e.Page).LoadSettings();
+            }
+        }
+
+        private void FIPMap_OnTrafficReceived(FIPMap sender, Dictionary<string, Aircraft> traffic)
+        {
+            UpdateTraffic(traffic);
+        }
+
+        private void FIPMap_OnRequestMapImage(FIPMap sender, FIPMapImage map)
+        {
+            GetMapBitmap(map);
+        }
+
+        private GMap.NET.WindowsForms.GMapControl FIPMap_OnRequestMapForm(FIPMap sender)
+        {
+            return Map;
+        }
+
+        private void FIPMap_OnReadyToFly(FIPMap sender, FlightSimProviderBase flightSimProviderBase)
+        {
+            ReadyToFly(flightSimProviderBase);
+        }
+
+        private void FIPMap_OnPropertiesChanged(FIPMap sender, FIPMapProperties properties)
+        {
+            LoadProperties(properties);
+            foreach (FIPDevice device in Engine.Devices)
+            {
+                foreach (FIPMap mapPage in device.Pages.Where(p => typeof(FIPMap).IsAssignableFrom(p.GetType()) && p != sender))
+                {
+                    string name = mapPage.Properties.Name;
+                    string controlType = mapPage.Properties.ControlType;
+                    uint page = mapPage.Properties.Page;
+                    Guid id = mapPage.Properties.Id;
+                    PropertyCopier<FIPMapProperties, FIPMapProperties>.Copy(properties, mapPage.MapProperties);
+                    mapPage.Properties.Name = name;
+                    mapPage.Properties.ControlType = controlType;
+                    mapPage.Properties.Page = page;
+                    mapPage.Properties.Id = id;
+                    mapPage.UpdatePage();
+                }
+            }
+        }
+
+        private void FIPMap_OnInvalidateMap(FIPMap sender)
+        {
+            InvalidateMap();
+        }
+
+        private void FIPMap_OnFlightDataReceived(FIPMap sender, FlightSimProviderBase flightSimProviderBase)
+        {
+            FlightDataReceived(flightSimProviderBase);
+        }
+
+        private void FIPMap_OnConnected(FIPMap sender)
+        {
+            CenterPlane(true);
+        }
+
+        private void FIPMap_OnCenterPlane(FIPMap sender, bool center)
+        {
+            CenterPlane(center);
+        }
+
+        private void FIPMap_OnQuit(FIPMap sender)
+        {
+            QuitFlightSim();
         }
 
         private void Player_OnInactive(object sender, FIPPageEventArgs e)
@@ -760,7 +853,8 @@ namespace FIPDisplayMSFS2020
             //Stupid glitch with it not pumping the message queue if it loads hidden
             if ((string.IsNullOrEmpty(Message) || Message.Equals("Loading...") || !string.IsNullOrEmpty(Options.Settings)) && Visible == true && !webView21.Visible)
             {
-                WindowState = FormWindowState.Minimized;
+                //WindowState = FormWindowState.Minimized;
+                Visible = false;
                 btnOK.Visible = false;
             }
         }

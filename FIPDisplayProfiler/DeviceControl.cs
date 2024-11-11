@@ -4,17 +4,29 @@ using FIPToolKit.Models;
 using FIPToolKit.Tools;
 using Saitek.DirectOutput;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using static FIPToolKit.Models.FIPMapForm;
 
 namespace FIPDisplayProfiler
 {
     public partial class DeviceControl : UserControl
     {
-        private global::FIPDisplayProfiler.ToolStripSubMenu leftToolStripMenuItem;
-        private global::FIPDisplayProfiler.ToolStripSubMenu rightToolStripMenuItem;
+        private ToolStripSubMenu leftToolStripMenuItem;
+        private ToolStripSubMenu rightToolStripMenuItem;
 
+        public event FIPMapDelegate OnInvalidateMap;
+        public event FIPMapImageDelegate OnRequestMapImage;
+        public event FIPMapFormDelegate OnRequestMapForm;
+        public event FIPMapFlightSimDelegate OnReadyToFly;
+        public event FIPMapFlightSimDelegate OnFlightDataReceived;
+        public event FIPMapDelegate OnQuit;
+        public event FIPMapDelegate OnConnected;
+        public event FIPMapTrafficDelegate OnTrafficReceived;
+        public event FIPMapPropertiesDelegate OnPropertiesChanged;
+        public event FIPMapCenterOnPlaneDelegate OnCenterPlane;
         public delegate void FIPGetIntEventHandler(object sender, ref int value);
         public delegate void FIPGetBoolEventHandler(object sender, ref bool value);
         public event FIPPage.FIPPageEventHandler OnMediaPlayerActive;
@@ -127,6 +139,20 @@ namespace FIPDisplayProfiler
                 ((FIPVideoPlayer)e.Page).OnMuteChanged += VideoPlayer_OnMuteChanged;
                 ((FIPVideoPlayer)e.Page).Volume = GetInitialVolume(((FIPVideoPlayer)e.Page).Volume);
                 ((FIPVideoPlayer)e.Page).Mute = GetInitialMute(((FIPVideoPlayer)e.Page).Mute);
+            }
+            else if (typeof(FIPMap).IsAssignableFrom(e.Page.GetType()))
+            {
+                ((FIPMap)e.Page).OnQuit += FIPMap_OnQuit;
+                ((FIPMap)e.Page).OnCenterPlane += FIPMap_OnCenterPlane;
+                ((FIPMap)e.Page).OnConnected += FIPMap_OnConnected;
+                ((FIPMap)e.Page).OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+                ((FIPMap)e.Page).OnInvalidateMap += FIPMap_OnInvalidateMap;
+                ((FIPMap)e.Page).OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+                ((FIPMap)e.Page).OnReadyToFly += FIPMap_OnReadyToFly;
+                ((FIPMap)e.Page).OnRequestMapForm += FIPMap_OnRequestMapForm;
+                ((FIPMap)e.Page).OnRequestMapImage += FIPMap_OnRequestMapImage;
+                ((FIPMap)e.Page).OnTrafficReceived += FIPMap_OnTrafficReceived;
+                ((FIPMap)e.Page).LoadSettings();
             }
             Invoke((Action)delegate
             {
@@ -303,6 +329,20 @@ namespace FIPDisplayProfiler
                 ((FIPVideoPlayer)page).OnMuteChanged += VideoPlayer_OnMuteChanged;
                 ((FIPVideoPlayer)page).Volume = GetInitialVolume(((FIPVideoPlayer)page).Volume);
                 ((FIPVideoPlayer)page).Mute = GetInitialMute(((FIPVideoPlayer)page).Mute);
+            }
+            else if (typeof(FIPMap).IsAssignableFrom(page.GetType()))
+            {
+                ((FIPMap)page).OnQuit += FIPMap_OnQuit;
+                ((FIPMap)page).OnCenterPlane += FIPMap_OnCenterPlane;
+                ((FIPMap)page).OnConnected += FIPMap_OnConnected;
+                ((FIPMap)page).OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+                ((FIPMap)page).OnInvalidateMap += FIPMap_OnInvalidateMap;
+                ((FIPMap)page).OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+                ((FIPMap)page).OnReadyToFly += FIPMap_OnReadyToFly;
+                ((FIPMap)page).OnRequestMapForm += FIPMap_OnRequestMapForm;
+                ((FIPMap)page).OnRequestMapImage += FIPMap_OnRequestMapImage;
+                ((FIPMap)page).OnTrafficReceived += FIPMap_OnTrafficReceived;
+                ((FIPMap)page).LoadSettings();
             }
             return index;
         }
@@ -545,7 +585,19 @@ namespace FIPDisplayProfiler
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(new FIPSimConnectMap(form.SimMap), true);
+                                FIPSimConnectMap page = new FIPSimConnectMap(form.SimMap);
+                                page.OnQuit += FIPMap_OnQuit;
+                                page.OnCenterPlane += FIPMap_OnCenterPlane;
+                                page.OnConnected += FIPMap_OnConnected;
+                                page.OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+                                page.OnInvalidateMap += FIPMap_OnInvalidateMap;
+                                page.OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+                                page.OnReadyToFly += FIPMap_OnReadyToFly;
+                                page.OnRequestMapForm += FIPMap_OnRequestMapForm;
+                                page.OnRequestMapImage += FIPMap_OnRequestMapImage;
+                                page.OnTrafficReceived += FIPMap_OnTrafficReceived;
+                                page.LoadSettings();
+                                Device.AddPage(page, true);
                             }
                         }
                         break;
@@ -656,7 +708,19 @@ namespace FIPDisplayProfiler
                             };
                             if (form.ShowDialog(this) == DialogResult.OK)
                             {
-                                Device.AddPage(new FIPFSUIPCMap(form.FSUIPCMap), true);
+                                FIPFSUIPCMap page = new FIPFSUIPCMap(form.FSUIPCMap);
+                                page.OnQuit += FIPMap_OnQuit;
+                                page.OnCenterPlane += FIPMap_OnCenterPlane;
+                                page.OnConnected += FIPMap_OnConnected;
+                                page.OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+                                page.OnInvalidateMap += FIPMap_OnInvalidateMap;
+                                page.OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+                                page.OnReadyToFly += FIPMap_OnReadyToFly;
+                                page.OnRequestMapForm += FIPMap_OnRequestMapForm;
+                                page.OnRequestMapImage += FIPMap_OnRequestMapImage;
+                                page.OnTrafficReceived += FIPMap_OnTrafficReceived;
+                                page.LoadSettings();
+                                Device.AddPage(page, true);
                             }
                         }
                         break;
@@ -2271,6 +2335,77 @@ namespace FIPDisplayProfiler
         {
             OnGetMute?.Invoke(this, ref mute);
             return mute;
+        }
+
+        private void FIPMap_OnTrafficReceived(FIPMap sender, Dictionary<string, FIPToolKit.FlightSim.Aircraft> traffic)
+        {
+            OnTrafficReceived?.Invoke(sender, traffic);
+        }
+
+        private void FIPMap_OnRequestMapImage(FIPMap sender, FIPMapImage map)
+        {
+            OnRequestMapImage?.Invoke(sender, map);
+        }
+
+        private GMap.NET.WindowsForms.GMapControl FIPMap_OnRequestMapForm(FIPMap sender)
+        {
+            return OnRequestMapForm?.Invoke(sender);
+        }
+
+        private void FIPMap_OnReadyToFly(FIPMap sender, FlightSimProviderBase flightSimProviderBase)
+        {
+            OnReadyToFly.Invoke(sender, flightSimProviderBase);
+        }
+
+        private void FIPMap_OnPropertiesChanged(FIPMap sender, FIPMapProperties properties)
+        {
+            OnPropertiesChanged?.Invoke(sender, properties);
+            foreach (FIPMap mapPage in Device.Pages.Where(p => typeof(FIPMap).IsAssignableFrom(p.GetType()) && p != sender))
+            {
+                string name = mapPage.Properties.Name;
+                string controlType = mapPage.Properties.ControlType;
+                uint page = mapPage.Properties.Page;
+                Guid id = mapPage.Properties.Id;
+                PropertyCopier<FIPMapProperties, FIPMapProperties>.Copy(properties, mapPage.MapProperties);
+                mapPage.Properties.Name = name;
+                mapPage.Properties.ControlType = controlType;
+                mapPage.Properties.Page = page;
+                mapPage.Properties.Id = id;
+                mapPage.UpdatePage();
+            }
+        }
+
+        private void FIPMap_OnInvalidateMap(FIPMap sender)
+        {
+            OnInvalidateMap?.Invoke(sender);
+        }
+
+        private void FIPMap_OnFlightDataReceived(FIPMap sender, FlightSimProviderBase flightSimProviderBase)
+        {
+            OnFlightDataReceived.Invoke(sender, flightSimProviderBase);
+        }
+
+        private void FIPMap_OnConnected(FIPMap sender)
+        {
+            OnConnected?.Invoke(sender);
+        }
+
+        private void FIPMap_OnCenterPlane(FIPMap sender, bool center)
+        {
+            OnCenterPlane?.Invoke(sender, center);
+        }
+
+        private void FIPMap_OnQuit(FIPMap sender)
+        {
+            OnQuit?.Invoke(sender);
+        }
+
+        public void UpdateMapControls()
+        {
+            foreach (FIPMap mapPage in Device.Pages.Where(p => typeof(FIPMap).IsAssignableFrom(p.GetType())))
+            {
+                mapPage.UpdatePage();
+            }
         }
     }
 }

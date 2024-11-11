@@ -14,11 +14,9 @@ using GMap.NET.WindowsForms;
 using Saitek.DirectOutput;
 using System.Drawing.Drawing2D;
 using System.IO;
-using Microsoft.Win32;
 using RestSharp;
 using FIPToolKit.FlightSim;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
+using static FIPToolKit.Models.FIPMapForm;
 
 namespace FIPToolKit.Models
 {
@@ -67,86 +65,22 @@ namespace FIPToolKit.Models
             }
         }
 
-        private class MapImage : IDisposable
-        {
-            public Bitmap Map { get; set; }
-            public int Width { get; set; }
-            public int Height { get; set; }
-
-            public void Dispose()
-            {
-                if (Map != null)
-                {
-                    Map.Dispose();
-                }
-            }
-        }
-
-        public GMapControl Map { get; private set; }
-        protected GPilotMarker airplaneMarker;
-        public GMapRoute Route { get; private set; } = new GMapRoute(new List<PointLatLng>(), "IFR");
-        public bool CenterOnPlane { get; set; }
-        private GMapOverlay overlay = new GMapOverlay("Pilot");
-        private GMapOverlay routes = new GMapOverlay("Routes");
-        private GMapOverlay traffic = new GMapOverlay("Traffic");
-        private GMapOverlay mpTraffic = new GMapOverlay("MPTraffic");
-        private AbortableBackgroundWorker mpTrafficWorker;
-        private AbortableBackgroundWorker trafficWorker;
-        private bool Stop { get; set; }
-
-        private const int VATSIM_REFRESH_RATE = 60000;
-        private const int FLIGHTSHARE_REFRESH_RATE = 5000;
-
-        private delegate void MapImageDelegate(MapImage map);
-
-        private string FlightShareId
-        {
-            get
-            {
-                string clientId = string.Empty;
-                using (RegistryKey regFlightShare = Registry.CurrentUser.OpenSubKey("Software\\FlightShare", false))
-                {
-                    if (regFlightShare != null)
-                    {
-                        clientId = regFlightShare.GetValue("FlightShareClientID", string.Empty).ToString();
-                        regFlightShare.Close();
-                    }
-                }
-                return clientId;
-            }
-        }
-
-        private string FlightSharePilotName
-        {
-            get
-            {
-                string pilotName = string.Empty;
-                using (RegistryKey regFlightShare = Registry.CurrentUser.OpenSubKey("Software\\FlightShare", false))
-                {
-                    if (regFlightShare != null)
-                    {
-                        pilotName = regFlightShare.GetValue("FlightSharePilotName", string.Empty).ToString();
-                        regFlightShare.Close();
-                    }
-                }
-                return pilotName;
-            }
-        }
-
-
-        [XmlIgnore]
-        [JsonIgnore]
-        public Dictionary<string, Aircraft> MPTraffic { get; private set; }
-
-        private List<Color> Colors = new List<Color>();
-
+        private List<Color> Colors { get; set; } = new List<Color>();
         public FlightSimProviderBase FlightSimProvider { get; private set; }
+        public event FIPMapDelegate OnInvalidateMap;
+        public event FIPMapImageDelegate OnRequestMapImage;
+        public event FIPMapFormDelegate OnRequestMapForm;
+        public event FIPMapFlightSimDelegate OnReadyToFly;
+        public event FIPMapFlightSimDelegate OnFlightDataReceived;
+        public event FIPMapDelegate OnQuit;
+        public event FIPMapDelegate OnConnected;
+        public event FIPMapTrafficDelegate OnTrafficReceived;
+        public event FIPMapPropertiesDelegate OnPropertiesChanged;
+        public event FIPMapCenterOnPlaneDelegate OnCenterPlane;
 
         public FIPMap(FIPMapProperties properties, FlightSimProviderBase flightSimProvider) : base(properties)
         {
             FlightSimProvider = flightSimProvider;
-            OpenAIP_All_MapProvider.Instance.OpenAIPClientIDToken = MapProperties.AIPClientToken;
-            OpenAIP_All_MapProvider.Instance.OnCacheUpdated += GMapControl1_OnCacheUpdated;
             properties.ControlType = GetType().FullName;
             properties.Name = string.Format("{0} Map", flightSimProvider.Name);
             properties.IsDirty = false;
@@ -155,12 +89,6 @@ namespace FIPToolKit.Models
             properties.OnShowTrackChanged += Properties_OnShowTrackChanged;
             properties.OnAIPClientTokenChanged += Properties_OnAIPClientTokenChanged;
             GMaps.Instance.Mode = AccessMode.ServerOnly;
-            if (MPTraffic == null)
-            {
-                MPTraffic = new Dictionary<string, Aircraft>();
-            }
-            trafficWorker = new AbortableBackgroundWorker();
-            trafficWorker.DoWork += TrafficWorker_DoWork;
             foreach (Color color in GetSystemColors())
             {
                 Colors.Add(color);
@@ -174,166 +102,27 @@ namespace FIPToolKit.Models
 
         private void FlightSimProvider_OnReadyToFly(FlightSimProviderBase sender, ReadyToFly readyToFly)
         {
-            if (Map != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                Map.Invoke((Action)delegate
-                {
-                    Route.Points.Clear();
-                    airplaneMarker.IsRunning = (readyToFly == ReadyToFly.Ready);
-                    if (readyToFly != ReadyToFly.Ready)
-                    {
-                        airplaneMarker.ATCIdentifier = string.Empty;
-                        airplaneMarker.ATCModel = string.Empty;
-                        airplaneMarker.ATCType = string.Empty;
-                        airplaneMarker.EngineType = EngineType.Piston;
-                        airplaneMarker.IsHeavy = false;
-                        airplaneMarker.Heading = 0f;
-                        airplaneMarker.Altitude = 0;
-                        airplaneMarker.Airspeed = 0;
-                        airplaneMarker.AmbientTemperature = 0;
-                        airplaneMarker.AmbientWindDirection = 0f;
-                        airplaneMarker.AmbientWindVelocity = 0;
-                        airplaneMarker.Nav1RelativeBearing = 0;
-                        airplaneMarker.Nav2RelativeBearing = 0;
-                        airplaneMarker.AdfRelativeBearing = 0;
-                        airplaneMarker.KohlsmanInchesMercury = 29.92d;
-                        airplaneMarker.GPSHeading = 0;
-                        airplaneMarker.GPSIsActive = false;
-                        airplaneMarker.GPSTrackDistance = 0;
-                        airplaneMarker.Nav1Available = false;
-                        airplaneMarker.Nav2Available = false;
-                        airplaneMarker.HeadingBug = 0;
-                        airplaneMarker.IsRunning = false;
-                        Map.Position = airplaneMarker.Position = new PointLatLng(0, 0);
-                    }
-                    InvalidateMap();
-                });
-            }
+            OnReadyToFly?.Invoke(this, FlightSimProvider);
         }
 
         private void FlightSimProvider_OnFlightDataReceived(FlightSimProviderBase sender)
         {
-            if (Map != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                Map.Invoke((Action)delegate
-                {
-                    try
-                    {
-
-                        //Map.Bearing = (ShowHeading ? (float)FlightSimProvider.HeadingTrueDegrees : 0f);
-                        airplaneMarker.ATCIdentifier = FlightSimProvider.ATCIdentifier;
-                        airplaneMarker.ATCModel = FlightSimProvider.ATCModel;
-                        airplaneMarker.ATCType = FlightSimProvider.ATCType;
-                        airplaneMarker.IsHeavy = FlightSimProvider.IsHeavy;
-                        airplaneMarker.EngineType = FlightSimProvider.EngineType;
-                        airplaneMarker.Heading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.HeadingMagneticDegrees : FlightSimProvider.HeadingTrueDegrees);
-                        airplaneMarker.Position = new PointLatLng(FlightSimProvider.Latitude, FlightSimProvider.Longitude);
-                        airplaneMarker.Airspeed = (int)(FlightSimProvider.OnGround ? FlightSimProvider.GroundSpeedKnots : FlightSimProvider.AirSpeedIndicatedKnots);
-                        airplaneMarker.Altitude = (int)FlightSimProvider.AltitudeFeet;
-                        airplaneMarker.AmbientTemperature = (int)FlightSimProvider.AmbientTemperatureCelcius;
-                        airplaneMarker.AmbientWindDirection = (float)FlightSimProvider.AmbientWindDirectionDegrees;
-                        airplaneMarker.AmbientWindVelocity = (int)FlightSimProvider.AmbientWindSpeedKnots;
-                        airplaneMarker.KohlsmanInchesMercury = FlightSimProvider.KohlsmanInchesMercury;
-                        airplaneMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.GPSRequiredMagneticHeadingRadians : FlightSimProvider.GPSRequiredTrueHeadingRadians);
-                        airplaneMarker.GPSIsActive = FlightSimProvider.HasActiveWaypoint;
-                        airplaneMarker.GPSTrackDistance = (float)FlightSimProvider.GPSCrossTrackErrorMeters;
-                        airplaneMarker.Nav1RelativeBearing = FlightSimProvider.Nav1Radial + 180;
-                        airplaneMarker.Nav2RelativeBearing = FlightSimProvider.Nav2Radial + 180;
-                        airplaneMarker.Nav1Available = FlightSimProvider.Nav1Available;
-                        airplaneMarker.Nav2Available = FlightSimProvider.Nav2Available;
-                        airplaneMarker.AdfRelativeBearing = (int)FlightSimProvider.AdfRelativeBearing;
-                        airplaneMarker.HeadingBug = (int)FlightSimProvider.HeadingBug;
-                        if (FlightSimProvider.IsReadyToFly == ReadyToFly.Ready && !airplaneMarker.IsRunning)
-                        {
-                            FlightSimProvider.ReadyToFly(FlightSimProvider.IsReadyToFly);
-                        }
-                        Route.Points.Add(new PointLatLng(FlightSimProvider.Latitude, FlightSimProvider.Longitude));
-                        if (MapProperties.FollowMyPlane || CenterOnPlane)
-                        {
-                            CenterOnPlane = false;
-                            Map.Position = new PointLatLng(FlightSimProvider.Latitude, FlightSimProvider.Longitude);
-                        }
-                    }
-                    catch
-                    {
-                    }
-                });
-            }
+            OnFlightDataReceived?.Invoke(this, FlightSimProvider);
         }
 
         private void FlightSimProvider_OnQuit(FlightSimProviderBase sender)
         {
-            if (Map != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                try
-                {
-                    Map.Invoke((Action)delegate
-                    {
-                        try
-                        {
-                            airplaneMarker.ATCIdentifier = string.Empty;
-                            airplaneMarker.ATCModel = string.Empty;
-                            airplaneMarker.ATCType = string.Empty;
-                            airplaneMarker.EngineType = EngineType.Piston;
-                            airplaneMarker.IsHeavy = false;
-                            airplaneMarker.Heading = 0f;
-                            airplaneMarker.Airspeed = 0;
-                            airplaneMarker.Altitude = 0;
-                            airplaneMarker.AmbientTemperature = 0;
-                            airplaneMarker.AmbientWindDirection = 0f;
-                            airplaneMarker.AmbientWindVelocity = 0;
-                            airplaneMarker.Nav1RelativeBearing = 0;
-                            airplaneMarker.Nav2RelativeBearing = 0;
-                            airplaneMarker.AdfRelativeBearing = 0;
-                            airplaneMarker.KohlsmanInchesMercury = 29.92d;
-                            airplaneMarker.GPSHeading = 0;
-                            airplaneMarker.GPSIsActive = false;
-                            airplaneMarker.GPSTrackDistance = 0;
-                            airplaneMarker.Nav1Available = false;
-                            airplaneMarker.Nav2Available = false;
-                            airplaneMarker.HeadingBug = 0;
-                            Route.Points.Clear();
-                            Map.Position = airplaneMarker.Position = new PointLatLng(0, 0);
-                            InvalidateMap();
-                        }
-                        catch(Exception)
-                        {
-                        }
-                    });
-                }
-                catch(Exception)
-                {
-                }
-            }
+            OnQuit?.Invoke(this);
         }
 
         private void FlightSimProvider_OnConnected(FlightSimProviderBase sender)
         {
-            CenterOnPlane = true;
-            InvalidateMap();
+            OnConnected?.Invoke(this);
         }
 
         private void FlightSimProvider_OnTrafficReceived(FlightSimProviderBase sender, string callsign, Aircraft aircraft, TrafficEvent eventType)
         {
-            UpdateMap();
-        }
-
-        private void GMapControl1_OnCacheUpdated(GMapProvider provider)
-        {
-            try
-            {
-                if (GMaps.Instance.UseMemoryCache)
-                {
-                    GMaps.Instance.MemoryCache.Clear();
-                }
-                if (Map != null && !IsDisposed)
-                {
-                    Map.ReloadMap();
-                }
-            }
-            catch (Exception)
-            {
-            }
+            OnTrafficReceived?.Invoke(this, FlightSimProvider.Traffic);
         }
 
         private void Properties_OnAIPClientTokenChanged(object sender, EventArgs e)
@@ -355,35 +144,7 @@ namespace FIPToolKit.Models
 
         private void Properties_OnShowTrackChanged(object sender, EventArgs e)
         {
-            if (Map != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                if (Map.InvokeRequired)
-                {
-                    Map.Invoke((Action)(() =>
-                    {
-                        if (!MapProperties.ShowTrack)
-                        {
-                            routes.Routes.Remove(Route);
-                        }
-                        else
-                        {
-                            routes.Routes.Add(Route);
-                        }
-                    }));
-                }
-                else
-                {
-                    if (!MapProperties.ShowTrack)
-                    {
-                        routes.Routes.Remove(Route);
-                    }
-                    else
-                    {
-                        routes.Routes.Add(Route);
-                    }
-                }
-                LoadMapSettings();
-            }
+            OnPropertiesChanged?.Invoke(this, MapProperties);
         }
 
         public FIPMapProperties MapProperties
@@ -396,12 +157,12 @@ namespace FIPToolKit.Models
 
         private void Properties_OnUpdateMap(object sender, EventArgs e)
         {
-            UpdateMap();
+            OnPropertiesChanged?.Invoke(this, MapProperties);
         }
 
         private void Properties_OnLoadMapSettings(object sender, EventArgs e)
         {
-            LoadMapSettings();
+            OnPropertiesChanged?.Invoke(this, MapProperties);
         }
 
         private static IEnumerable<Color> GetSystemColors()
@@ -410,382 +171,12 @@ namespace FIPToolKit.Models
             return type.GetProperties().Where(info => info.PropertyType == type && (Color)info.GetValue(null, null) != Color.Transparent).Select(info => (Color)info.GetValue(null, null));
         }
 
-        private void mpTrafficWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-            Stop = false;
-            DateTime lastVatSimQuery = DateTime.MinValue;
-            DateTime lastFlightShareQuery = DateTime.MinValue;
-            bool updateMap = false;
-            while (!Stop)
-            {
-                try
-                {
-                    //VatSim MP Traffic
-                    if (MapProperties.VatSimId != 0)
-                    {
-                        if ((DateTime.Now - lastVatSimQuery).TotalMilliseconds >= VATSIM_REFRESH_RATE)
-                        {
-                            Dictionary<string, VatSimAircraft> currentTraffic = new Dictionary<string, VatSimAircraft>();
-                            RestClient restClient = new RestClient("https://api2.simaware.ca");
-                            RestRequest request = new RestRequest("/api/livedata/live.json", Method.Get)
-                            {
-                                Timeout = new TimeSpan(10000)
-                            };
-                            request.AddHeader("credentials", "omit");
-                            RestResponse response = restClient.Execute(request);
-                            if (response.IsSuccessful)
-                            {
-                                string json = response.Content;
-                                JsonSerializer jsonSerializer = new JsonSerializer();
-                                using (JsonTextReader jsonReader = new JsonTextReader(new StringReader(json)))
-                                {
-                                    while (jsonReader.Read())
-                                    {
-                                        if (Stop)
-                                        {
-                                            break;
-                                        }
-                                        if (jsonReader.TokenType == JsonToken.PropertyName)
-                                        {
-                                            Guid guid;
-                                            if (Guid.TryParse(jsonReader.Value.ToString(), out guid))
-                                            {
-                                                jsonReader.Read();
-                                                VatSimAircraft aircraft = jsonSerializer.Deserialize<VatSimAircraft>(jsonReader);
-                                                //double distance = FlightSim.Tools.DistanceTo(Latitude, Longitude, aircraft.Lat, aircraft.Lon);
-                                                //if (distance < SearchRadius)
-                                                if (aircraft.Id != MapProperties.VatSimId)
-                                                {
-                                                    // Add 1,000,000 to differenciate between FlightShare and VatSim user id's.
-                                                    if (!MPTraffic.ContainsKey(aircraft.Id.ToString()))
-                                                    {
-                                                        MPTraffic.Add(aircraft.Id.ToString(), aircraft);
-                                                    }
-                                                    else
-                                                    {
-                                                        MPTraffic[aircraft.Id.ToString()].Altitude = aircraft.Altitude;
-                                                        MPTraffic[aircraft.Id.ToString()].Latitude = aircraft.Latitude;
-                                                        MPTraffic[aircraft.Id.ToString()].Longitude = aircraft.Longitude;
-                                                        MPTraffic[aircraft.Id.ToString()].Heading = aircraft.Heading;
-                                                        MPTraffic[aircraft.Id.ToString()].AirSpeedIndicated = aircraft.AirSpeedIndicated;
-                                                    }
-                                                }
-                                                currentTraffic.Add(aircraft.Id.ToString(), aircraft);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if (!Stop)
-                            {
-                                CleanUpVatSimTraffic(currentTraffic);
-                            }
-                            lastVatSimQuery = DateTime.Now;
-                            updateMap = true;
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                }
-                try
-                {
-                    //FlightShare MP Traffic
-                    if ((DateTime.Now - lastFlightShareQuery).TotalMilliseconds >= FLIGHTSHARE_REFRESH_RATE)
-                    {
-                        if (!string.IsNullOrEmpty(FlightShareId) && IsStarted && !Stop)
-                        {
-                            RestClient restClient = new RestClient("https://www.flightshareapp.com");
-                            RestRequest request = new RestRequest("/PilotData", Method.Get)
-                            {
-                                Timeout = new TimeSpan(10000)
-                            };
-                            Dictionary<string, FlightShareAircraft> currentTraffic = new Dictionary<string, FlightShareAircraft>();
-                            RestResponse response = restClient.Execute(request);
-                            string json = response.Content;
-                            if (response.IsSuccessful && json != "Error")
-                            {
-                                List<FlightShareAircraft> traffic = JsonConvert.DeserializeObject<List<FlightShareAircraft>>(json);
-                                if (traffic != null)
-                                {
-                                    foreach (FlightShareAircraft flightShareAircraft in traffic)
-                                    {
-                                        if (Stop)
-                                        {
-                                            break;
-                                        }
-                                        if (flightShareAircraft.Callsign != FlightSharePilotName)
-                                        {
-                                            flightShareAircraft.IsHeavy = true;
-                                            flightShareAircraft.EngineType = EngineType.Jet;
-                                            if (!MPTraffic.ContainsKey(flightShareAircraft.Callsign))
-                                            {
-                                                MPTraffic.Add(flightShareAircraft.Callsign, flightShareAircraft);
-                                            }
-                                            else
-                                            {
-                                                MPTraffic[flightShareAircraft.Callsign].Latitude = flightShareAircraft.Latitude;
-                                                MPTraffic[flightShareAircraft.Callsign].Longitude = flightShareAircraft.Longitude;
-                                                MPTraffic[flightShareAircraft.Callsign].Heading = flightShareAircraft.Heading;
-                                            }
-                                        }
-                                        currentTraffic.Add(flightShareAircraft.Callsign, flightShareAircraft);
-                                    }
-                                    if (!Stop)
-                                    {
-                                        CleanUpFlightShareTraffic(currentTraffic);
-                                    }
-                                }
-                            }
-                            lastFlightShareQuery = DateTime.Now;
-                            updateMap = true;
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                }
-                if (IsStarted && !Stop && updateMap)
-                {
-                    updateMap = false;
-                    UpdateMap();
-                }
-                DrawMap();
-                Thread.Sleep(1);
-            }
-        }
-
-        private void UpdateTraffic()
-        {
-            if (Map != null && FlightSimProvider.Traffic != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                try
-                {
-                    Map.Invoke((Action)delegate
-                    {
-                        if (!IsDisposed)
-                        {
-                            try
-                            {
-                                traffic.Markers.Clear();
-                                if (Map.Zoom > 4 && MapProperties.ShowTraffic)
-                                {
-                                    List<Aircraft> filteredAircraft = FlightSimProvider.Traffic.Values.Where(a => a.IsInRect(Map.ViewArea) && a.IsRunning).ToList();
-                                    foreach (Aircraft aircraft in filteredAircraft)
-                                    {
-                                        if (Stop)
-                                        {
-                                            break;
-                                        }
-                                        if (traffic.Markers.Count < MapProperties.MaxAIAircraft)
-                                        {
-                                            GAircraftMarker aircraftMarker = new GAircraftMarker(new PointLatLng(aircraft.Latitude, aircraft.Longitude), aircraft)
-                                            {
-                                                CurrentAltitude = (int)FlightSimProvider.AltitudeFeet,
-                                                ShowHeading = MapProperties.ShowHeading,
-                                                CurrentHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.HeadingMagneticDegrees : FlightSimProvider.HeadingTrueDegrees)
-                                            };
-                                            traffic.Markers.Add(aircraftMarker);
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            catch (Exception)
-                            {
-                            }
-                        }
-                    });
-                }
-                catch(Exception)
-                {
-                }
-            }
-        }
-
-        private void UpdateMPTraffic()
-        {
-            if (Map != null && MPTraffic != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                Map.Invoke((Action)delegate
-                {
-                    mpTraffic.Markers.Clear();
-                    if (Map.Zoom > 4 && MapProperties.ShowTraffic)
-                    {
-                        List<Aircraft> filteredAircraft = MPTraffic.Values.Where(a => a.IsInRect(Map.ViewArea)).ToList();
-                        foreach (Aircraft aircraft in filteredAircraft)
-                        {
-                            if (Stop)
-                            {
-                                break;
-                            }
-                            if (mpTraffic.Markers.Count < MapProperties.MaxMPAircraft)
-                            {
-                                GMPAircraftMarker aircraftMarker = new GMPAircraftMarker(new PointLatLng(aircraft.Latitude, aircraft.Longitude), aircraft)
-                                {
-                                    ShowHeading = MapProperties.ShowHeading,
-                                    ShowDetails = Map.Zoom > 11,
-                                    CurrentAltitude = (int)FlightSimProvider.AltitudeFeet,
-                                    CurrentHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.HeadingMagneticDegrees : FlightSimProvider.HeadingTrueDegrees)
-                                };
-                                mpTraffic.Markers.Add(aircraftMarker);
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        private void CleanUpVatSimTraffic(Dictionary<string, VatSimAircraft> currentAircraft)
-        {
-            List<Aircraft> aircraftToRemove = MPTraffic.Values.Where(mp => mp.GetType() == typeof(VatSimAircraft) && !currentAircraft.ContainsKey(mp.Id.ToString())).ToList();
-            foreach (Aircraft aircraft in aircraftToRemove)
-            {
-                MPTraffic.Remove(aircraft.Id.ToString());
-            }
-        }
-
-        private void CleanUpFlightShareTraffic(Dictionary<string, FlightShareAircraft> currentAircraft)
-        {
-            List<Aircraft> aircraftToRemove = MPTraffic.Values.Where(mp => mp.GetType() == typeof(FlightShareAircraft) && !currentAircraft.ContainsKey(mp.Callsign)).ToList();
-            foreach (Aircraft aircraft in aircraftToRemove)
-            {
-                MPTraffic.Remove(aircraft.Callsign);
-            }
-        }
-
-        private void LoadMapSettings()
-        {
-            //Doesn't always init the map provider when loading the saved settings, so we check here.
-            try
-            {
-                if (Map != null && !IsDisposed)
-                {
-                    switch (MapProperties.MapType)
-                    {
-                        case FlightSim.MapType.Normal:
-                            if (Map.MapProvider.GetType() != typeof(OpenStreetMapProvider2))
-                            {
-                                Map.MapProvider = OpenStreetMapProvider2.Instance;
-                            }
-                            break;
-                        case FlightSim.MapType.Terrain:
-                            if (Map.MapProvider.GetType() != typeof(OpenTopoMapProvider))
-                            {
-                                Map.MapProvider = OpenTopoMapProvider.Instance;
-                            }
-                            break;
-                        case FlightSim.MapType.Satellite:
-                            if (Map.MapProvider.GetType() != typeof(ArcGIS_World_Imagery_MapProvider))
-                            {
-                                Map.MapProvider = ArcGIS_World_Imagery_MapProvider.Instance;
-                            }
-                            break;
-                        case FlightSim.MapType.Hybrid:
-                            if (Map.MapProvider.GetType() != typeof(GoogleHybridMapProvider2))
-                            {
-                                Map.MapProvider = GoogleHybridMapProvider2.Instance;
-                            }
-                            break;
-                    }
-                    Map.Zoom = MapProperties.ZoomLevel;
-                    airplaneMarker.ATCIdentifier = FlightSimProvider.ATCIdentifier;
-                    airplaneMarker.ATCModel = FlightSimProvider.ATCModel;
-                    airplaneMarker.ATCType = FlightSimProvider.ATCType;
-                    airplaneMarker.TemperatureUnit = MapProperties.TemperatureUnit;
-                    airplaneMarker.OverlayColor = MapProperties.OverlayColor;
-                    airplaneMarker.ShowHeading = MapProperties.ShowHeading;
-                    airplaneMarker.ShowGPS = MapProperties.ShowGPS;
-                    airplaneMarker.ShowNav1 = MapProperties.ShowNav1;
-                    airplaneMarker.ShowNav2 = MapProperties.ShowNav2;
-                    airplaneMarker.ShowAdf = MapProperties.ShowAdf;
-                    airplaneMarker.Font = MapProperties.Font;
-                    airplaneMarker.Heading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.HeadingMagneticDegrees : FlightSimProvider.HeadingTrueDegrees);
-                    airplaneMarker.IsHeavy = FlightSimProvider.IsHeavy;
-                    airplaneMarker.EngineType = FlightSimProvider.EngineType;
-                    airplaneMarker.Airspeed = (int)(FlightSimProvider.OnGround ? FlightSimProvider.GroundSpeedKnots : FlightSimProvider.AirSpeedIndicatedKnots);
-                    airplaneMarker.Altitude = (int)FlightSimProvider.AltitudeFeet;
-                    airplaneMarker.AmbientTemperature = (int)FlightSimProvider.AmbientTemperatureCelcius;
-                    airplaneMarker.AmbientWindDirection = (float)FlightSimProvider.AmbientWindDirectionDegrees;
-                    airplaneMarker.AmbientWindVelocity = (int)FlightSimProvider.AmbientWindSpeedKnots;
-                    airplaneMarker.KohlsmanInchesMercury = FlightSimProvider.KohlsmanInchesMercury;
-                    airplaneMarker.IsRunning = FlightSimProvider.IsReadyToFly == ReadyToFly.Ready;
-                    airplaneMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.GPSRequiredMagneticHeadingRadians : FlightSimProvider.GPSRequiredTrueHeadingRadians);
-                    airplaneMarker.GPSIsActive = FlightSimProvider.HasActiveWaypoint;
-                    airplaneMarker.GPSTrackDistance = (float)FlightSimProvider.GPSCrossTrackErrorMeters;
-                    airplaneMarker.Nav1RelativeBearing = FlightSimProvider.Nav1Radial + 180;
-                    airplaneMarker.Nav2RelativeBearing = FlightSimProvider.Nav2Radial + 180;
-                    airplaneMarker.Nav1Available = FlightSimProvider.Nav1Available;
-                    airplaneMarker.Nav2Available = FlightSimProvider.Nav2Available;
-                    airplaneMarker.AdfRelativeBearing = (int)FlightSimProvider.AdfRelativeBearing;
-                    airplaneMarker.HeadingBug = (int)FlightSimProvider.HeadingBug;
-                    Route.Stroke = new Pen(MapProperties.TrackColor, 2);
-                    UpdateMap();
-                }
-            }
-            catch
-            {
-            }
-        }
-
         public override void StopTimer(int timeOut = 100)
         {
             if (IsStarted)
             {
                 IsStarted = false;
-                if (Map != null && !IsDisposed && Map.IsHandleCreated)
-                {
-                    if (Map.InvokeRequired)
-                    {
-                        try
-                        {
-                            Map.Invoke((Action)(() =>
-                            {
-                                Map.Position = airplaneMarker.Position = new PointLatLng(0, 0);
-                            }));
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
-                    {
-                        Map.Position = airplaneMarker.Position = new PointLatLng(0, 0);
-                    }
-                }
                 SetLEDs();
-                if (mpTrafficWorker != null)
-                {
-                    Stop = true;
-                    DateTime stopTime = DateTime.Now;
-                    while (mpTrafficWorker.IsRunning)
-                    {
-                        TimeSpan span = DateTime.Now - stopTime;
-                        if (span.TotalMilliseconds > timeOut)
-                        {
-                            break;
-                        }
-                        Thread.Sleep(10);
-                        if (mpTrafficWorker == null)
-                        {
-                            break;
-                        }
-                    }
-                    if (mpTrafficWorker != null && mpTrafficWorker.IsRunning)
-                    {
-                        mpTrafficWorker.Abort();
-                    }
-                    mpTrafficWorker.Dispose();
-                    mpTrafficWorker = null;
-                    InvalidateMap();
-                }
             }
             base.StopTimer();
         }
@@ -794,49 +185,18 @@ namespace FIPToolKit.Models
         {
             if (!IsStarted)
             {
-                CenterOnPlane = true;
+                OnCenterPlane?.Invoke(this, true);
                 IsStarted = true;
                 SetLEDs();
-                mpTrafficWorker = new AbortableBackgroundWorker();
-                mpTrafficWorker.DoWork += mpTrafficWorker_DoWork;
-                mpTrafficWorker.RunWorkerAsync();
                 InvalidateMap();
             }
             base.StartTimer();
         }
 
-        private void Map_OnPositionChanged(PointLatLng point)
-        {
-            UpdateMap();
-        }
-
-        private void Map_OnMapZoomChanged()
-        {
-            UpdateMap();
-        }
-
-        private void TrafficWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-            if (IsStarted && Map != null && !IsDisposed)
-            {
-                UpdateMPTraffic();
-                UpdateTraffic();
-                //InvalidateMap();
-            }
-        }
-
-        public void UpdateMap()
-        {
-            if (!trafficWorker.IsBusy)
-            {
-                trafficWorker.RunWorkerAsync();
-            }
-        }
-
         private bool _initialzed = false;
         public override void Active(bool sendEvent = true)
         {
-            InitializeMap();
+            InvalidateMap();
             if (!_initialzed)
             {
                 _initialzed = true;
@@ -849,362 +209,276 @@ namespace FIPToolKit.Models
             base.Active(sendEvent);
         }
 
-        public void InitializeMap()
-        {
-            if (Map == null)
-            {
-                Map = new GMapControl()
-                {
-                    Bearing = 0f,
-                    CanDragMap = true,
-                    ForceDoubleBuffer = true,
-                    EmptyTileColor = Color.AliceBlue,
-                    GrayScaleMode = false,
-                    HelperLineOption = HelperLineOptions.DontShow,
-                    LevelsKeepInMemory = 5,
-                    Location = new Point(0, 0),
-                    MapProvider = OpenStreetMapProvider2.Instance,
-                    MarkersEnabled = true,
-                    MaxZoom = 18,
-                    MinZoom = 2,
-                    MouseWheelZoomEnabled = true,
-                    NegativeMode = false,
-                    PolygonsEnabled = true,
-                    Position = new PointLatLng(0, 0),
-                    RetryLoadTile = 0,
-                    RoutesEnabled = true,
-                    ScaleMode = ScaleModes.Integer,
-                    SelectedAreaFillColor = Color.FromArgb(33, 65, 105, 225),
-                    ShowTileGridLines = false,
-                    ShowCenter = false,
-                    Size = new Size(480, 480),
-                    DragButton = System.Windows.Forms.MouseButtons.None,
-                    MouseWheelZoomType = MouseWheelZoomType.MousePositionAndCenter
-                };
-                Map.HandleCreated += Map_HandleCreated;
-                Map.CreateControl();
-                airplaneMarker = new GPilotMarker(Map.Position)
-                {
-                    ATCIdentifier = FlightSimProvider.ATCIdentifier,
-                    ATCModel = FlightSimProvider.ATCModel,
-                    ATCType = FlightSimProvider.ATCType,
-                    ShowHeading = MapProperties.ShowHeading,
-                    OverlayColor = MapProperties.FontColor,
-                    ShowGPS = MapProperties.ShowGPS,
-                    ShowNav1 = MapProperties.ShowNav1,
-                    ShowNav2 = MapProperties.ShowNav2,
-                    ShowAdf = MapProperties.ShowAdf,
-                    IsHeavy = FlightSimProvider.IsHeavy,
-                    EngineType = FlightSimProvider.EngineType,
-                    Airspeed = (int)FlightSimProvider.AirSpeedIndicatedKnots,
-                    Heading = (float)FlightSimProvider.HeadingTrueDegrees,
-                    Altitude = (int)FlightSimProvider.AltitudeFeet,
-                    KohlsmanInchesMercury = FlightSimProvider.KohlsmanInchesMercury,
-                    AmbientTemperature = (int)FlightSimProvider.AmbientTemperatureCelcius,
-                    AmbientWindDirection = (float)FlightSimProvider.AmbientWindDirectionDegrees,
-                    AmbientWindVelocity = (int)FlightSimProvider.AmbientWindSpeedKnots,
-                    TemperatureUnit = MapProperties.TemperatureUnit,
-                    Font = MapProperties.Font,
-                    IsRunning = FlightSimProvider.IsReadyToFly == ReadyToFly.Ready,
-                    GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.GPSRequiredMagneticHeadingRadians : FlightSimProvider.GPSRequiredTrueHeadingRadians),
-                    GPSIsActive = FlightSimProvider.HasActiveWaypoint,
-                    GPSTrackDistance = (float)FlightSimProvider.GPSCrossTrackErrorMeters,
-                    Nav1RelativeBearing = FlightSimProvider.Nav1Radial + 180,
-                    Nav2RelativeBearing = FlightSimProvider.Nav2Radial + 180,
-                    Nav1Available = FlightSimProvider.Nav1Available,
-                    Nav2Available = FlightSimProvider.Nav2Available,
-                    AdfRelativeBearing = (int)FlightSimProvider.AdfRelativeBearing,
-                    HeadingBug = (int)FlightSimProvider.HeadingBug
-                };
-                Route.Stroke = new Pen(MapProperties.TrackColor, 2);
-                overlay.Markers.Add(airplaneMarker);
-                if (MapProperties.ShowTrack)
-                {
-                    routes.Routes.Add(Route);
-                }
-                Map.Overlays.Add(routes);
-                Map.Overlays.Add(traffic);
-                Map.Overlays.Add(mpTraffic);
-                Map.Overlays.Add(overlay);
-                Map.OnMapZoomChanged += Map_OnMapZoomChanged;
-                Map.OnPositionChanged += Map_OnPositionChanged;
-                LoadMapSettings();
-            }
-        }
-
         private void Map_HandleCreated(object sender, EventArgs e)
         {
             //DrawMap();
         }
 
-        private void DrawMap()
+        public void DrawMap()
         {
-            if (IsActive)
+            try
             {
-                try
+                //Bitmap bmp = new Bitmap(320, 240, PixelFormat.Format32bppArgb);
+                Bitmap bmp = new Bitmap(320, 240, PixelFormat.Format24bppRgb);
+                using (Graphics graphics = Graphics.FromImage(bmp))
                 {
-                    //Bitmap bmp = new Bitmap(320, 240, PixelFormat.Format32bppArgb);
-                    Bitmap bmp = new Bitmap(320, 240, PixelFormat.Format24bppRgb);
-                    using (Graphics graphics = Graphics.FromImage(bmp))
+                    /*using (Graphics graphics = Graphics.FromImage(bmp))
                     {
-                        /*using (Graphics graphics = Graphics.FromImage(bmp))
+                        graphics.DrawImage(Properties.Resources.map_background, new Rectangle(0, 0, 320, 240));
+                    }*/
+                    try
+                    {
+                        if (Map != null && !IsDisposed)
                         {
-                            graphics.DrawImage(Properties.Resources.map_background, new Rectangle(0, 0, 320, 240));
-                        }*/
-                        try
-                        {
-                            if (Map != null && !IsDisposed)
+                            FIPMapImage map = new FIPMapImage()
                             {
-                                MapImage map = new MapImage()
+                                Width = 480,
+                                Height = 480
+                            };
+                            OnRequestMapImage?.Invoke(this, map);
+                            if (map.Map != null)
+                            {
+                                Rectangle destRect = new Rectangle(34, 0, 286, 240);
+                                if (MapProperties.ShowHeading)
                                 {
-                                    Width = 480,
-                                    Height = 480
-                                };
-                                GetMapBitmap(map);
-                                if (map.Map != null)
-                                {
-                                    Rectangle destRect = new Rectangle(34, 0, 286, 240);
-                                    if (MapProperties.ShowHeading)
+                                    using (Bitmap rotated = map.Map.RotateImageByRadians(-(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.HeadingMagneticRadians : FlightSimProvider.HeadingTrueRadians)))
                                     {
-                                        using (Bitmap rotated = map.Map.RotateImageByRadians(-(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.HeadingMagneticRadians : FlightSimProvider.HeadingTrueRadians)))
+                                        Rectangle srcRect = new Rectangle((rotated.Width - 286) / 2, ((rotated.Height - 240) / 2) - 15, 286, 240);
+                                        graphics.DrawImage(rotated, destRect, srcRect, GraphicsUnit.Pixel);
+                                        using (Bitmap overlay = map.PilotMarker.CreateDataOverlay())
                                         {
-                                            Rectangle srcRect = new Rectangle((rotated.Width - 286) / 2, ((rotated.Height - 240) / 2) - 15, 286, 240);
-                                            graphics.DrawImage(rotated, destRect, srcRect, GraphicsUnit.Pixel);
-                                            using (Bitmap overlay = airplaneMarker.CreateDataOverlay())
-                                            {
-                                                graphics.DrawImage(overlay, destRect);
-                                            }
+                                            graphics.DrawImage(overlay, destRect);
                                         }
                                     }
-                                    else
-                                    {
-                                        Rectangle srcRect = new Rectangle(97, 105, 286, 240);
-                                        graphics.DrawImage(map.Map, destRect, srcRect, GraphicsUnit.Pixel);
-                                    }
-                                    map.Dispose();
                                 }
-                            }
-                        }
-                        catch (Exception)
-                        {
-                        }
-                        using (Pen pen = new Pen(Color.Black, 2f))
-                        {
-                            pen.Alignment = PenAlignment.Inset;
-                            graphics.DrawRectangle(pen, new Rectangle(34, 0, 286, 240));
-                            using (SolidBrush brush = new SolidBrush(Color.FromArgb(128, 0, 0, 0)))
-                            {
-                                graphics.FillRectangle(brush, new Rectangle(0, 0, (CurrentPage != GPSPage.Normal ? 68 : 34), 240));
-                            }
-                            //graphics.DrawImage(Properties.Resources.map_background.SetOpacity(0f), new Rectangle(0, 0, (CurrentPage != GPSPage.Normal ? 68 : 34), 240), new Rectangle(0, 0, (CurrentPage != GPSPage.Normal ? 68 : 34), 240), GraphicsUnit.Pixel);
-                            switch (CurrentPage)
-                            {
-                                case GPSPage.Normal:
-                                    {
-                                        switch (MapProperties.MapType)
-                                        {
-                                            case FlightSim.MapType.Normal:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Terrain:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Satellite:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Hybrid:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                        }
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data, Color.White, false, SoftButtons.Button2);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2, Color.White, false, SoftButtons.Button3);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set, Color.White, false, SoftButtons.Button4);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin, Color.White, false, SoftButtons.Button5);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout, Color.White, false, SoftButtons.Button6);
-                                    }
-                                    break;
-                                case GPSPage.Map:
-                                    {
-                                        switch (MapProperties.MapType)
-                                        {
-                                            case FlightSim.MapType.Normal:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Terrain:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Satellite:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Hybrid:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid, Color.White, false, SoftButtons.Button1);
-                                                break;
-                                        }
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data.SetOpacity(.5f), Color.White, false, SoftButtons.Button2);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2.SetOpacity(.5f), Color.White, false, SoftButtons.Button3);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set.SetOpacity(.5f), Color.White, false, SoftButtons.Button4);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
-
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal, Color.White, false, SoftButtons.Button1, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain, Color.White, false, SoftButtons.Button2, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite, Color.White, false, SoftButtons.Button3, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid, Color.White, false, SoftButtons.Button4, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_heading, Color.White, false, SoftButtons.Button5, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_center, Color.White, false, SoftButtons.Button6, 1);
-                                        switch (MapProperties.MapType)
-                                        {
-                                            case FlightSim.MapType.Normal:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button1, 1);
-                                                break;
-                                            case FlightSim.MapType.Terrain:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button2, 1);
-                                                break;
-                                            case FlightSim.MapType.Satellite:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button3, 1);
-                                                break;
-                                            case FlightSim.MapType.Hybrid:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button4, 1);
-                                                break;
-                                        }
-                                        if (MapProperties.ShowHeading)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button5, 1);
-                                        }
-                                        if (MapProperties.FollowMyPlane)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button6, 1);
-                                        }
-                                    }
-                                    break;
-                                case GPSPage.Data:
-                                    {
-                                        switch (MapProperties.MapType)
-                                        {
-                                            case FlightSim.MapType.Normal:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Terrain:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Satellite:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Hybrid:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                        }
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data, Color.White, false, SoftButtons.Button2);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2.SetOpacity(.5f), Color.White, false, SoftButtons.Button3);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set.SetOpacity(.5f), Color.White, false, SoftButtons.Button4);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
-
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_adf, Color.White, false, SoftButtons.Button1, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav1, Color.White, false, SoftButtons.Button2, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav2, Color.White, false, SoftButtons.Button3, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_gps, Color.White, false, SoftButtons.Button4, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_traffic, Color.White, false, SoftButtons.Button5, 1);
-                                        if (MapProperties.ShowAdf)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Orange, true, SoftButtons.Button1, 1);
-                                        }
-                                        if (MapProperties.ShowNav1)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Green, true, SoftButtons.Button2, 1);
-                                        }
-                                        if (MapProperties.ShowNav2)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.SkyBlue, true, SoftButtons.Button3, 1);
-                                        }
-                                        if (MapProperties.ShowGPS)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Magenta, true, SoftButtons.Button4, 1);
-                                        }
-                                        if (MapProperties.ShowTraffic)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button5, 1);
-                                        }
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, Color.White, false, SoftButtons.Button6, 1);
-                                    }
-                                    break;
-                                case GPSPage.Track:
-                                    {
-                                        switch (MapProperties.MapType)
-                                        {
-                                            case FlightSim.MapType.Normal:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Terrain:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Satellite:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Hybrid:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                        }
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data.SetOpacity(.5f), Color.White, false, SoftButtons.Button2);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2, Color.White, false, SoftButtons.Button3);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set.SetOpacity(.5f), Color.White, false, SoftButtons.Button4);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
-
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track, Color.White, false, SoftButtons.Button3, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_color, Color.White, false, SoftButtons.Button4, 1);
-                                        if (MapProperties.ShowTrack)
-                                        {
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button3, 1);
-                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, MapProperties.TrackColor, true, SoftButtons.Button4, 1);
-                                        }
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, Color.White, false, SoftButtons.Button6, 1);
-                                    }
-                                    break;
-                                case GPSPage.Settings:
-                                    {
-                                        switch (MapProperties.MapType)
-                                        {
-                                            case FlightSim.MapType.Normal:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Terrain:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Satellite:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                            case FlightSim.MapType.Hybrid:
-                                                graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                                break;
-                                        }
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data.SetOpacity(.5f), Color.White, false, SoftButtons.Button2);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2.SetOpacity(.5f), Color.White, false, SoftButtons.Button3);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set, Color.White, false, SoftButtons.Button4);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
-
-                                        graphics.AddButtonIcon(MapProperties.CompassMode == CompassMode.Magnetic ? FIPToolKit.Properties.Resources.map_magnetic : FIPToolKit.Properties.Resources.map_true, Color.White, false, SoftButtons.Button3, 1); ;
-                                        graphics.AddButtonIcon(MapProperties.TemperatureUnit == TemperatureUnit.Celsius ? FIPToolKit.Properties.Resources.map_cel : FIPToolKit.Properties.Resources.map_fah, Color.White, false, SoftButtons.Button4, 1); ;
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_color, Color.White, false, SoftButtons.Button5, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, Color.White, false, SoftButtons.Button6, 1);
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), MapProperties.OverlayColor, true, SoftButtons.Button5, 1);
-                                    }
-                                    break;
+                                else
+                                {
+                                    Rectangle srcRect = new Rectangle(97, 105, 286, 240);
+                                    graphics.DrawImage(map.Map, destRect, srcRect, GraphicsUnit.Pixel);
+                                }
+                                map.Dispose();
                             }
                         }
                     }
-                    SendImage(bmp);
-                    bmp.Dispose();
+                    catch (Exception)
+                    {
+                    }
+                    using (Pen pen = new Pen(Color.Black, 2f))
+                    {
+                        pen.Alignment = PenAlignment.Inset;
+                        graphics.DrawRectangle(pen, new Rectangle(34, 0, 286, 240));
+                        using (SolidBrush brush = new SolidBrush(Color.FromArgb(128, 0, 0, 0)))
+                        {
+                            graphics.FillRectangle(brush, new Rectangle(0, 0, (CurrentPage != GPSPage.Normal ? 68 : 34), 240));
+                        }
+                        //graphics.DrawImage(Properties.Resources.map_background.SetOpacity(0f), new Rectangle(0, 0, (CurrentPage != GPSPage.Normal ? 68 : 34), 240), new Rectangle(0, 0, (CurrentPage != GPSPage.Normal ? 68 : 34), 240), GraphicsUnit.Pixel);
+                        switch (CurrentPage)
+                        {
+                            case GPSPage.Normal:
+                                {
+                                    switch (MapProperties.MapType)
+                                    {
+                                        case FlightSim.MapType.Normal:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Terrain:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Satellite:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Hybrid:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                    }
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data, Color.White, false, SoftButtons.Button2);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2, Color.White, false, SoftButtons.Button3);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set, Color.White, false, SoftButtons.Button4);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin, Color.White, false, SoftButtons.Button5);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout, Color.White, false, SoftButtons.Button6);
+                                }
+                                break;
+                            case GPSPage.Map:
+                                {
+                                    switch (MapProperties.MapType)
+                                    {
+                                        case FlightSim.MapType.Normal:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Terrain:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Satellite:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Hybrid:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid, Color.White, false, SoftButtons.Button1);
+                                            break;
+                                    }
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data.SetOpacity(.5f), Color.White, false, SoftButtons.Button2);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2.SetOpacity(.5f), Color.White, false, SoftButtons.Button3);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set.SetOpacity(.5f), Color.White, false, SoftButtons.Button4);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
+
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal, Color.White, false, SoftButtons.Button1, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain, Color.White, false, SoftButtons.Button2, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite, Color.White, false, SoftButtons.Button3, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid, Color.White, false, SoftButtons.Button4, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_heading, Color.White, false, SoftButtons.Button5, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_center, Color.White, false, SoftButtons.Button6, 1);
+                                    switch (MapProperties.MapType)
+                                    {
+                                        case FlightSim.MapType.Normal:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button1, 1);
+                                            break;
+                                        case FlightSim.MapType.Terrain:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button2, 1);
+                                            break;
+                                        case FlightSim.MapType.Satellite:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button3, 1);
+                                            break;
+                                        case FlightSim.MapType.Hybrid:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button4, 1);
+                                            break;
+                                    }
+                                    if (MapProperties.ShowHeading)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button5, 1);
+                                    }
+                                    if (MapProperties.FollowMyPlane)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button6, 1);
+                                    }
+                                }
+                                break;
+                            case GPSPage.Data:
+                                {
+                                    switch (MapProperties.MapType)
+                                    {
+                                        case FlightSim.MapType.Normal:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Terrain:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Satellite:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Hybrid:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                    }
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data, Color.White, false, SoftButtons.Button2);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2.SetOpacity(.5f), Color.White, false, SoftButtons.Button3);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set.SetOpacity(.5f), Color.White, false, SoftButtons.Button4);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
+
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_adf, Color.White, false, SoftButtons.Button1, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav1, Color.White, false, SoftButtons.Button2, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav2, Color.White, false, SoftButtons.Button3, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_gps, Color.White, false, SoftButtons.Button4, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_traffic, Color.White, false, SoftButtons.Button5, 1);
+                                    if (MapProperties.ShowAdf)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Orange, true, SoftButtons.Button1, 1);
+                                    }
+                                    if (MapProperties.ShowNav1)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Green, true, SoftButtons.Button2, 1);
+                                    }
+                                    if (MapProperties.ShowNav2)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.SkyBlue, true, SoftButtons.Button3, 1);
+                                    }
+                                    if (MapProperties.ShowGPS)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Magenta, true, SoftButtons.Button4, 1);
+                                    }
+                                    if (MapProperties.ShowTraffic)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button5, 1);
+                                    }
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, Color.White, false, SoftButtons.Button6, 1);
+                                }
+                                break;
+                            case GPSPage.Track:
+                                {
+                                    switch (MapProperties.MapType)
+                                    {
+                                        case FlightSim.MapType.Normal:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Terrain:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Satellite:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Hybrid:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                    }
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data.SetOpacity(.5f), Color.White, false, SoftButtons.Button2);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2, Color.White, false, SoftButtons.Button3);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set.SetOpacity(.5f), Color.White, false, SoftButtons.Button4);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
+
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track, Color.White, false, SoftButtons.Button3, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_color, Color.White, false, SoftButtons.Button4, 1);
+                                    if (MapProperties.ShowTrack)
+                                    {
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button3, 1);
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, MapProperties.TrackColor, true, SoftButtons.Button4, 1);
+                                    }
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, Color.White, false, SoftButtons.Button6, 1);
+                                }
+                                break;
+                            case GPSPage.Settings:
+                                {
+                                    switch (MapProperties.MapType)
+                                    {
+                                        case FlightSim.MapType.Normal:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_normal.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Terrain:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_terrain.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Satellite:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_satellite.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                        case FlightSim.MapType.Hybrid:
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_hybrid.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                            break;
+                                    }
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), Color.White, false, SoftButtons.Button1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_data.SetOpacity(.5f), Color.White, false, SoftButtons.Button2);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_track2.SetOpacity(.5f), Color.White, false, SoftButtons.Button3);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_set, Color.White, false, SoftButtons.Button4);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
+
+                                    graphics.AddButtonIcon(MapProperties.CompassMode == CompassMode.Magnetic ? FIPToolKit.Properties.Resources.map_magnetic : FIPToolKit.Properties.Resources.map_true, Color.White, false, SoftButtons.Button3, 1); ;
+                                    graphics.AddButtonIcon(MapProperties.TemperatureUnit == TemperatureUnit.Celsius ? FIPToolKit.Properties.Resources.map_cel : FIPToolKit.Properties.Resources.map_fah, Color.White, false, SoftButtons.Button4, 1); ;
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_color, Color.White, false, SoftButtons.Button5, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, Color.White, false, SoftButtons.Button6, 1);
+                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon.SetOpacity(.5f), MapProperties.OverlayColor, true, SoftButtons.Button5, 1);
+                                }
+                                break;
+                        }
+                    }
                 }
-                catch (Exception)
-                {
-                }
+                SendImage(bmp);
+                bmp.Dispose();
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -1415,7 +689,6 @@ namespace FIPToolKit.Models
                             GPoint p = Map.FromLatLngToLocal(Map.Position);
                             p.X += PIXEL_SCROLL;
                             Map.Position = Map.FromLocalToLatLng((int)p.X, (int)p.Y);
-                            UpdateMap();
                             _isScrolling = false;
                         }
                     });
@@ -1437,7 +710,6 @@ namespace FIPToolKit.Models
                             GPoint p = Map.FromLatLngToLocal(Map.Position);
                             p.X -= PIXEL_SCROLL;
                             Map.Position = Map.FromLocalToLatLng((int)p.X, (int)p.Y);
-                            UpdateMap();
                             _isScrolling = false;
                         }
                     });
@@ -1459,7 +731,6 @@ namespace FIPToolKit.Models
                             GPoint p = Map.FromLatLngToLocal(Map.Position);
                             p.Y += PIXEL_SCROLL;
                             Map.Position = Map.FromLocalToLatLng((int)p.X, (int)p.Y);
-                            UpdateMap();
                             _isScrolling = false;
                         }
                     });
@@ -1481,7 +752,6 @@ namespace FIPToolKit.Models
                             GPoint p = Map.FromLatLngToLocal(Map.Position);
                             p.Y -= PIXEL_SCROLL;
                             Map.Position = Map.FromLocalToLatLng((int)p.X, (int)p.Y);
-                            UpdateMap();
                             _isScrolling = false;
                         }
                     });
@@ -1617,92 +887,22 @@ namespace FIPToolKit.Models
             return false;
         }
 
+        public GMapControl Map
+        {
+            get
+            {
+                return OnRequestMapForm?.Invoke(this);
+            }
+        }
+
         public void InvalidateMap()
         {
-            if (Map != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                Map.Invoke((Action)delegate
-                {
-                    try
-                    {
-                        Map.Invalidate();
-                    }
-                    catch
-                    {
-                    }
-                });
-            }
+            OnInvalidateMap?.Invoke(this);
         }
 
-        public override void Dispose()
+        public void LoadSettings()
         {
-            base.Dispose();
-            if (Map != null)
-            {
-                Map.Dispose();
-                Map = null;
-            }
-        }
-
-        private void GetMapBitmap(MapImage map)
-        {
-            if (Map != null && !IsDisposed && Map.IsHandleCreated)
-            {
-                if (Map.InvokeRequired)
-                {
-                    Map.Invoke(new Action(() =>
-                    {
-                        //map.Map = PrintClientRectangleToImage(Map, new Rectangle(0, 0, map.Width, map.Height));
-                        //map.Map = new Bitmap(Map.ToImage());
-                        map.Map = new Bitmap(map.Width, map.Height, PixelFormat.Format24bppRgb);
-                        Map.DrawToBitmap(map.Map, new Rectangle(0, 0, map.Width, map.Height));
-                    }));
-                }
-                else
-                {
-                    try
-                    {
-                        //map.Map = PrintClientRectangleToImage(Map, new Rectangle(0, 0, map.Width, map.Height));
-                        //map.Map = new Bitmap(Map.ToImage());
-                        map.Map = new Bitmap(map.Width, map.Height, PixelFormat.Format24bppRgb);
-                        Map.DrawToBitmap(map.Map, new Rectangle(0, 0, map.Width, map.Height));
-                    }
-                    catch(Exception)
-                    {
-                    }
-                }
-            }
-        }
-
-        const int SRCCOPY = 0xCC0020;
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern IntPtr SendMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-        
-        [DllImport("gdi32.dll")]
-        static extern int BitBlt(HandleRef hdc, int x, int y, int cx, int cy, HandleRef hdcSrc, int x1, int y1, int rop);
-
-        private Bitmap PrintClientRectangleToImage(System.Windows.Forms.Control control, Rectangle targetBounds)
-        {
-            Bitmap bmp = new Bitmap(targetBounds.Width, targetBounds.Height, PixelFormat.Format24bppRgb);
-            int nWidth = Math.Min(control.Width, targetBounds.Width);
-            int nHeight = Math.Min(control.Height, targetBounds.Height);
-            using (Bitmap image = new Bitmap(nWidth, nHeight, bmp.PixelFormat))
-            {
-                using (Graphics graphics = Graphics.FromImage(image))
-                {
-                    IntPtr hdc = graphics.GetHdc();
-                    SendMessage(new HandleRef(control, control.Handle), 791, hdc, (IntPtr)30);
-                    using (Graphics graphics2 = Graphics.FromImage(bmp))
-                    {
-                        IntPtr hdc2 = graphics2.GetHdc();
-                        BitBlt(new HandleRef(graphics2, hdc2), targetBounds.X, targetBounds.Y, nWidth, nHeight, new HandleRef(graphics, hdc), 0, 0, SRCCOPY);
-                        graphics2.ReleaseHdcInternal(hdc2);
-                    }
-                    graphics.ReleaseHdcInternal(hdc);
-                }
-            }
-            return bmp;
+            OnPropertiesChanged?.Invoke(this, MapProperties);
         }
     }
 }

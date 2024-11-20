@@ -2174,10 +2174,7 @@ namespace FIPToolKit.Models
             else
             {
                 Error = "LibVLC failed to initialize.";
-                using (Bitmap bmp = ImageHelper.GetErrorImage("LibVLC failed to initialize."))
-                {
-                    SendImage(bmp);
-                }
+                UpdatePage();
             }
         }
 

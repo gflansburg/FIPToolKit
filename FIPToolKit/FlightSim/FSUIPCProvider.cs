@@ -142,7 +142,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double AirSpeedTrueKnots
+        public override double AirSpeedTrueKnots
         {
             get
             {
@@ -240,7 +240,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public override double AltitudeFeet
+        public override double AltitudeMSL
         {
             get
             {
@@ -310,7 +310,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double PressureAltitudeFeet
+        public override double AltitudePressure
         {
             get
             {
@@ -318,7 +318,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double GroundAltitudeFeet
+        public override double AltitudeAGL
         {
             get
             {
@@ -788,11 +788,107 @@ namespace FIPToolKit.FlightSim
             }
         }
 
+        public override bool AvionicsOn
+        {
+            get
+            {
+                return (avionicsMasterSwitch.Value != 0);
+            }
+        }
+
+        public override bool BatteryOn
+        {
+            get
+            {
+                return (electricalMasterBattery.Value != 0);
+            }
+        }
+
+        public override double Nav1Frequency
+        {
+            get
+            {
+                return Tools.Bcd2Dec(nav1ActiveFrequency.Value);
+            }
+        }
+
+        public override double Nav2Frequency
+        {
+            get
+            {
+                return Tools.Bcd2Dec(nav2ActiveFrequency.Value);
+            }
+        }
+
+        public override double Com1Frequency
+        {
+            get
+            {
+                return (com1ActiveFrequency.Value / 1000) + (com1ActiveFrequency.Value % 1000);
+            }
+        }
+
+        public override double Com2Frequency
+        {
+            get
+            {
+                return (com2ActiveFrequency.Value / 1000) + (com2ActiveFrequency.Value % 1000);
+            }
+        }
+
+        public double AdfActiveFrequency
+        {
+            get
+            {
+                return Tools.Bcd2Dec(adfActiveFrequency.Value);
+            }
+        }
+
+        public override uint Transponder
+        {
+            get
+            {
+                return Tools.Bcd2Dec(transponder.Value);
+            }
+        }
+
         public override double HeadingBug
         {
             get
             {
                 return (int)Math.Abs((double)headingBug.Value * 360f / 65536f);
+            }
+        }
+
+        public override bool Com1Transmit
+        {
+            get
+            {
+                return radioSwitches.Value.IsBitSet(7);
+            }
+        }
+
+        public override bool Com2Transmit
+        {
+            get
+            {
+                return radioSwitches.Value.IsBitSet(6);
+            }
+        }
+
+        public override bool Com1Receive
+        {
+            get
+            {
+                return radioSwitches.Value.IsBitSet(5);
+            }
+        }
+
+        public override bool Com2Receive
+        {
+            get
+            {
+                return radioSwitches.Value.IsBitSet(5);
             }
         }
 
@@ -845,6 +941,12 @@ namespace FIPToolKit.FlightSim
         private Offset<short> nav2Radial = new Offset<short>(0x0C60);
         private Offset<short> nav1MagVar = new Offset<short>(0x0C40);
         private Offset<short> nav2MagVar = new Offset<short>(0x0C42);
+        private Offset<ushort> nav1ActiveFrequency = new Offset<ushort>(0x0350);
+        private Offset<ushort> nav2ActiveFrequency = new Offset<ushort>(0x0352);
+        private Offset<uint> com1ActiveFrequency = new Offset<uint>(0x05C4);
+        private Offset<uint> com2ActiveFrequency = new Offset<uint>(0x05C8);
+        private Offset<ushort> adfActiveFrequency = new Offset<ushort>(0x034C);
+        private Offset<ushort> transponder = new Offset<ushort>(0x0354);
         private Offset<byte> nav1ToFromFlag = new Offset<byte>(0x0C4B);
         private Offset<byte> nav2ToFromFlag = new Offset<byte>(0x0C5B);
         private Offset<float> nav1CourseDeviation = new Offset<float>(0x2AAC);
@@ -873,6 +975,9 @@ namespace FIPToolKit.FlightSim
         private Offset<short> dme2TimeToStation = new Offset<short>(0x030A);
         private Offset<int> nav1Available = new Offset<int>(0x07A0);
         private Offset<int> nav2Available = new Offset<int>(0x07A4);
+        private Offset<byte> radioSwitches = new Offset<byte>(0x3122);
+        private Offset<int> electricalMasterBattery = new Offset<int>(0x281C);
+        private Offset<int> avionicsMasterSwitch = new Offset<int>(0x2E80);
 
         static FSUIPCProvider()
         {
@@ -1070,28 +1175,34 @@ namespace FIPToolKit.FlightSim
             Quit();
         }
 
-        public override void SendControlToFS(string control, int value)
+        public override void SendCommandToFS(string command)
+        {
+            FsControl fsControl = (FsControl)Enum.Parse(typeof(FsControl), command, true);
+            FSUIPCConnection.SendControlToFS(fsControl, 0);
+        }
+
+        public override void SendControlToFS(string control, float value)
         {
             FsControl fsControl = (FsControl)Enum.Parse(typeof(FsControl), control, true);
-            FSUIPCConnection.SendControlToFS(fsControl, value);
+            FSUIPCConnection.SendControlToFS(fsControl, Convert.ToInt32(value));
         }
 
-        public override void SendSimControlToFS(string control, int value)
+        public override void SendSimControlToFS(string control, float value)
         {
             FSUIPCControl fsuipcControl = (FSUIPCControl)Enum.Parse(typeof(FSUIPCControl), control, true);
-            FSUIPCConnection.SendControlToFS(fsuipcControl, value);
+            FSUIPCConnection.SendControlToFS(fsuipcControl, Convert.ToInt32(value));
         }
 
-        public override void SendAutoPilotControlToFS(string control, int value)
+        public override void SendAutoPilotControlToFS(string control, float value)
         {
             FSUIPCAutoPilotControl autoPilotControl = (FSUIPCAutoPilotControl)Enum.Parse(typeof(FSUIPCAutoPilotControl), control, true);
-            FSUIPCConnection.SendControlToFS(autoPilotControl, value);
+            FSUIPCConnection.SendControlToFS(autoPilotControl, Convert.ToInt32(value));
         }
 
-        public override void SendAxisControlToFS(string control, int value)
+        public override void SendAxisControlToFS(string control, float value)
         {
             FSUIPCAxisControl axisControl = (FSUIPCAxisControl)Enum.Parse(typeof(FSUIPCAxisControl), control, true);
-            FSUIPCConnection.SendControlToFS(axisControl, value);
+            FSUIPCConnection.SendControlToFS(axisControl, Convert.ToInt32(value));
         }
     }
 }

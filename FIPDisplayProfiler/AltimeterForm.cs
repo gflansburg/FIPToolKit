@@ -56,7 +56,6 @@ namespace FIPDisplayProfiler
         private void FSUIPCAltimeterForm_Load(object sender, EventArgs e)
         {
             _fontHolder = Altimeter.Font;
-            tbName.Text = Altimeter.Name;
             tbFont.Font = new Font(Altimeter.Font.FontFamily, tbFont.Font.Size, Altimeter.Font.Style, Altimeter.Font.Unit, Altimeter.Font.GdiCharSet);
             tbFont.Text = Altimeter.Font.FontFamily.Name;
             btnFontColor.BackColor = Altimeter.FontColor;
@@ -97,7 +96,6 @@ namespace FIPDisplayProfiler
             btnNeedleColor.Enabled = cbDrawTenThousandsHand.Checked || cbDrawThousandsHand.Checked || cbDrawHundredsHand.Checked;
             numHundredsHandLengthOffset.Enabled = cbDrawHundredsHand.Checked;
             btnNeedleColor.Enabled = cbDrawTenThousandsHand.Checked || cbDrawThousandsHand.Checked || cbDrawHundredsHand.Checked;
-            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -260,11 +258,6 @@ namespace FIPDisplayProfiler
                 Properties.Settings.Default.CustomColors = colorDialog1.CustomColors;
                 Properties.Settings.Default.Save();
             }
-        }
-
-        private void tbName_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            btnOK.Enabled = !string.IsNullOrEmpty(tbName.Text);
         }
 
         private void pbGaugeImage_Click(object sender, EventArgs e)

@@ -44,5 +44,11 @@
     <Setting Name="AutoSave" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="XPlaneIPAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">127.0.0.1</Value>
+    </Setting>
+    <Setting Name="XPlanePort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">49000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -147,7 +147,7 @@ namespace FIPDisplayProfiler
             ListViewItem selectedItem = GetSelectedItem;
             if(selectedItem != null)
             {
-                if (MessageBox.Show(this, "Are you sure you wish to delete this key?", "Delete Key", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show(this, "Are you sure you wish to delete this command?", "Delete Command", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     int index = GetSelectedIndex;
                     lvFSUIPCCommands.Items.Remove(selectedItem);

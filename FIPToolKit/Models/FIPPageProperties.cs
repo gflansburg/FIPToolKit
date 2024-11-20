@@ -28,7 +28,7 @@ namespace FIPToolKit.Models
         public FIPPageProperties()
         {
             _id = Guid.NewGuid();
-            _name = String.Empty;
+            _name = string.Empty;
             _font = new Font("Microsoft Sans Serif", 14.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
             _fontColor = Color.White;
             Buttons = new List<FIPButton>();

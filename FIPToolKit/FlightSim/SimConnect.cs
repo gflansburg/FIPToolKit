@@ -16,31 +16,13 @@ namespace FIPToolKit.FlightSim
             Instance = new SimConnect();
         }
 
-        enum EVENT_ID : uint
+        SimConnect()
         {
-            HEADING_BUG_SET,
-            AP_AIRSPEED_SET,
-            AP_SPD_VAR_SET,
-            AP_PANEL_HEADING_SET,
-            AP_PANEL_SPEED_SET,
-            AP_ALT_VAR_SET_ENGLISH,
-            AP_VS_VAR_SET_ENGLISH,
-            AP_PANEL_ALTITUDE_SET,
-            AP_MASTER,
-            AUTO_THROTTLE_ARM,
-            AP_AIRSPEED_ON,
-            AP_HDG_HOLD_OFF,
-            CLOCK_HOURS_SET,
-            FREEZE_ALTITUDE_SET,
-            FREEZE_ALTITUDE_TOGGLE,
-            HEADING_SLOT_INDEX_SET,
-            AP_PANEL_HEADING_ON,
-            VOR1_SET,
-            VOR2_SET,
-            ADF_SET,
-            KOHLSMAN_SET,
-            KOHLSMAN_INC,
-            KOHLSMAN_DEC,
+            Events = new Dictionary<SimConnectEventId, SimConnectEvent>();
+        }
+
+        enum SYSTEM_EVENT : uint
+        {
             SIM
         }
 
@@ -87,6 +69,7 @@ namespace FIPToolKit.FlightSim
             public double PLANE_LONGITUDE;
             public double PLANE_ALTITUDE;
             public double PRESSURE_ALTITUDE;
+            public double ALTITUDE_AGL;
             public double AUTOPILOT_HEADING_LOCK_DIR;
             public double PLANE_HEADING_DEGREES_MAGNETIC;
             public double PLANE_HEADING_DEGREES_TRUE;
@@ -101,14 +84,27 @@ namespace FIPToolKit.FlightSim
             public double AMBIENT_WIND_VELOCITY;
             public double AMBIENT_WIND_DIRECTION;
             public double AMBIENT_TEMPERATURE;
-            public double FUEL_TANK_RIGHT_MAIN_QUANTITY;
-            public double FUEL_TANK_LEFT_MAIN_QUANTITY;
             public double ADF_RADIAL;
             public double NAV_RELATIVE_BEARING_TO_STATION_1;
             public double NAV_RELATIVE_BEARING_TO_STATION_2;
             public double GPS_WP_TRUE_REQ_HDG;
             public double GPS_WP_BEARING;
             public double GPS_WP_CROSS_TRK;
+            public double FUEL_TANK_RIGHT_MAIN_QUANTITY;
+            public double FUEL_TANK_LEFT_MAIN_QUANTITY;
+            public uint NAV1_FREQUENCY;
+            public uint NAV2_FREQUENCY;
+            public uint COM1_FREQUENCY;
+            public uint COM2_FREQUENCY;
+            public int COM1_TRANSMIT;
+            public int COM2_TRANSMIT;
+            public int COM1_STATUS;
+            public int COM2_STATUS;
+            public int COM1_RECEIVE;
+            public int COM2_RECEIVE;
+            public uint XPDR_CODE;
+            public int BATTERY_MASTER;
+            public int AVIONICS_MASTER;
             public int GPS_IS_ACTIVE_WAY_POINT;
             public int NAV1_AVAILABLE;
             public int NAV2_AVAILABLE;
@@ -173,19 +169,50 @@ namespace FIPToolKit.FlightSim
         public delegate void SimConnectTrafficEventHandler(uint objectId, Aircraft aircraft, TrafficEvent eventType);
         public event SimConnectTrafficEventHandler OnTrafficReceived;
 
-        public delegate void SimConnectADFSetEventHandler(uint heading);
-        public event SimConnectADFSetEventHandler OnADFSet;
+        public Dictionary<SimConnectEventId, SimConnectEvent> Events { get; private set; }
 
-        public delegate void SimConnectVORSetEventHandler(uint heading);
-        public event SimConnectVORSetEventHandler OnVOR1Set;
-        public event SimConnectVORSetEventHandler OnVOR2Set;
+        public void Subscribe(SimConnectEventId eventId, Action<SimConnectEvent, uint> onchange = null)
+        {
+            SimConnectEvent evt = SimConnectEvents.Instance.Events[eventId];
+            if (!Events.ContainsKey(evt.Id))
+            {
+                Events.Add(evt.Id, evt);
+                if (onchange != null)
+                {
+                    SimConnectEvent.NotifyChangeHandler changeHandler = (e, v) => { onchange(e, v); };
+                    evt.Delegates.Add(changeHandler);
+                    evt.OnValueChange += changeHandler;
+                }
+                if (IsConnected)
+                {
+                    MicrosoftSimConnect.MapClientEventToSimEvent(evt.Id, evt.Name);
+                }
+            }
+        }
 
-        public delegate void SimConnectKohlsmanSetEventHandler(uint kohlsman);
-        public event SimConnectKohlsmanSetEventHandler OnKohlsmanSet;
+        public void Unsubscribe(SimConnectEventId eventId)
+        {
+            SimConnectEvent evt = SimConnectEvents.Instance.Events[eventId];
+            if (Events.ContainsKey(evt.Id))
+            {
+                foreach (SimConnectEvent.NotifyChangeHandler changeHandler in evt.Delegates)
+                {
+                    evt.OnValueChange -= changeHandler;
+                }
+                evt.Delegates.Clear();
+                Events.Remove(evt.Id);
+            }
+        }
 
-        public delegate void SimConnectKohlsmanEventHandler();
-        public event SimConnectKohlsmanEventHandler OnKohlsmanInc;
-        public event SimConnectKohlsmanEventHandler OnKohlsmanDec;
+        public void SetValue(SimConnectEventId eventId, uint value)
+        {
+            MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, eventId, value, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+        }
+
+        public void SendCommand(SimConnectEventId eventId)
+        {
+            MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, eventId, 0, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
+        }
 
         public void Initialize(IntPtr hWnd)
         {
@@ -246,141 +273,9 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public void SetAPHeading(uint heading)
-        {
-            if (MicrosoftSimConnect != null)
-            {
-                ClearError();
-                try
-                {
-                    MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENT_ID.HEADING_BUG_SET, heading, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                }
-                catch (Exception ex)
-                {
-                    Error = true;
-                    ErrorMessage = ex.Message;
-                    OnError?.Invoke(ErrorMessage);
-                }
-            }
-        }
-
-        public void SetADF(uint heading)
-        {
-            if (MicrosoftSimConnect != null)
-            {
-                ClearError();
-                try
-                {
-                    MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENT_ID.ADF_SET, heading, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                    OnADFSet?.Invoke(heading);
-                }
-                catch (Exception ex)
-                {
-                    Error = true;
-                    ErrorMessage = ex.Message;
-                    OnError?.Invoke(ErrorMessage);
-                }
-            }
-        }
-
-        public void SetKohlsman(uint kohlsman)
-        {
-            if (MicrosoftSimConnect != null)
-            {
-                ClearError();
-                try
-                {
-                    MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENT_ID.KOHLSMAN_SET, kohlsman, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                    OnKohlsmanSet?.Invoke(kohlsman);
-                }
-                catch (Exception ex)
-                {
-                    Error = true;
-                    ErrorMessage = ex.Message;
-                    OnError?.Invoke(ErrorMessage);
-                }
-            }
-        }
-
-        public void IncKohlsman()
-        {
-            if (MicrosoftSimConnect != null)
-            {
-                ClearError();
-                try
-                {
-                    MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENT_ID.KOHLSMAN_INC, 0, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                    OnKohlsmanInc?.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Error = true;
-                    ErrorMessage = ex.Message;
-                    OnError?.Invoke(ErrorMessage);
-                }
-            }
-        }
-
-        public void DecKohlsman()
-        {
-            if (MicrosoftSimConnect != null)
-            {
-                ClearError();
-                try
-                {
-                    MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENT_ID.KOHLSMAN_DEC, 0, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                    OnKohlsmanDec?.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Error = true;
-                    ErrorMessage = ex.Message;
-                    OnError?.Invoke(ErrorMessage);
-                }
-            }
-        }
-
-        public void SetVOR1(uint heading)
-        {
-            if (MicrosoftSimConnect != null)
-            {
-                ClearError();
-                try
-                {
-                    MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENT_ID.VOR1_SET, heading, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                    OnVOR1Set?.Invoke(heading);
-                }
-                catch (Exception ex)
-                {
-                    Error = true;
-                    ErrorMessage = ex.Message;
-                    OnError?.Invoke(ErrorMessage);
-                }
-            }
-        }
-
-        public void SetVOR2(uint heading)
-        {
-            if (MicrosoftSimConnect != null)
-            {
-                ClearError();
-                try
-                {
-                    MicrosoftSimConnect.TransmitClientEvent(Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_OBJECT_ID_USER, EVENT_ID.VOR2_SET, heading, SIMCONNECT_GROUP_PRIORITY.HIGHEST, SIMCONNECT_EVENT_FLAG.GROUPID_IS_PRIORITY);
-                    OnVOR2Set?.Invoke(heading);
-                }
-                catch (Exception ex)
-                {
-                    Error = true;
-                    ErrorMessage = ex.Message;
-                    OnError?.Invoke(ErrorMessage);
-                }
-            }
-        }
-
         private void MicrosoftSimConnect_OnRecvEvent(Microsoft.FlightSimulator.SimConnect.SimConnect sender, SIMCONNECT_RECV_EVENT data)
         {
-            if(data.uEventID == (uint)EVENT_ID.SIM)
+            if(data.uEventID == (uint)SYSTEM_EVENT.SIM)
             {
                 IsRunning = Convert.ToBoolean(data.dwData);
                 if (IsRunning)
@@ -400,17 +295,13 @@ namespace FIPToolKit.FlightSim
                 }
                 OnSim?.Invoke(IsRunning);
             }
-            else if(data.uEventID == (uint)EVENT_ID.ADF_SET)
+            else
             {
-                OnADFSet?.Invoke(data.dwData);
-            }
-            else if (data.uEventID == (uint)EVENT_ID.VOR1_SET)
-            {
-                OnVOR1Set?.Invoke(data.dwData);
-            }
-            else if (data.uEventID == (uint)EVENT_ID.VOR2_SET)
-            {
-                OnVOR2Set?.Invoke(data.dwData);
+                SimConnectEvent evt = Events[(SimConnectEventId)data.uEventID];
+                if (evt != null)
+                {
+                    evt.Update(data.dwData);
+                }
             }
         }
 
@@ -573,6 +464,7 @@ namespace FIPToolKit.FlightSim
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE LONGITUDE", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PRESSURE ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE ALT ABOVE GROUND", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "AUTOPILOT HEADING LOCK DIR", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE HEADING DEGREES MAGNETIC", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "PLANE HEADING DEGREES TRUE", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
@@ -595,12 +487,24 @@ namespace FIPToolKit.FlightSim
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "GPS WP CROSS TRK", "meters", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "FUEL TANK RIGHT MAIN QUANTITY", "gallons", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "FUEL TANK LEFT MAIN QUANTITY", "gallons", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "NAV ACTIVE FREQUENCY:1", "Khz", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "NAV ACTIVE FREQUENCY:2", "Khz", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM ACTIVE FREQUENCY:1", "Khz", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM ACTIVE FREQUENCY:2", "Khz", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM TRANSMIT:1", "Bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM TRANSMIT:2", "Bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM STATUS:1", "Enum", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM STATUS:2", "Enum", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM RECEIVE:1", "Bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "COM RECEIVE:2", "Bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "TRANSPONDER CODE:1", "Bco16", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ELECTRICAL MASTER BATTERY:1", "Bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "AVIONICS MASTER SWITCH:1", "Bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "GPS IS ACTIVE WAY POINT", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "NAV AVAILABLE:1", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "NAV AVAILABLE:2", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "SIM ON GROUND", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ENGINE TYPE", "Enum", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
-                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "SIM ON GROUND", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "ATC HEAVY", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "IS GEAR FLOATS", "bool", SIMCONNECT_DATATYPE.INT32, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
 
@@ -622,31 +526,12 @@ namespace FIPToolKit.FlightSim
 
                     MicrosoftSimConnect.RegisterDataDefineStruct<AIRCRAFT_DATA>(DATA_DEFINE_ID.AIRCRAFT);
 
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.HEADING_BUG_SET, "HEADING_BUG_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_AIRSPEED_SET, "AP_AIRSPEED_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_SPD_VAR_SET, "AP_SPD_VAR_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_PANEL_HEADING_SET, "AP_PANEL_HEADING_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_PANEL_SPEED_SET, "AP_PANEL_SPEED_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_ALT_VAR_SET_ENGLISH, "AP_ALT_VAR_SET_ENGLISH");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_VS_VAR_SET_ENGLISH, "AP_VS_VAR_SET_ENGLISH");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_PANEL_ALTITUDE_SET, "AP_PANEL_ALTITUDE_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_MASTER, "AP_MASTER");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AUTO_THROTTLE_ARM, "AUTO_THROTTLE_ARM");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_AIRSPEED_ON, "AP_AIRSPEED_ON");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_HDG_HOLD_OFF, "AP_HDG_HOLD_OFF");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.CLOCK_HOURS_SET, "CLOCK_HOURS_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.FREEZE_ALTITUDE_SET, "FREEZE_ALTITUDE_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.FREEZE_ALTITUDE_TOGGLE, "FREEZE_ALTITUDE_TOGGLE");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.HEADING_SLOT_INDEX_SET, "HEADING_SLOT_INDEX_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.AP_PANEL_HEADING_ON, "AP_PANEL_HEADING_ON");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.VOR1_SET, "VOR1_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.VOR2_SET, "VOR2_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.ADF_SET, "ADF_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.KOHLSMAN_SET, "KEY_KOHLSMAN_SET");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.KOHLSMAN_INC, "KEY_KOHLSMAN_INC");
-                    MicrosoftSimConnect.MapClientEventToSimEvent(EVENT_ID.KOHLSMAN_DEC, "KEY_KOHLSMAN_DEC");
+                    foreach(SimConnectEvent evt in Events.Values)
+                    {
+                        MicrosoftSimConnect.MapClientEventToSimEvent(evt.Id, evt.Name);
+                    }
 
-                    MicrosoftSimConnect.SubscribeToSystemEvent(EVENT_ID.SIM, "Sim");
+                    MicrosoftSimConnect.SubscribeToSystemEvent(SYSTEM_EVENT.SIM, "Sim");
 
                     MicrosoftSimConnect.RequestDataOnSimObjectType(DATA_REQUEST_ID.TRAFFIC_REQ, DATA_DEFINE_ID.AIRCRAFT, SearchRadius, SIMCONNECT_SIMOBJECT_TYPE.AIRCRAFT);
                     MicrosoftSimConnect.RequestDataOnSimObjectType(DATA_REQUEST_ID.TRAFFIC_REQ, DATA_DEFINE_ID.AIRCRAFT, SearchRadius, SIMCONNECT_SIMOBJECT_TYPE.HELICOPTER);

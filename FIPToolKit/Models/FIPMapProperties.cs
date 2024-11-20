@@ -15,6 +15,7 @@ namespace FIPToolKit.Models
 
         public FIPMapProperties() : base()
         {
+            Name = "Map";
             Font = new Font("Microsoft Sans Serif", 10.0F, FontStyle.Bold, GraphicsUnit.Point, ((System.Byte)(0)));
             FontColor = Color.Black;
             _followMyPlane = true;

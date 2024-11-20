@@ -99,7 +99,8 @@ namespace FIPToolKit.Models
         {
             get
             {
-                return _devices.Where(d => d.DeviceType == DeviceType.Fip);
+                FIPDevice[] fIPDevices = _devices.ToArray();
+                return fIPDevices.Where(d => d.DeviceType == DeviceType.Fip);
             }
             set
             {

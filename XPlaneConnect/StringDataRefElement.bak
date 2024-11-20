@@ -1,0 +1,98 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+
+namespace XPlaneConnect
+{
+    public class StringDataRefElement
+    {
+        private static readonly object lockElement = new object();
+        public XPlaneDataRefs Id { get; set; }
+        public string Name { get; set; }
+        public string DataRef { get; set; }
+        public int StringLength { get; set; }
+        public DateTime LastUpdateTime { get; set; }
+        public string Description { get; set; }
+        public int Frequency { get; set; }
+        public string Value { get; set; }
+        public bool IsSubscribed { get; set; }
+        public bool Subscribed { get; set; }
+        public bool ForceUpdate { get; set; }
+        public bool Writable { get; set; }
+        public string DataType { get; set; }
+        public List<NotifyChangeHandler> Delegates = new List<NotifyChangeHandler>();
+
+        public TimeSpan Age
+        {
+            get
+            {
+                return DateTime.Now - LastUpdateTime;
+            }
+        }
+
+        public TimeSpan MaxAge { get; private set; } = TimeSpan.FromSeconds(5);
+
+        public delegate void NotifyChangeHandler(StringDataRefElement sender, string newValue);
+        public event NotifyChangeHandler OnValueChange;
+
+        private int CharactersInitialized;
+
+        public bool IsCompletelyInitialized
+        {
+            get
+            {
+                return CharactersInitialized >= StringLength;
+            }
+        }
+
+        protected void ValueChanged()
+        {
+            OnValueChange?.Invoke(this, Value);
+        }
+
+        public void Update(int index, char character)
+        {
+            lock (lockElement)
+            {
+                if( (DateTime.Now - LastUpdateTime) > MaxAge || ForceUpdate)
+                {
+                    // The string has changed, this is the first character received of the new string, so we invalidate the previous string
+                    CharactersInitialized = 0;
+                    Value = string.Empty;
+                }
+                LastUpdateTime = DateTime.Now;
+                ForceUpdate = false;
+
+                var fireEvent = !IsCompletelyInitialized;
+
+                if (!IsCompletelyInitialized)
+                    CharactersInitialized++;
+
+                if (character > 0)
+                {
+                    if (Value.Length <= index)
+                        Value = Value.PadRight(index + 1, ' ');
+
+                    var current = Value[index];
+                    if (current != character)
+                    {
+                        Value = Value.Remove(index, 1).Insert(index, character.ToString());
+                        fireEvent = true;
+                    }
+                }
+                
+                if (IsCompletelyInitialized && fireEvent || ForceUpdate)
+                {
+                    ValueChanged();
+                    CharactersInitialized = 0;
+                }
+            }
+        }
+
+        public StringDataRefElement()
+        {
+            CharactersInitialized = 0;
+            Value = string.Empty;
+        }
+    }
+}

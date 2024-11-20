@@ -89,7 +89,8 @@ namespace FIPToolKit.Models
         {
             get
             {
-                foreach (FIPPage page in _pages)
+                FIPPage[] fIPPages = _pages.ToArray();
+                foreach (FIPPage page in fIPPages)
                 {
                     yield return page;
                 }

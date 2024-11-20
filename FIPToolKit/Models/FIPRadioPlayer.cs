@@ -590,37 +590,19 @@ namespace FIPToolKit.Models
 
         public override bool IsButtonAssignable(SoftButtons softButton)
         {
-            if (CurrentPage == MusicPlayerPage.Player)
+            switch (softButton)
             {
-                switch (softButton)
-                {
-                    case SoftButtons.Button1:
-                    case SoftButtons.Button2:
-                    case SoftButtons.Button6:
-                    case SoftButtons.Left:
-                    case SoftButtons.Right:
-                    case SoftButtons.Up:
-                    case SoftButtons.Down:
-                        return false;
-                }
+                case SoftButtons.Button1:
+                case SoftButtons.Button2:
+                case SoftButtons.Button6:
+                case SoftButtons.Left:
+                case SoftButtons.Right:
+                case SoftButtons.Up:
+                case SoftButtons.Down:
+                    return false;
+                default:
+                    return true;
             }
-            else
-            {
-                switch (softButton)
-                {
-                    case SoftButtons.Button1:
-                    case SoftButtons.Button2:
-                    case SoftButtons.Left:
-                    case SoftButtons.Right:
-                    case SoftButtons.Up:
-                    case SoftButtons.Down:
-                        return false;
-                    case SoftButtons.Button3:
-                    case SoftButtons.Button4:
-                        return true;
-                }
-            }
-            return base.IsButtonAssignable(softButton);
         }
 
         public override void Media_MetaChanged(object sender, MediaMetaChangedEventArgs e)

@@ -1465,38 +1465,21 @@ namespace FIPToolKit.Models
 
         public override bool IsButtonAssignable(SoftButtons softButton)
         {
-            if (CurrentPage == MusicPlayerPage.Player)
+            switch (softButton)
             {
-                switch (softButton)
-                {
-                    case SoftButtons.Button1:
-                    case SoftButtons.Button2:
-                    case SoftButtons.Button3:
-                    case SoftButtons.Button4:
-                    case SoftButtons.Button6:
-                    case SoftButtons.Left:
-                    case SoftButtons.Right:
-                    case SoftButtons.Up:
-                    case SoftButtons.Down:
-                        return false;
-                }
+                case SoftButtons.Button1:
+                case SoftButtons.Button2:
+                case SoftButtons.Button3:
+                case SoftButtons.Button4:
+                case SoftButtons.Button6:
+                case SoftButtons.Left:
+                case SoftButtons.Right:
+                case SoftButtons.Up:
+                case SoftButtons.Down:
+                    return false;
+                default:
+                    return true;
             }
-            else
-            {
-                switch (softButton)
-                {
-                    case SoftButtons.Button1:
-                    case SoftButtons.Button2:
-                    case SoftButtons.Button3:
-                    case SoftButtons.Button4:
-                    case SoftButtons.Left:
-                    case SoftButtons.Right:
-                    case SoftButtons.Up:
-                    case SoftButtons.Down:
-                        return false;
-                }
-            }
-            return base.IsButtonAssignable(softButton);
         }
 
         private int GetSongCount()
@@ -2190,6 +2173,7 @@ namespace FIPToolKit.Models
             }
             else
             {
+                Error = "LibVLC failed to initialize.";
                 using (Bitmap bmp = ImageHelper.GetErrorImage("LibVLC failed to initialize."))
                 {
                     SendImage(bmp);

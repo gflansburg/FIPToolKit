@@ -8,11 +8,13 @@ namespace FIPToolKit.Models
     public class FIPValueChangedEventArgs : EventArgs
     {
         public double Value { get; set; }
-        public bool DoOverride { get; set; } = true;
+        public bool DoOverride { get; set; }
+        public bool FirstPass { get; private set; }
 
-        public FIPValueChangedEventArgs(double value) : base()
+        public FIPValueChangedEventArgs(double value, bool firstPass) : base()
         {
             Value = value;
+            FirstPass = firstPass;
         }
     }
 
@@ -22,10 +24,13 @@ namespace FIPToolKit.Models
         public delegate void FIPValueChangedEventHandler(object sender, FIPValueChangedEventArgs e);
         public event EventHandler OnSelectedAircraftChanged;
         public event EventHandler OnSelectedVSpeedChanged;
+        public event EventHandler OnAutoSelectAircraftChanged;
         public event FIPValueChangedEventHandler OnValueChanged;
 
         public FIPAirspeedProperties() : base() 
         {
+            Name = "Airspeed";
+            IsDirty = false;
         }
 
         private VSpeed _selectedVSpeed;
@@ -46,8 +51,8 @@ namespace FIPToolKit.Models
                 if ((_selectedVSpeed == null && value != null) || (_selectedVSpeed != null && value == null) || (_selectedVSpeed.AircraftId != value.AircraftId))
                 {
                     _selectedVSpeed = value;
-                    MinValue = _selectedVSpeed.MinSpeed;
-                    MaxValue = _selectedVSpeed.MaxSpeed;
+                    MinValue = _selectedVSpeed != null ? _selectedVSpeed.MinSpeed : 0;
+                    MaxValue = _selectedVSpeed != null ? _selectedVSpeed.MaxSpeed : 0;
                     OnSelectedVSpeedChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
@@ -65,11 +70,22 @@ namespace FIPToolKit.Models
             {
                 if (base.Value != value)
                 {
-                    FIPValueChangedEventArgs args = new FIPValueChangedEventArgs(value);
+                    FIPValueChangedEventArgs args = new FIPValueChangedEventArgs(value, true);
                     OnValueChanged?.Invoke(this, args);
-                    if (args.DoOverride && base.Value != args.Value)
+                    if (args.DoOverride)
                     {
-                        base.Value = args.Value;
+                        if (base.Value != args.Value)
+                        {
+                            base.Value = args.Value;
+                            args = new FIPValueChangedEventArgs(value, false);
+                            OnValueChanged?.Invoke(this, args);
+                        }
+                    }
+                    else
+                    {
+                        base.Value = value;
+                        args = new FIPValueChangedEventArgs(value, false);
+                        OnValueChanged?.Invoke(this, args);
                     }
                 }
             }
@@ -106,6 +122,7 @@ namespace FIPToolKit.Models
                 {
                     _autoSelectAircraft = value;
                     IsDirty = true;
+                    OnAutoSelectAircraftChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }

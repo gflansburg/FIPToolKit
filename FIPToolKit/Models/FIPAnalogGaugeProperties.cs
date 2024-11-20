@@ -17,6 +17,7 @@ namespace FIPToolKit.Models
 
         public FIPAnalogGaugeProperties() : base() 
         {
+            Name = "Analog Guage";
             MinValue = 0f;
             MaxValue = 100f;
             Value = MinValue;

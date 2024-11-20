@@ -14,6 +14,9 @@ namespace FIPToolKit.FlightSim
         Helo = 3,
         Rocket = 4,
         Turboprop = 5,
+        Electric = 252,
+        Balloon = 253,
+        Boat = 254,
         Car = 255
     }
 }

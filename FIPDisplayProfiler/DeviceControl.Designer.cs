@@ -50,6 +50,8 @@ namespace FIPDisplayProfiler
             this.keySequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FSUIPCCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FSUIPCCommandSequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.xPlaneCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.xPlaneCommandSequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.colorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,6 +78,8 @@ namespace FIPDisplayProfiler
             this.pbS6ButtonOn = new System.Windows.Forms.PictureBox();
             this.pbPageButtonsOn = new System.Windows.Forms.PictureBox();
             this.pbS1ButtonOn = new System.Windows.Forms.PictureBox();
+            this.simConnectCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.simConnectCommandSequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuBindType.SuspendLayout();
             this.contextMenuKnob.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fipImage)).BeginInit();
@@ -129,13 +133,17 @@ namespace FIPDisplayProfiler
             this.oSCommandToolStripMenuItem,
             this.keyPressToolStripMenuItem,
             this.keySequenceToolStripMenuItem,
+            this.simConnectCommandToolStripMenuItem,
+            this.simConnectCommandSequenceToolStripMenuItem,
             this.FSUIPCCommandToolStripMenuItem,
             this.FSUIPCCommandSequenceToolStripMenuItem,
+            this.xPlaneCommandToolStripMenuItem,
+            this.xPlaneCommandSequenceToolStripMenuItem,
             this.deleteToolStripSeparator,
             this.colorToolStripMenuItem,
             this.deleteToolStripMenuItem});
             this.contextMenuBindType.Name = "contextMenuBindType";
-            this.contextMenuBindType.Size = new System.Drawing.Size(236, 186);
+            this.contextMenuBindType.Size = new System.Drawing.Size(263, 296);
             this.contextMenuBindType.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuBindType_Opening);
             // 
             // windowsCommandStripMenuItem
@@ -152,7 +160,7 @@ namespace FIPDisplayProfiler
             this.emailToolStripMenuItem,
             this.calculatorToolStripMenuItem});
             this.windowsCommandStripMenuItem.Name = "windowsCommandStripMenuItem";
-            this.windowsCommandStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.windowsCommandStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.windowsCommandStripMenuItem.Text = "&Windows Command";
             // 
             // volumeUpToolStripMenuItem
@@ -228,54 +236,68 @@ namespace FIPDisplayProfiler
             // oSCommandToolStripMenuItem
             // 
             this.oSCommandToolStripMenuItem.Name = "oSCommandToolStripMenuItem";
-            this.oSCommandToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.oSCommandToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.oSCommandToolStripMenuItem.Text = "&OS Command...";
             this.oSCommandToolStripMenuItem.Click += new System.EventHandler(this.oSCommandToolStripMenuItem_Click);
             // 
             // keyPressToolStripMenuItem
             // 
             this.keyPressToolStripMenuItem.Name = "keyPressToolStripMenuItem";
-            this.keyPressToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.keyPressToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.keyPressToolStripMenuItem.Text = "&Key Press...";
             this.keyPressToolStripMenuItem.Click += new System.EventHandler(this.keyPressToolStripMenuItem_Click);
             // 
             // keySequenceToolStripMenuItem
             // 
             this.keySequenceToolStripMenuItem.Name = "keySequenceToolStripMenuItem";
-            this.keySequenceToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.keySequenceToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.keySequenceToolStripMenuItem.Text = "Key &Sequence...";
             this.keySequenceToolStripMenuItem.Click += new System.EventHandler(this.keySequenceToolStripMenuItem_Click);
             // 
             // FSUIPCCommandToolStripMenuItem
             // 
             this.FSUIPCCommandToolStripMenuItem.Name = "FSUIPCCommandToolStripMenuItem";
-            this.FSUIPCCommandToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.FSUIPCCommandToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.FSUIPCCommandToolStripMenuItem.Text = "&FSUIPC Command...";
             this.FSUIPCCommandToolStripMenuItem.Click += new System.EventHandler(this.FSUIPCCommandToolStripMenuItem_Click);
             // 
             // FSUIPCCommandSequenceToolStripMenuItem
             // 
             this.FSUIPCCommandSequenceToolStripMenuItem.Name = "FSUIPCCommandSequenceToolStripMenuItem";
-            this.FSUIPCCommandSequenceToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.FSUIPCCommandSequenceToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.FSUIPCCommandSequenceToolStripMenuItem.Text = "FS&UIPC Command Sequence...";
             this.FSUIPCCommandSequenceToolStripMenuItem.Click += new System.EventHandler(this.FSUIPCCommandSequenceToolStripMenuItem_Click);
+            // 
+            // xPlaneCommandToolStripMenuItem
+            // 
+            this.xPlaneCommandToolStripMenuItem.Name = "xPlaneCommandToolStripMenuItem";
+            this.xPlaneCommandToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.xPlaneCommandToolStripMenuItem.Text = "X-Plane Command...";
+            this.xPlaneCommandToolStripMenuItem.Click += new System.EventHandler(this.xPlaneCommandToolStripMenuItem_Click);
+            // 
+            // xPlaneCommandSequenceToolStripMenuItem
+            // 
+            this.xPlaneCommandSequenceToolStripMenuItem.Name = "xPlaneCommandSequenceToolStripMenuItem";
+            this.xPlaneCommandSequenceToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.xPlaneCommandSequenceToolStripMenuItem.Text = "X-Plane Command Sequence...";
+            this.xPlaneCommandSequenceToolStripMenuItem.Click += new System.EventHandler(this.xPlaneCommandSequenceToolStripMenuItem_Click);
             // 
             // deleteToolStripSeparator
             // 
             this.deleteToolStripSeparator.Name = "deleteToolStripSeparator";
-            this.deleteToolStripSeparator.Size = new System.Drawing.Size(232, 6);
+            this.deleteToolStripSeparator.Size = new System.Drawing.Size(259, 6);
             // 
             // colorToolStripMenuItem
             // 
             this.colorToolStripMenuItem.Name = "colorToolStripMenuItem";
-            this.colorToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.colorToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.colorToolStripMenuItem.Text = "&Color...";
             this.colorToolStripMenuItem.Click += new System.EventHandler(this.colorToolStripMenuItem_Click);
             // 
             // deleteToolStripMenuItem
             // 
             this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.deleteToolStripMenuItem.Text = "&Delete";
             this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
             // 
@@ -519,6 +541,20 @@ namespace FIPDisplayProfiler
             this.pbS1ButtonOn.Visible = false;
             this.pbS1ButtonOn.Click += new System.EventHandler(this.pbS1Button_Click);
             // 
+            // simConnectCommandToolStripMenuItem
+            // 
+            this.simConnectCommandToolStripMenuItem.Name = "simConnectCommandToolStripMenuItem";
+            this.simConnectCommandToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.simConnectCommandToolStripMenuItem.Text = "SimConnect Command...";
+            this.simConnectCommandToolStripMenuItem.Click += new System.EventHandler(this.simConnectCommandToolStripMenuItem_Click);
+            // 
+            // simConnectCommandSequenceToolStripMenuItem
+            // 
+            this.simConnectCommandSequenceToolStripMenuItem.Name = "simConnectCommandSequenceToolStripMenuItem";
+            this.simConnectCommandSequenceToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.simConnectCommandSequenceToolStripMenuItem.Text = "SimConnect Command Sequence...";
+            this.simConnectCommandSequenceToolStripMenuItem.Click += new System.EventHandler(this.simConnectCommandSequenceToolStripMenuItem_Click);
+            // 
             // DeviceControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -619,5 +655,9 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.PictureBox pbS6ButtonOn;
         private System.Windows.Forms.PictureBox pbPageButtonsOn;
         private System.Windows.Forms.PictureBox pbS1ButtonOn;
+        private System.Windows.Forms.ToolStripMenuItem xPlaneCommandToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem xPlaneCommandSequenceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem simConnectCommandToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem simConnectCommandSequenceToolStripMenuItem;
     }
 }

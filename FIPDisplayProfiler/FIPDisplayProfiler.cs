@@ -7,6 +7,7 @@ using System.IO;
 using FIPToolKit.Tools;
 using System.Diagnostics;
 using Microsoft.Web.WebView2.Core;
+using FIPDisplayProfiler.Properties;
 
 namespace FIPDisplayProfiler
 {
@@ -22,12 +23,12 @@ namespace FIPDisplayProfiler
         { 
             get
             {
-                return Properties.Settings.Default.LastProfileName;
+                return Settings.Default.LastProfileName;
             }
             private set
             {
-                Properties.Settings.Default.LastProfileName = value;
-                Properties.Settings.Default.Save();
+                Settings.Default.LastProfileName = value;
+                Settings.Default.Save();
             }
         }
 
@@ -128,7 +129,7 @@ namespace FIPDisplayProfiler
 
         private void Page_OnSettingsChanged(object sender, FIPPageEventArgs e)
         {
-            if(Properties.Settings.Default.AutoSave && !_loading)
+            if(Settings.Default.AutoSave && !_loading)
             {
                 if (!string.IsNullOrEmpty(ProfileName))
                 {
@@ -237,7 +238,7 @@ namespace FIPDisplayProfiler
                 bool saveActivePages = Engine.IsActivePagesDirty;
                 if (Engine.IsDirty || saveActivePages)
                 {
-                    if (!Properties.Settings.Default.AutoSave || string.IsNullOrEmpty(ProfileName))
+                    if (!Settings.Default.AutoSave || string.IsNullOrEmpty(ProfileName))
                     {
                         _saveChangesDialogShowing = true;
                         DialogResult result = MessageBox.Show(this, "Do you want to save changes?", "FIP Display Profiler", MessageBoxButtons.YesNoCancel);
@@ -269,7 +270,7 @@ namespace FIPDisplayProfiler
                 FIPToolKit.FlightSim.FlightSimProviders.SimConnect.Deinitialize();
                 FIPToolKit.FlightSim.FlightSimProviders.FSUIPC.Deinitialize();
             }
-            if (Properties.Settings.Default.CloseFlightShareOnExit)
+            if (Settings.Default.CloseFlightShareOnExit)
             {
                 FIPFlightShare.CloseFlightShare();
             }
@@ -371,7 +372,7 @@ namespace FIPDisplayProfiler
         {
             if (Engine.IsDirty)
             {
-                if (!Properties.Settings.Default.AutoSave)
+                if (!Settings.Default.AutoSave)
                 {
                     DialogResult result = MessageBox.Show(this, "Do you want to save changes?", "FIP Display Profiler", MessageBoxButtons.YesNoCancel);
                     if (result == DialogResult.Cancel)
@@ -420,14 +421,14 @@ namespace FIPDisplayProfiler
 
         private void minimizeToSystemTrayToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.MinimizeToSystemTray = minimizeToSystemTrayToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.MinimizeToSystemTray = minimizeToSystemTrayToolStripMenuItem.Checked;
+            Settings.Default.Save();
         }
 
         private void previewVideoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.PreviewVideo = previewVideoToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.PreviewVideo = previewVideoToolStripMenuItem.Checked;
+            Settings.Default.Save();
             foreach (TabPage tab in tabDevices.TabPages)
             {
                 if (tab.Controls.Count > 0 && tab.Controls[0].GetType() == typeof(DeviceControl))
@@ -446,8 +447,8 @@ namespace FIPDisplayProfiler
 
         private void autoLoadLastProfileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.AutoLoadLastProfile = autoLoadLastProfileToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.AutoLoadLastProfile = autoLoadLastProfileToolStripMenuItem.Checked;
+            Settings.Default.Save();
         }
 
         private void tabDevices_SelectedIndexChanged(object sender, EventArgs e)
@@ -456,8 +457,8 @@ namespace FIPDisplayProfiler
             {
                 if (tabDevices.SelectedTab != null)
                 {
-                    Properties.Settings.Default.LastSelectedDevice = tabDevices.SelectedTab.Text;
-                    Properties.Settings.Default.Save();
+                    Settings.Default.LastSelectedDevice = tabDevices.SelectedTab.Text;
+                    Settings.Default.Save();
                     if (tabDevices.SelectedTab.Controls.Count > 0 && tabDevices.SelectedTab.Controls[0].GetType() == typeof(DeviceControl))
                     {
                         DeviceControl deviceControl = tabDevices.SelectedTab.Controls[0] as DeviceControl;
@@ -486,9 +487,9 @@ namespace FIPDisplayProfiler
 
         private void UpdateKeyAPIMode()
         {
-            Properties.Settings.Default.KeyAPIMode = keybdeventToolStripMenuItem.Checked ? KeyAPIModes.keybd_event : sendInputToolStripMenuItem.Checked ? KeyAPIModes.SendInput : KeyAPIModes.FSUIPC;
-            Properties.Settings.Default.Save();
-            FIPButton.KeyAPIMode = Properties.Settings.Default.KeyAPIMode;
+            Settings.Default.KeyAPIMode = keybdeventToolStripMenuItem.Checked ? KeyAPIModes.keybd_event : sendInputToolStripMenuItem.Checked ? KeyAPIModes.SendInput : KeyAPIModes.FSUIPC;
+            Settings.Default.Save();
+            FIPButton.KeyAPIMode = Settings.Default.KeyAPIMode;
         }
         private void keybdeventToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -516,8 +517,8 @@ namespace FIPDisplayProfiler
 
         private void loadLastPlaylistToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.LoadLastPlaylist = loadLastPlaylistToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.LoadLastPlaylist = loadLastPlaylistToolStripMenuItem.Checked;
+            Settings.Default.Save();
             UpdateLoadLastPlaylist();
         }
 
@@ -543,7 +544,7 @@ namespace FIPDisplayProfiler
                 if (m.WParam.ToInt32() == NativeMethods.SC_MINIMIZE)
                 {
                     // Caption bar minimize button
-                    if (Properties.Settings.Default.MinimizeToSystemTray)
+                    if (Settings.Default.MinimizeToSystemTray)
                     {
                         m.Result = IntPtr.Zero;
                         ShowInTaskbar = false;
@@ -554,7 +555,7 @@ namespace FIPDisplayProfiler
                 else if(m.WParam.ToInt32() == NativeMethods.SC_CLOSE)
                 {
                     // Caption bar close button
-                    if (Properties.Settings.Default.MinimizeToSystemTray)
+                    if (Settings.Default.MinimizeToSystemTray)
                     {
                         m.Result = IntPtr.Zero;
                         ShowInTaskbar = false;
@@ -583,8 +584,8 @@ namespace FIPDisplayProfiler
 
         private void startMinimizedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.StartMinimized = startMinimizedToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.StartMinimized = startMinimizedToolStripMenuItem.Checked;
+            Settings.Default.Save();
         }
 
         private async void FIPDisplay_Load(object sender, EventArgs e)
@@ -593,31 +594,33 @@ namespace FIPDisplayProfiler
             {
                 _loading = true;
                 await InitializeWebView2Async();
-                startMinimizedToolStripMenuItem.Checked = Properties.Settings.Default.StartMinimized;
-                autoLoadLastProfileToolStripMenuItem.Checked = Properties.Settings.Default.AutoLoadLastProfile;
-                minimizeToSystemTrayToolStripMenuItem.Checked = Properties.Settings.Default.MinimizeToSystemTray;
-                keybdeventToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.keybd_event;
-                sendInputToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.SendInput;
-                fSUIPCToolStripMenuItem.Checked = Properties.Settings.Default.KeyAPIMode == KeyAPIModes.FSUIPC;
-                previewVideoToolStripMenuItem.Checked = Properties.Settings.Default.PreviewVideo;
-                loadLastPlaylistToolStripMenuItem.Checked = Properties.Settings.Default.LoadLastPlaylist;
-                showArtistImagesToolStripMenuItem.Checked = Properties.Settings.Default.ShowArtistImages;
-                cacheSpotifyArtworkToolStripMenuItem.Checked = Properties.Settings.Default.CacheSpotifyArtwork;
-                closeFlightShareOnExitToolStripMenuItem.Checked = Properties.Settings.Default.CloseFlightShareOnExit;
-                _waitForMSFS = checkMSFSTimer.Enabled = exitWhenMSFSQuitsToolStripMenuItem.Checked = Properties.Settings.Default.CloseWithMSFS;
-                autoSaveSettingsToolStripMenuItem.Checked = Properties.Settings.Default.AutoSave;
+                FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerIPAddress = Settings.Default.XPlaneIPAddress;
+                FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerPort = Settings.Default.XPlanePort;
+                startMinimizedToolStripMenuItem.Checked = Settings.Default.StartMinimized;
+                autoLoadLastProfileToolStripMenuItem.Checked = Settings.Default.AutoLoadLastProfile;
+                minimizeToSystemTrayToolStripMenuItem.Checked = Settings.Default.MinimizeToSystemTray;
+                keybdeventToolStripMenuItem.Checked = Settings.Default.KeyAPIMode == KeyAPIModes.keybd_event;
+                sendInputToolStripMenuItem.Checked = Settings.Default.KeyAPIMode == KeyAPIModes.SendInput;
+                fSUIPCToolStripMenuItem.Checked = Settings.Default.KeyAPIMode == KeyAPIModes.FSUIPC;
+                previewVideoToolStripMenuItem.Checked = Settings.Default.PreviewVideo;
+                loadLastPlaylistToolStripMenuItem.Checked = Settings.Default.LoadLastPlaylist;
+                showArtistImagesToolStripMenuItem.Checked = Settings.Default.ShowArtistImages;
+                cacheSpotifyArtworkToolStripMenuItem.Checked = Settings.Default.CacheSpotifyArtwork;
+                closeFlightShareOnExitToolStripMenuItem.Checked = Settings.Default.CloseFlightShareOnExit;
+                _waitForMSFS = checkMSFSTimer.Enabled = exitWhenMSFSQuitsToolStripMenuItem.Checked = Settings.Default.CloseWithMSFS;
+                autoSaveSettingsToolStripMenuItem.Checked = Settings.Default.AutoSave;
                 for (int i = 0; i < tabDevices.TabPages.Count; i++)
                 {
                     TabPage tab = tabDevices.TabPages[i];
-                    if (tab.Text.Equals(Properties.Settings.Default.LastSelectedDevice))
+                    if (tab.Text.Equals(Settings.Default.LastSelectedDevice))
                     {
                         tabDevices.SelectedIndex = i;
                         break;
                     }
                 }
-                if (Properties.Settings.Default.AutoLoadLastProfile && !string.IsNullOrEmpty(Properties.Settings.Default.LastProfileName) && File.Exists(Properties.Settings.Default.LastProfileName))
+                if (Settings.Default.AutoLoadLastProfile && !string.IsNullOrEmpty(Settings.Default.LastProfileName) && File.Exists(Settings.Default.LastProfileName))
                 {
-                    ProfileName = Properties.Settings.Default.LastProfileName;
+                    ProfileName = Settings.Default.LastProfileName;
                     LoadSettings(ProfileName);
                 }
                 _loading = false;
@@ -626,9 +629,9 @@ namespace FIPDisplayProfiler
 
         public void HideWindow()
         {
-            if (Properties.Settings.Default.StartMinimized)
+            if (Settings.Default.StartMinimized)
             {
-                if (Properties.Settings.Default.MinimizeToSystemTray)
+                if (Settings.Default.MinimizeToSystemTray)
                 {
                     Visible = false;
                     ShowInTaskbar = false;
@@ -642,28 +645,28 @@ namespace FIPDisplayProfiler
 
         private void showArtistImagesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.ShowArtistImages = showArtistImagesToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.ShowArtistImages = showArtistImagesToolStripMenuItem.Checked;
+            Settings.Default.Save();
             UpdateShowArtistImages();
         }
 
         private void cacheSpotifyArtworkToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.CacheSpotifyArtwork = cacheSpotifyArtworkToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.CacheSpotifyArtwork = cacheSpotifyArtworkToolStripMenuItem.Checked;
+            Settings.Default.Save();
             UpdateCacheSpotifyArtwork();
         }
 
         private void closeFlightShareOnExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.CloseFlightShareOnExit = closeFlightShareOnExitToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.CloseFlightShareOnExit = closeFlightShareOnExitToolStripMenuItem.Checked;
+            Settings.Default.Save();
         }
 
         private void exitWhenMSFSQuitsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _waitForMSFS = checkMSFSTimer.Enabled = Properties.Settings.Default.CloseWithMSFS = exitWhenMSFSQuitsToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            _waitForMSFS = checkMSFSTimer.Enabled = Settings.Default.CloseWithMSFS = exitWhenMSFSQuitsToolStripMenuItem.Checked;
+            Settings.Default.Save();
         }
 
         private void checkMSFSTimer_Tick(object sender, EventArgs e)
@@ -684,8 +687,8 @@ namespace FIPDisplayProfiler
 
         private void autoSaveSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.AutoSave = autoSaveSettingsToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Settings.Default.AutoSave = autoSaveSettingsToolStripMenuItem.Checked;
+            Settings.Default.Save();
         }
 
         /*protected override void DefWndProc(ref Message m)
@@ -992,6 +995,18 @@ namespace FIPDisplayProfiler
                     }
                 }
             }
+        }
+
+        private void xPlaneIPAddressToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.Default.XPlaneIPAddress = Prompt.ShowDialog(Settings.Default.XPlaneIPAddress, "IP Address:", "X-Plane Settings");
+            FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerIPAddress = Settings.Default.XPlaneIPAddress;
+        }
+
+        private void xPlanePortToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.Default.XPlanePort = Prompt.ShowDialog(Settings.Default.XPlanePort, "Port:", "X-Plane Settings");
+            FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerPort = Settings.Default.XPlanePort;
         }
     }
 }

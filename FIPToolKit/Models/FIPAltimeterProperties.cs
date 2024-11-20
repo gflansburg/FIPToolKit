@@ -10,6 +10,7 @@ namespace FIPToolKit.Models
     {
         public FIPAltimeterProperties() : base()
         {
+            Name = "Altimeter";
             MaxValue = 100000f;
             DrawRim = true;
             _drawFaceTicks = true;

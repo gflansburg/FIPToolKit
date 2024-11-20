@@ -26,7 +26,11 @@ namespace FIPDisplayProfiler
         FSUIPCMap,
         FSUIPCAirspeed,
         FSUIPCAltimeter,
-        FSUIPCRadio
+        FSUIPCRadio,
+        XPlaneMap,
+        XPlaneAirspeed,
+        XPlaneAltimeter,
+        XPlaneRadio
     }
 
     public partial class AddPageDialog : Form
@@ -179,6 +183,70 @@ namespace FIPDisplayProfiler
         private void AddPageDialog_Load(object sender, EventArgs e)
         {
             UncheckRadioButtons(this);
+        }
+
+        private void rbXPlaneMap_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.XPlaneMap;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbXPlaneAirspeed_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.XPlaneAirspeed;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbXPlaneAltimeter_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.XPlaneAltimeter;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbXPlaneRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.XPlaneRadio;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbMap_CheckedChanged(object sender, EventArgs e)
+        {
+            panelMap.Enabled = true;
+            panelAirspeed.Enabled = false;
+            panelAltimeter.Enabled = false;
+            panelRadio.Enabled = false;
+            btnOK.Enabled = rbSimConnectMap.Checked || rbFSUIPCMap.Checked || rbXPlaneMap.Checked;
+        }
+
+        private void rbAirspeed_CheckedChanged(object sender, EventArgs e)
+        {
+            panelMap.Enabled = false;
+            panelAirspeed.Enabled = true;
+            panelAltimeter.Enabled = false;
+            panelRadio.Enabled = false;
+            btnOK.Enabled = rbSimConnectAirspeed.Checked || rbFSUIPCAirspeed.Checked || rbXPlaneAirspeed.Checked;
+        }
+
+        private void rbAltimeter_CheckedChanged(object sender, EventArgs e)
+        {
+            panelMap.Enabled = false;
+            panelAirspeed.Enabled = false;
+            panelAltimeter.Enabled = true;
+            panelRadio.Enabled = false;
+            btnOK.Enabled = rbSimConnectAltimeter.Checked || rbFSUIPCAltimeter.Checked || rbXPlaneAltimeter.Checked;
+        }
+
+        private void rbRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            panelMap.Enabled = false;
+            panelAirspeed.Enabled = false;
+            panelAltimeter.Enabled = false;
+            panelRadio.Enabled = true;
+            btnOK.Enabled = rbSimConnectRadio.Checked || rbFSUIPCRadio.Checked || rbXPlaneRadio.Checked;
         }
     }
 }

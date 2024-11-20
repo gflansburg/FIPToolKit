@@ -122,6 +122,29 @@ namespace FIPToolKit.FlightSim
             return dist;
         }
 
+        public static uint Bcd2Dec(uint num)
+        {
+            return HornerScheme(num, 0x10, 10);
+        }
+
+        public static uint Dec2Bcd(uint num)
+        {
+            return HornerScheme(num, 10, 0x10);
+        }
+
+        static private uint HornerScheme(uint num, uint divider, uint factor)
+        {
+            uint remainder = num % divider;
+            uint quotient = num / divider;
+            uint result = 0;
+
+            if (!(quotient == 0 && remainder == 0))
+            {
+                result += HornerScheme(quotient, divider, factor) * factor + remainder;
+            }
+            return result;
+        }
+
         public static string GetExecutingDirectory()
         {
             var location = new Uri(System.Reflection.Assembly.GetEntryAssembly().GetName().CodeBase);
@@ -166,9 +189,49 @@ namespace FIPToolKit.FlightSim
             {
                 // Offline?
             }
-            return null;
+            return new AircraftData()
+            {
+                AircraftId = 34,
+                Name = "Textron Aviation Cessna 172 Skyhawk",
+                FriendlyName = "Cessna 172 Skyhawk",
+                FriendlyType = "CESSNA",
+                FriendlyModel = "C172",
+                EngineType = EngineType.Piston,
+                Heavy = false,
+                Helo = false
+            };
         }
 
+
+        internal static AircraftData LoadAircraft(int aircraftId)
+        {
+            try
+            {
+                RestClient client = new RestClient("https://cloud.gafware.com/Home");
+                RestRequest request = new RestRequest("GetAircraftById", Method.Post);
+                request.AddParameter("AircraftId", aircraftId);
+                RestResponse response = client.Execute(request);
+                if (response.IsSuccessful)
+                {
+                    return JsonConvert.DeserializeObject<AircraftData>(response.Content);
+                }
+            }
+            catch (Exception)
+            {
+                // Offline?
+            }
+            return new AircraftData()
+            {
+                AircraftId = 34,
+                Name = "Textron Aviation Cessna 172 Skyhawk",
+                FriendlyName = "Cessna 172 Skyhawk",
+                FriendlyType = "CESSNA",
+                FriendlyModel = "C172",
+                EngineType = EngineType.Piston,
+                Heavy = false,
+                Helo = false
+            };
+        }
 
         public static AircraftData DefaultAircraft(string atcType, string atcModel)
         {

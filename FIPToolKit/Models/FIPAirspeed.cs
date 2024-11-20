@@ -16,7 +16,7 @@ namespace FIPToolKit.Models
         private bool ShowName { get; set; }
         private DateTime ShowTime { get; set; }
 
-        private List<VSpeed> vSpeeds = new List<VSpeed>();
+        protected List<VSpeed> vSpeeds = new List<VSpeed>();
 
         public FIPAirspeed(FIPAirspeedProperties properties, FlightSimProviderBase flightSimProvider) : base(properties, flightSimProvider)
         {
@@ -28,15 +28,18 @@ namespace FIPToolKit.Models
             properties.OnSelectedVSpeedChanged += Properties_OnSelectedVSpeedChanged;
             flightSimProvider.OnFlightDataReceived += FlightSimProvider_OnFlightDataReceived;
             flightSimProvider.OnAircraftChange += FlightSimProvider_OnAircraftChange;
-            if (flightSimProvider.IsConnected)
-            {
-                flightSimProvider.AircraftChange(flightSimProvider.AircraftId);
-            }
-            if (flightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && flightSimProvider.AircraftId != 0)
-            {
-                AirspeedProperties.SelectedAircraftId = flightSimProvider.AircraftId;
-            }
+            AirspeedProperties.SelectedAircraftId = FlightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && FlightSimProvider.AircraftId != 0 ? FlightSimProvider.AircraftId : 34; // Cessna 172 Skyhawk
+            SetSelectedVSpeed(vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId) ?? VSpeed.DefaultVSpeed());
             Init(); 
+        }
+
+        public virtual void SetSelectedVSpeed(VSpeed vSpeed)
+        {
+            AirspeedProperties.SelectedVSpeed = vSpeed;
+            ShowTime = DateTime.Now;
+            ShowName = true;
+            CreateGauge();
+            UpdateGauge();
         }
 
         private void FlightSimProvider_OnAircraftChange(FlightSimProviderBase sender, int aircraftId)
@@ -49,7 +52,8 @@ namespace FIPToolKit.Models
 
         private void FlightSimProvider_OnFlightDataReceived(FlightSimProviderBase sender)
         {
-            AirspeedProperties.Value = FlightSimProvider.OnGround ? FlightSimProvider.GroundSpeedKnots : FlightSimProvider.AirSpeedIndicatedKnots;
+            double speed = FlightSimProvider.OnGround ? FlightSimProvider.GroundSpeedKnots : FlightSimProvider.AirSpeedIndicatedKnots;
+            AirspeedProperties.Value = speed;
             if (ShowName && (DateTime.Now - ShowTime).TotalSeconds > 5)
             {
                 UpdateGauge();
@@ -58,28 +62,34 @@ namespace FIPToolKit.Models
 
         private void Properties_OnValueChanged(object sender, FIPValueChangedEventArgs e)
         {
-            if (AirspeedProperties.SelectedVSpeed != null)
+            if (e.FirstPass)
             {
-                double temp = Math.Min(e.Value, AirspeedProperties.SelectedVSpeed.HighLimit);
-                temp = Math.Max(temp, AirspeedProperties.SelectedVSpeed.LowLimit);
-                if (e.Value != temp || !AirspeedProperties.HasDrawnTheNeedle || ShowName)
+                if (AirspeedProperties.SelectedVSpeed != null)
                 {
-                    e.Value = temp;
-                    e.DoOverride = true;
-                    UpdateGauge();
+                    double temp = Math.Min(e.Value, AirspeedProperties.SelectedVSpeed.HighLimit);
+                    temp = Math.Max(temp, AirspeedProperties.SelectedVSpeed.LowLimit);
+                    if ((e.Value != temp || !AirspeedProperties.HasDrawnTheNeedle || ShowName) && temp != 0)
+                    {
+                        e.Value = temp;
+                        e.DoOverride = true;
+                    }
                 }
+            }
+            else
+            {
+                UpdateGauge();
             }
         }
 
         private void Properties_OnSelectedVSpeedChanged(object sender, EventArgs e)
         {
-            CreateGauge();
             ShowTime = DateTime.Now;
             ShowName = true;
+            CreateGauge();
             UpdateGauge();
         }
 
-        private FIPAirspeedProperties AirspeedProperties
+        protected FIPAirspeedProperties AirspeedProperties
         {
             get
             {
@@ -91,10 +101,7 @@ namespace FIPToolKit.Models
         {
             if (vSpeeds != null && vSpeeds.Count > 0)
             {
-                AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
-                ShowTime = DateTime.Now;
-                ShowName = true;
-                UpdateGauge();
+                SetSelectedVSpeed(vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId) ?? VSpeed.DefaultVSpeed());
             }
         }
 
@@ -108,10 +115,10 @@ namespace FIPToolKit.Models
                 ThreadPool.QueueUserWorkItem(_ =>
                 {
                     vSpeeds = VSpeed.GetAllVSpeeds();
-                    if (vSpeeds != null && vSpeeds.Count > 0 && AirspeedProperties.AutoSelectAircraft)
+                    if (vSpeeds != null && vSpeeds.Count > 0)
                     {
                         AirspeedProperties.SelectedAircraftId = FlightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && FlightSimProvider.AircraftId != 0 ? FlightSimProvider.AircraftId : 34; // Cessna 172 Skyhawk
-                        AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
+                        SetSelectedVSpeed(vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId) ?? VSpeed.DefaultVSpeed());
                         ShowTime = DateTime.Now;
                         ShowName = true;
                     }
@@ -121,15 +128,17 @@ namespace FIPToolKit.Models
             }
         }
 
+        public override void InvalidatePage()
+        {
+            CreateGauge();
+            base.InvalidatePage();
+        }
+
         public override void StartTimer()
         {
             base.StartTimer();
-            Init();
-            if (AirspeedProperties.SelectedVSpeed == null && vSpeeds != null && vSpeeds.Count > 0 && (AirspeedProperties.AutoSelectAircraft || AirspeedProperties.SelectedAircraftId == 0))
-            {
-                AirspeedProperties.SelectedAircraftId = FlightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && FlightSimProvider.AircraftId != 0 ? FlightSimProvider.AircraftId : 34; // Cessna 172 Skyhawk
-                AirspeedProperties.SelectedVSpeed = vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId);
-            }
+            AirspeedProperties.SelectedAircraftId = FlightSimProvider.IsConnected && AirspeedProperties.AutoSelectAircraft && FlightSimProvider.AircraftId != 0 ? FlightSimProvider.AircraftId : 34; // Cessna 172 Skyhawk
+            SetSelectedVSpeed(vSpeeds.FirstOrDefault(v => v.AircraftId == AirspeedProperties.SelectedAircraftId) ?? VSpeed.DefaultVSpeed());
             UpdateGauge();
         }
 
@@ -140,8 +149,9 @@ namespace FIPToolKit.Models
                 case SoftButtons.Left:
                 case SoftButtons.Right:
                     return false;
+                default:
+                    return true;
             }
-            return true;
         }
 
         public override void ExecuteSoftButton(SoftButtons softButton)

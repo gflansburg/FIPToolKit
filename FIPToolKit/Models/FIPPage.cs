@@ -115,6 +115,7 @@ namespace FIPToolKit.Models
 
         public delegate void FIPPageEventHandler(object sender, FIPPageEventArgs e);
         public event FIPPageEventHandler OnImageChange;
+        public event FIPPageEventHandler OnButtonChange;
         public event FIPPageEventHandler OnStateChange;
         public event FIPPageEventHandler OnSoftButton;
         public event FIPPageEventHandler OnSettingsChanged;
@@ -297,6 +298,20 @@ namespace FIPToolKit.Models
                 }
             }
             return null;
+        }
+
+        public void FireButtonChange(FIPButton button)
+        {
+            if (button.IsDirty)
+            {
+                InvalidatePage();
+                OnButtonChange?.Invoke(this, new FIPPageEventArgs(this));
+            }
+        }
+
+        public virtual void InvalidatePage()
+        {
+            UpdatePage();
         }
 
         public void AddButton(FIPButton button)

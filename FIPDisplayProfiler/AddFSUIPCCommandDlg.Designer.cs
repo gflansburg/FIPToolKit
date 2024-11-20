@@ -78,6 +78,7 @@ namespace FIPDisplayProfiler
             this.cbBreak.Name = "cbBreak";
             this.cbBreak.Size = new System.Drawing.Size(375, 21);
             this.cbBreak.TabIndex = 1;
+            this.cbBreak.SelectedIndexChanged += new System.EventHandler(this.cbBreak_SelectedIndexChanged);
             // 
             // label2
             // 

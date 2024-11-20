@@ -1,4 +1,5 @@
-﻿using FIPToolKit.Threading;
+﻿using FIPToolKit.FlightSim;
+using FIPToolKit.Threading;
 using FIPToolKit.Tools;
 using Newtonsoft.Json;
 using System;
@@ -9,8 +10,12 @@ using System.Xml.Serialization;
 namespace FIPToolKit.Models
 {
     [Serializable]
-    public class FIPCommandSequenceButton : FIPButton
+    public abstract class FIPCommandSequenceButton : FIPButton
     {
+        [XmlIgnore]
+        [JsonIgnore]
+        public FlightSimProviderBase FlightSimProvider { get; private set; }
+
         List<FIPCommandButton> _sequence;
 
         [XmlIgnore]
@@ -31,8 +36,9 @@ namespace FIPToolKit.Models
             }
         }
 
-        public FIPCommandSequenceButton() : base()
+        public FIPCommandSequenceButton(FlightSimProviderBase flightSimProvider) : base()
         {
+            FlightSimProvider = flightSimProvider;
             Sequence = new List<FIPCommandButton>();
         }
 
@@ -57,7 +63,7 @@ namespace FIPToolKit.Models
         {
             try
             {
-                foreach (FIPFSUIPCCommandButton button in Sequence)
+                foreach (FIPCommandButton button in Sequence)
                 {
                     if (button.Break != KeyPressLengths.Indefinite && button.Break != KeyPressLengths.Zero)
                     {

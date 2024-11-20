@@ -189,5 +189,29 @@ namespace FIPDisplayProfiler.Properties {
                 this["AutoSave"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.1")]
+        public string XPlaneIPAddress {
+            get {
+                return ((string)(this["XPlaneIPAddress"]));
+            }
+            set {
+                this["XPlaneIPAddress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("49000")]
+        public int XPlanePort {
+            get {
+                return ((int)(this["XPlanePort"]));
+            }
+            set {
+                this["XPlanePort"] = value;
+            }
+        }
     }
 }

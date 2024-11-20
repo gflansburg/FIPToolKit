@@ -204,7 +204,13 @@ namespace FIPToolKit.Models
 			SetLEDs();
         }
 
-		private void CreateClock()
+        public override void InvalidatePage()
+        {
+			CreateClock();
+            base.InvalidatePage();
+        }
+
+        private void CreateClock()
         {
 			try
 			{

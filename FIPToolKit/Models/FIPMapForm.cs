@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Linq.Expressions;
 
 namespace FIPToolKit.Models
 {
@@ -215,6 +216,7 @@ namespace FIPToolKit.Models
                     try
                     {
                         Map.Invalidate();
+                        OnMapUpdated?.Invoke(this);
                     }
                     catch
                     {
@@ -282,7 +284,6 @@ namespace FIPToolKit.Models
             {
                 Invoke((Action)delegate
                 {
-                    Route.Points.Clear();
                     PilotMarker.IsRunning = (flightSimProvider.IsReadyToFly == FlightSim.ReadyToFly.Ready);
                     if (PilotMarker.IsRunning)
                     {
@@ -292,7 +293,8 @@ namespace FIPToolKit.Models
                     {
                         QuitFlightSim();
                     }
-                    Map.Invalidate();
+                    Route.Points.Clear();
+                    OnMapUpdated?.Invoke(this);
                 });
             }
         }
@@ -301,50 +303,67 @@ namespace FIPToolKit.Models
         {
             if (Map != null && !IsDisposed && Map.IsHandleCreated)
             {
-                Invoke((Action)delegate
+                try
                 {
-                    try
+                    Invoke((Action)delegate
                     {
-                        CurrentAltitude = (int)flightSimProvider.AltitudeFeet;
-                        CurrentHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.HeadingMagneticDegrees : flightSimProvider.HeadingTrueDegrees);
-                        if ((flightSimProvider.IsReadyToFly == FlightSim.ReadyToFly.Ready && !PilotMarker.IsRunning) || (flightSimProvider.IsReadyToFly == FlightSim.ReadyToFly.Loading && PilotMarker.IsRunning))
+                        try
                         {
-                            flightSimProvider.ReadyToFly(flightSimProvider.IsReadyToFly);
+                            CurrentAltitude = (int)flightSimProvider.AltitudeMSL;
+                            CurrentHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.HeadingMagneticDegrees : flightSimProvider.HeadingTrueDegrees);
+                            if ((flightSimProvider.IsReadyToFly == FlightSim.ReadyToFly.Ready && !PilotMarker.IsRunning) || (flightSimProvider.IsReadyToFly == FlightSim.ReadyToFly.Loading && PilotMarker.IsRunning))
+                            {
+                                flightSimProvider.ReadyToFly(flightSimProvider.IsReadyToFly);
+                            }
+                            //Map.Bearing = (ShowHeading ? (float)flightSimProvider.HeadingTrueDegrees : 0f);
+                            PointLatLng location = new PointLatLng(flightSimProvider.Latitude, flightSimProvider.Longitude);
+                            PilotMarker.ATCIdentifier = flightSimProvider.ATCIdentifier;
+                            PilotMarker.ATCModel = flightSimProvider.ATCModel;
+                            PilotMarker.ATCType = flightSimProvider.ATCType;
+                            PilotMarker.IsHeavy = flightSimProvider.IsHeavy;
+                            PilotMarker.EngineType = flightSimProvider.EngineType;
+                            PilotMarker.Heading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.HeadingMagneticDegrees : flightSimProvider.HeadingTrueDegrees);
+                            PilotMarker.Position = location;
+                            PilotMarker.Airspeed = (int)(flightSimProvider.OnGround ? flightSimProvider.GroundSpeedKnots : flightSimProvider.AirSpeedIndicatedKnots);
+                            PilotMarker.Altitude = (int)flightSimProvider.AltitudeMSL;
+                            PilotMarker.AmbientTemperature = (int)flightSimProvider.AmbientTemperatureCelcius;
+                            PilotMarker.AmbientWindDirection = (float)flightSimProvider.AmbientWindDirectionDegrees;
+                            PilotMarker.AmbientWindVelocity = (int)flightSimProvider.AmbientWindSpeedKnots;
+                            PilotMarker.KohlsmanInchesMercury = flightSimProvider.KohlsmanInchesMercury;
+                            PilotMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.GPSRequiredMagneticHeadingRadians : flightSimProvider.GPSRequiredTrueHeadingRadians);
+                            PilotMarker.GPSIsActive = flightSimProvider.HasActiveWaypoint;
+                            PilotMarker.GPSTrackDistance = (float)flightSimProvider.GPSCrossTrackErrorMeters;
+                            PilotMarker.Nav1RelativeBearing = flightSimProvider.Nav1Radial + 180;
+                            PilotMarker.Nav2RelativeBearing = flightSimProvider.Nav2Radial + 180;
+                            PilotMarker.Nav1Available = flightSimProvider.Nav1Available;
+                            PilotMarker.Nav2Available = flightSimProvider.Nav2Available;
+                            PilotMarker.AdfRelativeBearing = (int)flightSimProvider.AdfRelativeBearing;
+                            PilotMarker.HeadingBug = (int)flightSimProvider.HeadingBug;
+                            if (MapProperties.FollowMyPlane || CenterOnPlane)
+                            {
+                                CenterOnPlane = false;
+                                Map.Position = location;
+                            }
+                            if (!flightSimProvider.Location.IsEmpty())
+                            {
+                                if (flightSimProvider.IsReadyToFly == FlightSim.ReadyToFly.Ready)
+                                {
+                                    Route.Points.Add(location);
+                                }
+                                else
+                                {
+                                    Route.Points.Clear();
+                                }
+                            }
                         }
-                        //Map.Bearing = (ShowHeading ? (float)flightSimProvider.HeadingTrueDegrees : 0f);
-                        PilotMarker.ATCIdentifier = flightSimProvider.ATCIdentifier;
-                        PilotMarker.ATCModel = flightSimProvider.ATCModel;
-                        PilotMarker.ATCType = flightSimProvider.ATCType;
-                        PilotMarker.IsHeavy = flightSimProvider.IsHeavy;
-                        PilotMarker.EngineType = flightSimProvider.EngineType;
-                        PilotMarker.Heading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.HeadingMagneticDegrees : flightSimProvider.HeadingTrueDegrees);
-                        PilotMarker.Position = new PointLatLng(flightSimProvider.Latitude, flightSimProvider.Longitude);
-                        PilotMarker.Airspeed = (int)(flightSimProvider.OnGround ? flightSimProvider.GroundSpeedKnots : flightSimProvider.AirSpeedIndicatedKnots);
-                        PilotMarker.Altitude = (int)flightSimProvider.AltitudeFeet;
-                        PilotMarker.AmbientTemperature = (int)flightSimProvider.AmbientTemperatureCelcius;
-                        PilotMarker.AmbientWindDirection = (float)flightSimProvider.AmbientWindDirectionDegrees;
-                        PilotMarker.AmbientWindVelocity = (int)flightSimProvider.AmbientWindSpeedKnots;
-                        PilotMarker.KohlsmanInchesMercury = flightSimProvider.KohlsmanInchesMercury;
-                        PilotMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.GPSRequiredMagneticHeadingRadians : flightSimProvider.GPSRequiredTrueHeadingRadians);
-                        PilotMarker.GPSIsActive = flightSimProvider.HasActiveWaypoint;
-                        PilotMarker.GPSTrackDistance = (float)flightSimProvider.GPSCrossTrackErrorMeters;
-                        PilotMarker.Nav1RelativeBearing = flightSimProvider.Nav1Radial + 180;
-                        PilotMarker.Nav2RelativeBearing = flightSimProvider.Nav2Radial + 180;
-                        PilotMarker.Nav1Available = flightSimProvider.Nav1Available;
-                        PilotMarker.Nav2Available = flightSimProvider.Nav2Available;
-                        PilotMarker.AdfRelativeBearing = (int)flightSimProvider.AdfRelativeBearing;
-                        PilotMarker.HeadingBug = (int)flightSimProvider.HeadingBug;
-                        Route.Points.Add(new PointLatLng(flightSimProvider.Latitude, flightSimProvider.Longitude));
-                        if (MapProperties.FollowMyPlane || CenterOnPlane)
+                        catch
                         {
-                            CenterOnPlane = false;
-                            Map.Position = new PointLatLng(flightSimProvider.Latitude, flightSimProvider.Longitude);
                         }
-                    }
-                    catch
-                    {
-                    }
-                });
+                    });
+                }
+                catch(Exception)
+                { 
+                }
             }
         }
 
@@ -380,13 +399,13 @@ namespace FIPToolKit.Models
                             PilotMarker.Nav2Available = false;
                             PilotMarker.HeadingBug = 0;
                             PilotMarker.IsRunning = false;
-                            Route.Points.Clear();
                             Map.Position = PilotMarker.Position = new PointLatLng(0, 0);
+                            Route.Points.Clear();
                         }
                         catch (Exception)
                         {
                         }
-                        Map.Invalidate();
+                        OnMapUpdated?.Invoke(this);
                     });
                 }
                 catch (Exception)

@@ -16,7 +16,11 @@ namespace FIPToolKit.FlightSim
 
         public override Dictionary<string, Aircraft> Traffic => SimConnect.Instance.Traffic;
 
-        public override double AltitudeFeet => FlightData.PLANE_ALTITUDE;
+        public override double AltitudeMSL => FlightData.PLANE_ALTITUDE;
+
+        public override double AltitudeAGL => FlightData.ALTITUDE_AGL;
+
+        public override double AltitudePressure => FlightData.PRESSURE_ALTITUDE;
 
         public override double HeadingMagneticDegrees => FlightData.PLANE_HEADING_DEGREES_MAGNETIC;
 
@@ -31,6 +35,8 @@ namespace FIPToolKit.FlightSim
         public override double GroundSpeedKnots => FlightData.AIRSPEED_TRUE;
 
         public override double AirSpeedIndicatedKnots => FlightData.AIRSPEED_INDICATED;
+
+        public override double AirSpeedTrueKnots => FlightData.AIRSPEED_TRUE;
 
         public override double AmbientTemperatureCelcius => FlightData.AMBIENT_TEMPERATURE;
 
@@ -58,6 +64,10 @@ namespace FIPToolKit.FlightSim
 
         public override bool Nav2Available => Convert.ToBoolean(FlightData.NAV2_AVAILABLE);
 
+        public override double Nav1Frequency => (FlightData.NAV1_FREQUENCY / 1000) + (FlightData.NAV1_FREQUENCY % 1000);
+
+        public override double Nav2Frequency => (FlightData.NAV2_FREQUENCY / 1000) + (FlightData.NAV2_FREQUENCY % 1000);
+
         public override double AdfRelativeBearing => FlightData.ADF_RADIAL;
 
         public override double HeadingBug => FlightData.AUTOPILOT_HEADING_LOCK_DIR;
@@ -65,6 +75,24 @@ namespace FIPToolKit.FlightSim
         public override double Latitude => FlightData.PLANE_LATITUDE;
 
         public override double Longitude => FlightData.PLANE_LONGITUDE;
+
+        public override double Com1Frequency => (FlightData.COM1_FREQUENCY / 1000) + (FlightData.COM1_FREQUENCY % 1000);
+
+        public override double Com2Frequency => (FlightData.COM2_FREQUENCY / 1000) + (FlightData.COM2_FREQUENCY % 1000);
+
+        public override bool Com1Receive => Convert.ToBoolean(FlightData.COM1_RECEIVE);
+
+        public override bool Com2Receive => Convert.ToBoolean(FlightData.COM2_RECEIVE);
+
+        public override bool Com1Transmit => Convert.ToBoolean(FlightData.COM1_TRANSMIT);
+
+        public override bool Com2Transmit => Convert.ToBoolean(FlightData.COM2_TRANSMIT);
+
+        public override bool AvionicsOn => Convert.ToBoolean(FlightData.AVIONICS_MASTER);
+
+        public override bool BatteryOn => Convert.ToBoolean(FlightData.BATTERY_MASTER);
+
+        public override uint Transponder => Tools.Bcd2Dec(FlightData.XPDR_CODE);
 
         private IntPtr _mainWindowHandle;
         
@@ -348,20 +376,22 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public override void SendControlToFS(string control, int value)
+        public override void SendControlToFS(string control, float value)
         {
+            SimConnectEventId id;
+            if (Enum.TryParse(control, out id)) 
+            {
+                SimConnect.Instance.SetValue(id, Convert.ToUInt32(value));
+            }
         }
 
-        public override void SendSimControlToFS(string control, int value)
+        public override void SendCommandToFS(string command)
         {
-        }
-
-        public override void SendAutoPilotControlToFS(string control, int value)
-        {
-        }
-
-        public override void SendAxisControlToFS(string control, int value)
-        {
+            SimConnectEventId id;
+            if (Enum.TryParse(command, out id))
+            {
+                SimConnect.Instance.SendCommand(id);
+            }
         }
     }
 }

@@ -71,30 +71,35 @@ namespace FIPToolKit.FlightSim
             catch(Exception)
             {
                 // Offline?
-                return new List<VSpeed>()
-                {
-                    new VSpeed()
-                    {
-                        AircraftName = "Cessna 172 Skyhawk",
-                        MinSpeed = 0,
-                        LowLimit = 0,
-                        WhiteStart = 40,
-                        WhiteEnd = 90,
-                        GreenStart = 48,
-                        GreenEnd = 130,
-                        YellowStart = 130,
-                        YellowEnd = 162,
-                        RedStart = 162,
-                        RedEnd = 164,
-                        MaxSpeed = 220,
-                        TickSpan = 20,
-                        TickStart = 40,
-                        TickEnd = 180,
-                        ShowTrueAirspeed = false
-                    }
-                };
             }
-            return null;
+            return new List<VSpeed>()
+            {
+                DefaultVSpeed()
+            };
+        }
+
+        public static VSpeed DefaultVSpeed()
+        {
+            return new VSpeed()
+            {
+                AircraftName = "Cessna 172 Skyhawk",
+                MinSpeed = 0,
+                LowLimit = 0,
+                HighLimit = 164,
+                WhiteStart = 40,
+                WhiteEnd = 90,
+                GreenStart = 48,
+                GreenEnd = 130,
+                YellowStart = 130,
+                YellowEnd = 162,
+                RedStart = 162,
+                RedEnd = 164,
+                MaxSpeed = 220,
+                TickSpan = 20,
+                TickStart = 40,
+                TickEnd = 180,
+                ShowTrueAirspeed = false
+            };
         }
     }
 }

@@ -756,6 +756,100 @@ namespace FIPDisplayProfiler
                             }
                         }
                         break;
+                    case PageType.XPlaneMap:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (typeof(FIPXPlaneMap).IsAssignableFrom(fipPage.GetType()))
+                                {
+                                    MessageBox.Show(this, "You can only have one X-Plane Map per device.", "X-Plane Map", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            FSUIPCMapForm form = new FSUIPCMapForm()
+                            {
+                                FSUIPCMap = new FIPMapProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                FIPXPlaneMap page = new FIPXPlaneMap(form.FSUIPCMap);
+                                page.OnQuit += FIPMap_OnQuit;
+                                page.OnCenterPlane += FIPMap_OnCenterPlane;
+                                page.OnConnected += FIPMap_OnConnected;
+                                page.OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+                                page.OnInvalidateMap += FIPMap_OnInvalidateMap;
+                                page.OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+                                page.OnReadyToFly += FIPMap_OnReadyToFly;
+                                page.OnRequestMapForm += FIPMap_OnRequestMapForm;
+                                page.OnRequestMapImage += FIPMap_OnRequestMapImage;
+                                page.OnTrafficReceived += FIPMap_OnTrafficReceived;
+                                page.LoadSettings();
+                                Device.AddPage(page, true);
+                            }
+                        }
+                        break;
+                    case PageType.XPlaneRadio:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (typeof(FIPXPlaneRadio).IsAssignableFrom(fipPage.GetType()))
+                                {
+                                    MessageBox.Show(this, "You can only have one X-Plane Radio per device.", "X-Plane Radio", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            RadioForm form = new RadioForm()
+                            {
+                                Radio = new FIPRadioProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                form.Radio.Mute = GetInitialMute(false);
+                                form.Radio.Volume = GetInitialVolume(100);
+                                FIPXPlaneRadio page = new FIPXPlaneRadio(form.Radio);
+                                page.OnCanPlay += DeviceControl_OnCanPlay;
+                                page.OnVolumeChanged += MusicPlayer_OnVolumeChanged;
+                                page.OnMuteChanged += MusicPlayer_OnMuteChanged;
+                                page.OnActive += Page_OnActive;
+                                page.OnInactive += Page_OnInactive;
+                                page.Init();
+                                Device.AddPage(page, true);
+                            }
+                        }
+                        break;
+                    case PageType.XPlaneAirspeed:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (typeof(FIPXPlaneAirspeed).IsAssignableFrom(fipPage.GetType()))
+                                {
+                                    MessageBox.Show(this, "You can only have one X-Plane Airspeed Indicator per device.", "X-Plane Airspeed Indicator", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            AirspeedForm form = new AirspeedForm()
+                            {
+                                AirspeedGauge = new FIPAirspeedProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                FIPXPlaneAirspeed page = new FIPXPlaneAirspeed(form.AirspeedGauge);
+                                Device.AddPage(page, true);
+                            }
+                        }
+                        break;
+                    case PageType.XPlaneAltimeter:
+                        {
+                            AltimeterForm form = new AltimeterForm()
+                            {
+                                Altimeter = new FIPAltimeterProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                Device.AddPage(new FIPXPlaneAltimeter(form.Altimeter), true);
+                            }
+                        }
+                        break;
                 }
             }
         }
@@ -1038,6 +1132,10 @@ namespace FIPDisplayProfiler
             keySequenceToolStripMenuItem.Visible = true;
             FSUIPCCommandToolStripMenuItem.Visible = true;
             FSUIPCCommandSequenceToolStripMenuItem.Visible = true;
+            xPlaneCommandToolStripMenuItem.Visible = true;
+            xPlaneCommandSequenceToolStripMenuItem.Visible = true;
+            simConnectCommandToolStripMenuItem.Visible = true;
+            simConnectCommandSequenceToolStripMenuItem.Visible = true;
             deleteToolStripMenuItem.Visible = false;
             deleteToolStripSeparator.Visible = false;
             colorToolStripMenuItem.Visible = false;
@@ -1065,6 +1163,10 @@ namespace FIPDisplayProfiler
                     keySequenceToolStripMenuItem.Visible = false;
                     FSUIPCCommandToolStripMenuItem.Visible = false;
                     FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                    xPlaneCommandToolStripMenuItem.Visible = false;
+                    xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                    simConnectCommandToolStripMenuItem.Visible = false;
+                    simConnectCommandSequenceToolStripMenuItem.Visible = false;
                     colorToolStripMenuItem.Visible = false;
                     deleteToolStripSeparator.Visible = false;
                     deleteToolStripMenuItem.Visible = false;
@@ -1079,6 +1181,10 @@ namespace FIPDisplayProfiler
                             keyPressToolStripMenuItem.Visible = false;
                             FSUIPCCommandToolStripMenuItem.Visible = false;
                             FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
                             keySequenceToolStripMenuItem.Visible = false;
                             colorToolStripMenuItem.Visible = true;
                             FIPWindowsCommandButton windowsCommandButton = button as FIPWindowsCommandButton;
@@ -1122,6 +1228,10 @@ namespace FIPDisplayProfiler
                             keyPressToolStripMenuItem.Visible = false;
                             FSUIPCCommandToolStripMenuItem.Visible = false;
                             FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
                             keySequenceToolStripMenuItem.Visible = false;
                         }
                         else if (typeof(FIPKeyPressButton).IsAssignableFrom(button.GetType()))
@@ -1130,6 +1240,10 @@ namespace FIPDisplayProfiler
                             oSCommandToolStripMenuItem.Visible = false;
                             FSUIPCCommandToolStripMenuItem.Visible = false;
                             FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
                             keySequenceToolStripMenuItem.Visible = false;
                         }
                         else if (typeof(FIPKeySequenceButton).IsAssignableFrom(button.GetType()))
@@ -1138,6 +1252,10 @@ namespace FIPDisplayProfiler
                             oSCommandToolStripMenuItem.Visible = false;
                             FSUIPCCommandToolStripMenuItem.Visible = false;
                             FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
                             keyPressToolStripMenuItem.Visible = false;
                         }
                         else if (typeof(FIPFSUIPCCommandButton).IsAssignableFrom(button.GetType()))
@@ -1147,14 +1265,70 @@ namespace FIPDisplayProfiler
                             keyPressToolStripMenuItem.Visible = false;
                             keySequenceToolStripMenuItem.Visible = false;
                             FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
                         }
-                        else if (typeof(FIPCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                        else if (typeof(FIPXPlaneCommandButton).IsAssignableFrom(button.GetType()))
                         {
                             windowsCommandStripMenuItem.Visible = false;
                             oSCommandToolStripMenuItem.Visible = false;
                             keyPressToolStripMenuItem.Visible = false;
                             keySequenceToolStripMenuItem.Visible = false;
                             FSUIPCCommandToolStripMenuItem.Visible = false;
+                            FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
+                        }
+                        else if (typeof(FIPFSUIPCCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                        {
+                            windowsCommandStripMenuItem.Visible = false;
+                            oSCommandToolStripMenuItem.Visible = false;
+                            keyPressToolStripMenuItem.Visible = false;
+                            keySequenceToolStripMenuItem.Visible = false;
+                            FSUIPCCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
+                        }
+                        else if (typeof(FIPXPlaneCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                        {
+                            windowsCommandStripMenuItem.Visible = false;
+                            oSCommandToolStripMenuItem.Visible = false;
+                            keyPressToolStripMenuItem.Visible = false;
+                            keySequenceToolStripMenuItem.Visible = false;
+                            FSUIPCCommandToolStripMenuItem.Visible = false;
+                            FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
+                        }
+                        else if (typeof(FIPSimConnectCommandButton).IsAssignableFrom(button.GetType()))
+                        {
+                            windowsCommandStripMenuItem.Visible = false;
+                            oSCommandToolStripMenuItem.Visible = false;
+                            keyPressToolStripMenuItem.Visible = false;
+                            keySequenceToolStripMenuItem.Visible = false;
+                            FSUIPCCommandToolStripMenuItem.Visible = false;
+                            FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandSequenceToolStripMenuItem.Visible = false;
+                        }
+                        else if (typeof(FIPSimConnectCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                        {
+                            windowsCommandStripMenuItem.Visible = false;
+                            oSCommandToolStripMenuItem.Visible = false;
+                            keyPressToolStripMenuItem.Visible = false;
+                            keySequenceToolStripMenuItem.Visible = false;
+                            FSUIPCCommandToolStripMenuItem.Visible = false;
+                            FSUIPCCommandSequenceToolStripMenuItem.Visible = false;
+                            xPlaneCommandToolStripMenuItem.Visible = false;
+                            xPlaneCommandSequenceToolStripMenuItem.Visible = false;
+                            simConnectCommandToolStripMenuItem.Visible = false;
                         }
                         deleteToolStripSeparator.Visible = true;
                         deleteToolStripMenuItem.Visible = true;
@@ -1234,6 +1408,10 @@ namespace FIPDisplayProfiler
                     {
                         selectedPage.AddButton(button);
                     }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
+                    }
                     UpdateLeds();
                 }
             }
@@ -1267,6 +1445,10 @@ namespace FIPDisplayProfiler
                     if (newButton)
                     {
                         selectedPage.AddButton(button);
+                    }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
                     }
                     UpdateLeds();
                 }
@@ -1302,6 +1484,10 @@ namespace FIPDisplayProfiler
                     {
                         selectedPage.AddButton(button);
                     }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
+                    }
                     UpdateLeds();
                 }
             }
@@ -1315,7 +1501,7 @@ namespace FIPDisplayProfiler
                 bool newButton = false;
                 ToolStripMenuItem item = sender as ToolStripMenuItem;
                 FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
-                if (button == null || !typeof(FIPFSUIPCCommandButton).IsAssignableFrom(button.GetType()))
+                if (button == null || !typeof(FIPCommandButton).IsAssignableFrom(button.GetType()))
                 {
                     button = new FIPFSUIPCCommandButton()
                     {
@@ -1336,6 +1522,10 @@ namespace FIPDisplayProfiler
                     {
                         selectedPage.AddButton(button);
                     }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
+                    }
                     UpdateLeds();
                 }
             }
@@ -1351,7 +1541,7 @@ namespace FIPDisplayProfiler
                 FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
                 if (button == null || !typeof(FIPCommandSequenceButton).IsAssignableFrom(button.GetType()))
                 {
-                    button = new FIPCommandSequenceButton()
+                    button = new FIPFSUIPCCommandSequenceButton()
                     {
                         Font = selectedPage.Properties.Font,
                         Color = selectedPage.Properties.FontColor,
@@ -1362,13 +1552,17 @@ namespace FIPDisplayProfiler
                 }
                 FSUIPCCommandSequenceDlg dlg = new FSUIPCCommandSequenceDlg()
                 {
-                    Button = button as FIPCommandSequenceButton
+                    Button = button as FIPFSUIPCCommandSequenceButton
                 };
                 if (dlg.ShowDialog(this) == DialogResult.OK)
                 {
                     if (newButton)
                     {
                         selectedPage.AddButton(button);
+                    }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
                     }
                     UpdateLeds();
                 }
@@ -1447,15 +1641,19 @@ namespace FIPDisplayProfiler
                 oSCommandToolStripMenuItem,
                 keyPressToolStripMenuItem,
                 keySequenceToolStripMenuItem,
+                simConnectCommandToolStripMenuItem,
+                simConnectCommandSequenceToolStripMenuItem,
                 FSUIPCCommandToolStripMenuItem,
                 FSUIPCCommandSequenceToolStripMenuItem,
+                xPlaneCommandToolStripMenuItem,
+                xPlaneCommandSequenceToolStripMenuItem,
                 deleteToolStripSeparator,
                 colorToolStripMenuItem,
                 deleteToolStripMenuItem
             });
             if (contextMenuKnob.Tag == pbKnobLeft)
             {
-                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Left;
+                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = xPlaneCommandToolStripMenuItem.Tag = xPlaneCommandSequenceToolStripMenuItem.Tag = simConnectCommandToolStripMenuItem.Tag = simConnectCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Left;
                 foreach (ToolStripMenuItem item in windowsCommandStripMenuItem.DropDownItems)
                 {
                     item.Tag = SoftButtons.Left;
@@ -1468,7 +1666,7 @@ namespace FIPDisplayProfiler
             }
             else
             {
-                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Down;
+                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = xPlaneCommandToolStripMenuItem.Tag = xPlaneCommandSequenceToolStripMenuItem.Tag = simConnectCommandToolStripMenuItem.Tag = simConnectCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Down;
                 foreach (ToolStripMenuItem item in windowsCommandStripMenuItem.DropDownItems)
                 {
                     item.Tag = SoftButtons.Down;
@@ -1492,15 +1690,19 @@ namespace FIPDisplayProfiler
                 oSCommandToolStripMenuItem,
                 keyPressToolStripMenuItem,
                 keySequenceToolStripMenuItem,
+                simConnectCommandToolStripMenuItem,
+                simConnectCommandSequenceToolStripMenuItem,
                 FSUIPCCommandToolStripMenuItem,
                 FSUIPCCommandSequenceToolStripMenuItem,
+                xPlaneCommandToolStripMenuItem,
+                xPlaneCommandSequenceToolStripMenuItem,
                 deleteToolStripSeparator,
                 colorToolStripMenuItem,
                 deleteToolStripMenuItem
             });
             if (contextMenuKnob.Tag == pbKnobLeft)
             {
-                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Right;
+                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = xPlaneCommandToolStripMenuItem.Tag = xPlaneCommandSequenceToolStripMenuItem.Tag = simConnectCommandToolStripMenuItem.Tag = simConnectCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Right;
                 foreach (ToolStripMenuItem item in windowsCommandStripMenuItem.DropDownItems)
                 {
                     item.Tag = SoftButtons.Right;
@@ -1513,7 +1715,7 @@ namespace FIPDisplayProfiler
             }
             else
             {
-                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Up;
+                deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = xPlaneCommandSequenceToolStripMenuItem.Tag = xPlaneCommandToolStripMenuItem.Tag = simConnectCommandSequenceToolStripMenuItem.Tag = simConnectCommandToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = SoftButtons.Up;
                 foreach (ToolStripMenuItem item in windowsCommandStripMenuItem.DropDownItems)
                 {
                     item.Tag = SoftButtons.Up;
@@ -1942,13 +2144,17 @@ namespace FIPDisplayProfiler
                 oSCommandToolStripMenuItem,
                 keyPressToolStripMenuItem,
                 keySequenceToolStripMenuItem,
+                simConnectCommandToolStripMenuItem,
+                simConnectCommandSequenceToolStripMenuItem,
                 FSUIPCCommandToolStripMenuItem,
                 FSUIPCCommandSequenceToolStripMenuItem,
+                xPlaneCommandToolStripMenuItem,
+                xPlaneCommandSequenceToolStripMenuItem,
                 deleteToolStripSeparator,
                 colorToolStripMenuItem,
                 deleteToolStripMenuItem
             });
-            deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = contextMenuBindType.Tag;
+            deleteToolStripMenuItem.Tag = colorToolStripMenuItem.Tag = keySequenceToolStripMenuItem.Tag = keyPressToolStripMenuItem.Tag = FSUIPCCommandToolStripMenuItem.Tag = FSUIPCCommandSequenceToolStripMenuItem.Tag = xPlaneCommandToolStripMenuItem.Tag = xPlaneCommandSequenceToolStripMenuItem.Tag = simConnectCommandToolStripMenuItem.Tag = simConnectCommandSequenceToolStripMenuItem.Tag = oSCommandToolStripMenuItem.Tag = windowsCommandStripMenuItem.Tag = contextMenuBindType.Tag;
             foreach(ToolStripMenuItem item in windowsCommandStripMenuItem.DropDownItems)
             {
                 item.Tag = contextMenuBindType.Tag;
@@ -2405,6 +2611,158 @@ namespace FIPDisplayProfiler
             foreach (FIPMap mapPage in Device.Pages.Where(p => typeof(FIPMap).IsAssignableFrom(p.GetType())))
             {
                 mapPage.UpdatePage();
+            }
+        }
+
+        private void xPlaneCommandToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                bool newButton = false;
+                ToolStripMenuItem item = sender as ToolStripMenuItem;
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
+                if (button == null || !typeof(FIPCommandButton).IsAssignableFrom(button.GetType()))
+                {
+                    button = new FIPXPlaneCommandButton()
+                    {
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
+                        SoftButton = (SoftButtons)item.Tag,
+                        Page = selectedPage
+                    };
+                    newButton = true;
+                }
+                XPlaneCommandDlg dlg = new XPlaneCommandDlg()
+                {
+                    Button = button as FIPXPlaneCommandButton
+                };
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    if (newButton)
+                    {
+                        selectedPage.AddButton(button);
+                    }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
+                    }
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void xPlaneCommandSequenceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                bool newButton = false;
+                ToolStripMenuItem item = sender as ToolStripMenuItem;
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
+                if (button == null || !typeof(FIPCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                {
+                    button = new FIPXPlaneCommandSequenceButton()
+                    {
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
+                        SoftButton = (SoftButtons)item.Tag,
+                        Page = selectedPage
+                    };
+                    newButton = true;
+                }
+                XPlaneCommandSequenceDlg dlg = new XPlaneCommandSequenceDlg()
+                {
+                    Button = button as FIPXPlaneCommandSequenceButton
+                };
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    if (newButton)
+                    {
+                        selectedPage.AddButton(button);
+                    }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
+                    }
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void simConnectCommandToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                bool newButton = false;
+                ToolStripMenuItem item = sender as ToolStripMenuItem;
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
+                if (button == null || !typeof(FIPCommandButton).IsAssignableFrom(button.GetType()))
+                {
+                    button = new FIPSimConnectCommandButton()
+                    {
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
+                        SoftButton = (SoftButtons)item.Tag,
+                        Page = selectedPage
+                    };
+                    newButton = true;
+                }
+                SimConnectCommandDlg dlg = new SimConnectCommandDlg()
+                {
+                    Button = button as FIPSimConnectCommandButton
+                };
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    if (newButton)
+                    {
+                        selectedPage.AddButton(button);
+                    }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
+                    }
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void simConnectCommandSequenceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                bool newButton = false;
+                ToolStripMenuItem item = sender as ToolStripMenuItem;
+                FIPButton button = selectedPage.GetButton((SoftButtons)item.Tag);
+                if (button == null || !typeof(FIPCommandSequenceButton).IsAssignableFrom(button.GetType()))
+                {
+                    button = new FIPSimConnectCommandSequenceButton()
+                    {
+                        Font = selectedPage.Properties.Font,
+                        Color = selectedPage.Properties.FontColor,
+                        SoftButton = (SoftButtons)item.Tag,
+                        Page = selectedPage
+                    };
+                    newButton = true;
+                }
+                SimConnectCommandSequenceDlg dlg = new SimConnectCommandSequenceDlg()
+                {
+                    Button = button as FIPSimConnectCommandSequenceButton
+                };
+                if (dlg.ShowDialog(this) == DialogResult.OK)
+                {
+                    if (newButton)
+                    {
+                        selectedPage.AddButton(button);
+                    }
+                    else
+                    {
+                        selectedPage.FireButtonChange(button);
+                    }
+                    UpdateLeds();
+                }
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using FIPToolKit.Drawing;
 using FIPToolKit.FlightSim;
-using FSUIPC;
 using Saitek.DirectOutput;
 using System;
 using System.Drawing;
@@ -22,7 +21,7 @@ namespace FIPToolKit.Models
 
         private void FlightSimProvider_OnFlightDataReceived(FlightSimProviderBase sender)
         {
-            AltimeterProperties.Value = FlightSimProvider.AltitudeFeet;
+            AltimeterProperties.Value = FlightSimProvider.AltitudeMSL;
             UpdateGauge();
         }
 
@@ -34,7 +33,13 @@ namespace FIPToolKit.Models
             }
         }
 
-		protected override void CreateGauge()
+        public override void InvalidatePage()
+        {
+            CreateGauge();
+            base.InvalidatePage();
+        }
+
+        protected override void CreateGauge()
         {
 			try
 			{
@@ -409,24 +414,8 @@ namespace FIPToolKit.Models
 				case SoftButtons.Down:
 					return false;
 				default:
-					return base.IsButtonAssignable(softButton);
+					return true;
 			}
 		}
-
-        public override void ExecuteSoftButton(SoftButtons softButton)
-        {
-			switch(softButton)
-            {
-				case SoftButtons.Up:
-					FSUIPCConnection.SendControlToFS(FsControl.KOHLSMAN_INC, 0);
-					break;
-				case SoftButtons.Down:
-					FSUIPCConnection.SendControlToFS(FsControl.KOHLSMAN_DEC, 0);
-					break;
-				default:
-					base.ExecuteSoftButton(softButton);
-					break;
-            }
-        }
     }
 }

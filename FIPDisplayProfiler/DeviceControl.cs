@@ -1569,68 +1569,6 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void pbKnobLeft_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Left) && selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Right))
-                {
-                    FIPButton leftButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Left);
-                    FIPButton rightButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Right);
-                    volumeControlToolStripMenuItem.Checked = ((leftButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(leftButton.GetType()) && ((FIPWindowsCommandButton)leftButton).Command.WindowsCommand == FIPWindowsCommands.VolumeDown) && (rightButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(rightButton.GetType()) && ((FIPWindowsCommandButton)rightButton).Command.WindowsCommand == FIPWindowsCommands.VolumeUp));
-                    volumeControlToolStripMenuItem.Visible = (volumeControlToolStripMenuItem.Checked || (leftButton == null && rightButton == null));
-                    leftToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
-                    rightToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
-                    contextMenuKnob.Tag = pbKnobLeft;
-                    contextMenuKnob.Show(Cursor.Position);
-                }
-                else
-                {
-                    Point p = pbKnobLeft.PointToClient(Cursor.Position);
-                    if (p.X < pbKnobLeft.Width / 2)
-                    {
-                        selectedPage.ExecuteSoftButton(SoftButtons.Left);
-                    }
-                    else
-                    {
-                        selectedPage.ExecuteSoftButton(SoftButtons.Right);
-                    }
-                }
-            }
-        }
-
-        private void pbKnobRight_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Up) && selectedPage.IsButtonAssignable(Saitek.DirectOutput.SoftButtons.Down))
-                {
-                    FIPButton upButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Up);
-                    FIPButton downButton = selectedPage.GetButton(Saitek.DirectOutput.SoftButtons.Down);
-                    volumeControlToolStripMenuItem.Checked = ((upButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(upButton.GetType()) && ((FIPWindowsCommandButton)upButton).Command.WindowsCommand == FIPWindowsCommands.VolumeUp) && (downButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(downButton.GetType()) && ((FIPWindowsCommandButton)downButton).Command.WindowsCommand == FIPWindowsCommands.VolumeDown));
-                    volumeControlToolStripMenuItem.Visible = (volumeControlToolStripMenuItem.Checked || (upButton == null && downButton == null));
-                    leftToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
-                    rightToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
-                    contextMenuKnob.Tag = pbKnobRight;
-                    contextMenuKnob.Show(Cursor.Position);
-                }
-                else
-                {
-                    Point p = pbKnobRight.PointToClient(Cursor.Position);
-                    if(p.X < pbKnobRight.Width / 2)
-                    {
-                        selectedPage.ExecuteSoftButton(SoftButtons.Down);
-                    }
-                    else
-                    {
-                        selectedPage.ExecuteSoftButton(SoftButtons.Up);
-                    }
-                }
-            }
-        }
-
         private void leftToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
             ShowContextMenuBinding();
@@ -2006,132 +1944,6 @@ namespace FIPDisplayProfiler
                     ((FIPWindowsCommandButton)button).Command = FIPWindowsCommandButton.FIPWindowsCommandCalculator;
                 }
                 UpdateLeds();
-            }
-        }
-
-        private void pbS1Button_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(SoftButtons.Button1))
-                {
-                    ShowContextMenuBinding();
-                    FIPButton button = selectedPage.GetButton(SoftButtons.Button1);
-                    HideContextMenuBindings(button);
-                    contextMenuBindType.Tag = SoftButtons.Button1;
-                    contextMenuBindType.Show(Cursor.Position);
-                }
-                else
-                {
-                    selectedPage.ExecuteSoftButton(SoftButtons.Button1);
-                    UpdateLeds();
-                }
-            }
-        }
-
-        private void pbS2Button_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(SoftButtons.Button2))
-                {
-                    ShowContextMenuBinding();
-                    FIPButton button = selectedPage.GetButton(SoftButtons.Button2);
-                    HideContextMenuBindings(button);
-                    contextMenuBindType.Tag = SoftButtons.Button2;
-                    contextMenuBindType.Show(Cursor.Position);
-                }
-                else
-                {
-                    selectedPage.ExecuteSoftButton(SoftButtons.Button2);
-                    UpdateLeds();
-                }
-            }
-        }
-
-        private void pbS3Button_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(SoftButtons.Button3))
-                {
-                    ShowContextMenuBinding();
-                    FIPButton button = selectedPage.GetButton(SoftButtons.Button3);
-                    HideContextMenuBindings(button);
-                    contextMenuBindType.Tag = SoftButtons.Button3;
-                    contextMenuBindType.Show(Cursor.Position);
-                }
-                else
-                {
-                    selectedPage.ExecuteSoftButton(SoftButtons.Button3);
-                    UpdateLeds();
-                }
-            }
-        }
-
-        private void pbS4Button_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(SoftButtons.Button4))
-                {
-                    ShowContextMenuBinding();
-                    FIPButton button = selectedPage.GetButton(SoftButtons.Button4);
-                    HideContextMenuBindings(button);
-                    contextMenuBindType.Tag = SoftButtons.Button4;
-                    contextMenuBindType.Show(Cursor.Position);
-                }
-                else
-                {
-                    selectedPage.ExecuteSoftButton(SoftButtons.Button4);
-                    UpdateLeds();
-                }
-            }
-        }
-
-        private void pbS5Button_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(SoftButtons.Button5))
-                {
-                    ShowContextMenuBinding();
-                    FIPButton button = selectedPage.GetButton(SoftButtons.Button5);
-                    HideContextMenuBindings(button);
-                    contextMenuBindType.Tag = SoftButtons.Button5;
-                    contextMenuBindType.Show(Cursor.Position);
-                }
-                else
-                {
-                    selectedPage.ExecuteSoftButton(SoftButtons.Button5);
-                    UpdateLeds();
-                }
-            }
-        }
-
-        private void pbS6Button_Click(object sender, EventArgs e)
-        {
-            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
-            if (selectedPage != null)
-            {
-                if (selectedPage.IsButtonAssignable(SoftButtons.Button6))
-                {
-                    ShowContextMenuBinding();
-                    FIPButton button = selectedPage.GetButton(SoftButtons.Button6);
-                    HideContextMenuBindings(button);
-                    contextMenuBindType.Tag = SoftButtons.Button6;
-                    contextMenuBindType.Show(Cursor.Position);
-                }
-                else
-                {
-                    selectedPage.ExecuteSoftButton(SoftButtons.Button6);
-                    UpdateLeds();
-                }
             }
         }
 
@@ -2762,6 +2574,194 @@ namespace FIPDisplayProfiler
                         selectedPage.FireButtonChange(button);
                     }
                     UpdateLeds();
+                }
+            }
+        }
+
+        private void pbS1ButtonOn_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button1) && e.Button == MouseButtons.Right)
+                {
+                    ShowContextMenuBinding();
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button1);
+                    HideContextMenuBindings(button);
+                    contextMenuBindType.Tag = SoftButtons.Button1;
+                    contextMenuBindType.Show(Cursor.Position);
+                }
+                else
+                {
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button1);
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void pbS2ButtonOn_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button2) && e.Button == MouseButtons.Right)
+                {
+                    ShowContextMenuBinding();
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button2);
+                    HideContextMenuBindings(button);
+                    contextMenuBindType.Tag = SoftButtons.Button2;
+                    contextMenuBindType.Show(Cursor.Position);
+                }
+                else
+                {
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button2);
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void pbS3ButtonOn_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button3) && e.Button == MouseButtons.Right)
+                {
+                    ShowContextMenuBinding();
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button3);
+                    HideContextMenuBindings(button);
+                    contextMenuBindType.Tag = SoftButtons.Button3;
+                    contextMenuBindType.Show(Cursor.Position);
+                }
+                else
+                {
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button3);
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void pbS4ButtonOn_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button4) && e.Button == MouseButtons.Right)
+                {
+                    ShowContextMenuBinding();
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button4);
+                    HideContextMenuBindings(button);
+                    contextMenuBindType.Tag = SoftButtons.Button4;
+                    contextMenuBindType.Show(Cursor.Position);
+                }
+                else
+                {
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button4);
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void pbS5ButtonOn_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button5) && e.Button == MouseButtons.Right)
+                {
+                    ShowContextMenuBinding();
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button5);
+                    HideContextMenuBindings(button);
+                    contextMenuBindType.Tag = SoftButtons.Button5;
+                    contextMenuBindType.Show(Cursor.Position);
+                }
+                else
+                {
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button5);
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void pbS6ButtonOn_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Button6) && e.Button == MouseButtons.Right)
+                {
+                    ShowContextMenuBinding();
+                    FIPButton button = selectedPage.GetButton(SoftButtons.Button6);
+                    HideContextMenuBindings(button);
+                    contextMenuBindType.Tag = SoftButtons.Button6;
+                    contextMenuBindType.Show(Cursor.Position);
+                }
+                else
+                {
+                    selectedPage.ExecuteSoftButton(SoftButtons.Button6);
+                    UpdateLeds();
+                }
+            }
+        }
+
+        private void pbKnobLeft_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Left) && selectedPage.IsButtonAssignable(SoftButtons.Right) && e.Button == MouseButtons.Right)
+                {
+                    FIPButton leftButton = selectedPage.GetButton(SoftButtons.Left);
+                    FIPButton rightButton = selectedPage.GetButton(SoftButtons.Right);
+                    volumeControlToolStripMenuItem.Checked = ((leftButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(leftButton.GetType()) && ((FIPWindowsCommandButton)leftButton).Command.WindowsCommand == FIPWindowsCommands.VolumeDown) && (rightButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(rightButton.GetType()) && ((FIPWindowsCommandButton)rightButton).Command.WindowsCommand == FIPWindowsCommands.VolumeUp));
+                    volumeControlToolStripMenuItem.Visible = (volumeControlToolStripMenuItem.Checked || (leftButton == null && rightButton == null));
+                    leftToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
+                    rightToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
+                    contextMenuKnob.Tag = pbKnobLeft;
+                    contextMenuKnob.Show(Cursor.Position);
+                }
+                else
+                {
+                    Point p = pbKnobLeft.PointToClient(Cursor.Position);
+                    if (p.X < pbKnobLeft.Width / 2)
+                    {
+                        selectedPage.ExecuteSoftButton(SoftButtons.Left);
+                    }
+                    else
+                    {
+                        selectedPage.ExecuteSoftButton(SoftButtons.Right);
+                    }
+                }
+            }
+        }
+
+        private void pbKnobRight_MouseDown(object sender, MouseEventArgs e)
+        {
+            FIPPage selectedPage = Device.Pages.FirstOrDefault(p => p.Properties == SelectedPage);
+            if (selectedPage != null)
+            {
+                if (selectedPage.IsButtonAssignable(SoftButtons.Up) && selectedPage.IsButtonAssignable(SoftButtons.Down) && e.Button == MouseButtons.Right)
+                {
+                    FIPButton upButton = selectedPage.GetButton(SoftButtons.Up);
+                    FIPButton downButton = selectedPage.GetButton(SoftButtons.Down);
+                    volumeControlToolStripMenuItem.Checked = ((upButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(upButton.GetType()) && ((FIPWindowsCommandButton)upButton).Command.WindowsCommand == FIPWindowsCommands.VolumeUp) && (downButton != null && typeof(FIPWindowsCommandButton).IsAssignableFrom(downButton.GetType()) && ((FIPWindowsCommandButton)downButton).Command.WindowsCommand == FIPWindowsCommands.VolumeDown));
+                    volumeControlToolStripMenuItem.Visible = (volumeControlToolStripMenuItem.Checked || (upButton == null && downButton == null));
+                    leftToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
+                    rightToolStripMenuItem.Visible = !volumeControlToolStripMenuItem.Checked;
+                    contextMenuKnob.Tag = pbKnobRight;
+                    contextMenuKnob.Show(Cursor.Position);
+                }
+                else
+                {
+                    Point p = pbKnobRight.PointToClient(Cursor.Position);
+                    if (p.X < pbKnobRight.Width / 2)
+                    {
+                        selectedPage.ExecuteSoftButton(SoftButtons.Down);
+                    }
+                    else
+                    {
+                        selectedPage.ExecuteSoftButton(SoftButtons.Up);
+                    }
                 }
             }
         }

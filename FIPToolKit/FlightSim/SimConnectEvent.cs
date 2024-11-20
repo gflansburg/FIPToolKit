@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FIPToolKit.Tools;
 
 namespace FIPToolKit.FlightSim
 {
     public enum SimConnectEventId : uint
     {
-        Abort = 1,
+        SelectAttributeToWrite,
+        Abort,
         AddFuelQuantity,
         Adf,
         Adf1Dec,
@@ -1935,7 +1934,18 @@ namespace FIPToolKit.FlightSim
     public class SimConnectEvent
     {
         public SimConnectEventId Id { get; set; }
-        public string Name { get; set; }
+        public string Name 
+        { 
+            get
+            {
+                if (Id == SimConnectEventId.SelectAttributeToWrite)
+                {
+                    return "--Select Attribute To Write--";
+                }
+                return Id.ToString().ToTitleCase();
+            }
+        }
+        public string Command { get; set; }
         public bool IsInitialized { get; set; }
         public DateTime LastUpdate { get; set; }
         public string Units { get; set; }

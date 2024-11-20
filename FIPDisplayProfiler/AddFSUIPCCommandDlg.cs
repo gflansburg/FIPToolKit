@@ -31,12 +31,6 @@ namespace FIPDisplayProfiler
             public string Name { get; set; }
         }
 
-        private class FSUIPCCommandDlgAction
-        {
-            public FIPButtonAction Action { get; set; }
-            public string Name { get; set; }
-        }
-
         private class FSUIPCCommandDlgFsControl
         {
             public FsControl? Control { get; set; }
@@ -82,7 +76,7 @@ namespace FIPDisplayProfiler
             }
             foreach (FIPButtonAction action in (FIPButtonAction[])Enum.GetValues(typeof(FIPButtonAction)))
             {
-                cbAction.Items.Add(new FSUIPCCommandDlgAction()
+                cbAction.Items.Add(new CommandDlgAction()
                 {
                     Action = action,
                     Name = Regex.Replace(action.ToString(), "(\\B[A-Z])", " $1").Replace(" A ", " a ").Replace(" And ", " and ")
@@ -180,8 +174,8 @@ namespace FIPDisplayProfiler
         {
             for (int i = 0; i < cbCommandSet.Items.Count; i++)
             {
-                FSUIPCCommandDlgAction fSUIPCCommandDlgAction = cbAction.Items[i] as FSUIPCCommandDlgAction;
-                if (fSUIPCCommandDlgAction.Action == action)
+                CommandDlgAction commandDlgAction = cbAction.Items[i] as CommandDlgAction;
+                if (commandDlgAction.Action == action)
                 {
                     return i;
                 }
@@ -244,7 +238,7 @@ namespace FIPDisplayProfiler
         private void btnOK_Click(object sender, EventArgs e)
         {
             Button.Break = ((AddFSUIPCCommandDlgBreak)cbBreak.SelectedItem).BreakLength;
-            Button.Action = (cbAction.SelectedItem as FSUIPCCommandDlgAction).Action;
+            Button.Action = (cbAction.SelectedItem as CommandDlgAction).Action;
             Button.ControlSet = (cbCommandSet.SelectedItem as FSUIPCCommandDlgControlSet).ControlSet;
             Button.Value = tbValue.Text;
             Button.Command = (cbFsControl.SelectedItem as FSUIPCCommandDlgFsControl).Control.ToString();
@@ -298,13 +292,13 @@ namespace FIPDisplayProfiler
                     switch (controlSet.ControlSet)
                     {
                         case FIPFSUIPCControlSet.FsControl:
-                            return cbFsControl.SelectedIndex > 0;
+                            return cbFsControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                         case FIPFSUIPCControlSet.FsuipcControl:
-                            return cbFSUIPCControl.SelectedIndex > 0;
+                            return cbFSUIPCControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                         case FIPFSUIPCControlSet.FsuipcAutoPilotControl:
-                            return cbFSUIPCAutoPilotControl.SelectedIndex > 0;
+                            return cbFSUIPCAutoPilotControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                         case FIPFSUIPCControlSet.FsuipcAxisControl:
-                            return cbFSUIPCAxisControl.SelectedIndex > 0;
+                            return cbFSUIPCAxisControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                     }
                 }
                 return false;
@@ -357,7 +351,7 @@ namespace FIPDisplayProfiler
 
         private void cbAction_SelectedIndexChanged(object sender, EventArgs e)
         {
-            FSUIPCCommandDlgAction action = cbAction.SelectedItem as FSUIPCCommandDlgAction;
+            CommandDlgAction action = cbAction.SelectedItem as CommandDlgAction;
             tbValue.Enabled = (action.Action == FIPButtonAction.Set);
         }
 

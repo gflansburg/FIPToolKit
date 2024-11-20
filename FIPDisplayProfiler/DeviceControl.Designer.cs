@@ -48,6 +48,8 @@ namespace FIPDisplayProfiler
             this.oSCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.keyPressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.keySequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.simConnectCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.simConnectCommandSequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FSUIPCCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.FSUIPCCommandSequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.xPlaneCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,8 +80,6 @@ namespace FIPDisplayProfiler
             this.pbS6ButtonOn = new System.Windows.Forms.PictureBox();
             this.pbPageButtonsOn = new System.Windows.Forms.PictureBox();
             this.pbS1ButtonOn = new System.Windows.Forms.PictureBox();
-            this.simConnectCommandToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.simConnectCommandSequenceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuBindType.SuspendLayout();
             this.contextMenuKnob.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.fipImage)).BeginInit();
@@ -143,7 +143,7 @@ namespace FIPDisplayProfiler
             this.colorToolStripMenuItem,
             this.deleteToolStripMenuItem});
             this.contextMenuBindType.Name = "contextMenuBindType";
-            this.contextMenuBindType.Size = new System.Drawing.Size(263, 296);
+            this.contextMenuBindType.Size = new System.Drawing.Size(263, 274);
             this.contextMenuBindType.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuBindType_Opening);
             // 
             // windowsCommandStripMenuItem
@@ -253,6 +253,20 @@ namespace FIPDisplayProfiler
             this.keySequenceToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
             this.keySequenceToolStripMenuItem.Text = "Key &Sequence...";
             this.keySequenceToolStripMenuItem.Click += new System.EventHandler(this.keySequenceToolStripMenuItem_Click);
+            // 
+            // simConnectCommandToolStripMenuItem
+            // 
+            this.simConnectCommandToolStripMenuItem.Name = "simConnectCommandToolStripMenuItem";
+            this.simConnectCommandToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.simConnectCommandToolStripMenuItem.Text = "SimConnect Command...";
+            this.simConnectCommandToolStripMenuItem.Click += new System.EventHandler(this.simConnectCommandToolStripMenuItem_Click);
+            // 
+            // simConnectCommandSequenceToolStripMenuItem
+            // 
+            this.simConnectCommandSequenceToolStripMenuItem.Name = "simConnectCommandSequenceToolStripMenuItem";
+            this.simConnectCommandSequenceToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
+            this.simConnectCommandSequenceToolStripMenuItem.Text = "SimConnect Command Sequence...";
+            this.simConnectCommandSequenceToolStripMenuItem.Click += new System.EventHandler(this.simConnectCommandSequenceToolStripMenuItem_Click);
             // 
             // FSUIPCCommandToolStripMenuItem
             // 
@@ -378,7 +392,7 @@ namespace FIPDisplayProfiler
             this.pbKnobRight.Size = new System.Drawing.Size(25, 25);
             this.pbKnobRight.TabIndex = 23;
             this.pbKnobRight.TabStop = false;
-            this.pbKnobRight.Click += new System.EventHandler(this.pbKnobRight_Click);
+            this.pbKnobRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbKnobRight_MouseDown);
             // 
             // pbKnobLeft
             // 
@@ -389,7 +403,7 @@ namespace FIPDisplayProfiler
             this.pbKnobLeft.Size = new System.Drawing.Size(25, 25);
             this.pbKnobLeft.TabIndex = 22;
             this.pbKnobLeft.TabStop = false;
-            this.pbKnobLeft.Click += new System.EventHandler(this.pbKnobLeft_Click);
+            this.pbKnobLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbKnobLeft_MouseDown);
             // 
             // pbS1ButtonOff
             // 
@@ -400,7 +414,7 @@ namespace FIPDisplayProfiler
             this.pbS1ButtonOff.Size = new System.Drawing.Size(26, 12);
             this.pbS1ButtonOff.TabIndex = 10;
             this.pbS1ButtonOff.TabStop = false;
-            this.pbS1ButtonOff.Click += new System.EventHandler(this.pbS1Button_Click);
+            this.pbS1ButtonOff.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS1ButtonOn_MouseDown);
             // 
             // pbS3ButtonOff
             // 
@@ -411,7 +425,7 @@ namespace FIPDisplayProfiler
             this.pbS3ButtonOff.Size = new System.Drawing.Size(26, 12);
             this.pbS3ButtonOff.TabIndex = 12;
             this.pbS3ButtonOff.TabStop = false;
-            this.pbS3ButtonOff.Click += new System.EventHandler(this.pbS3Button_Click);
+            this.pbS3ButtonOff.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS3ButtonOn_MouseDown);
             // 
             // pbS2ButtonOff
             // 
@@ -422,7 +436,7 @@ namespace FIPDisplayProfiler
             this.pbS2ButtonOff.Size = new System.Drawing.Size(26, 12);
             this.pbS2ButtonOff.TabIndex = 11;
             this.pbS2ButtonOff.TabStop = false;
-            this.pbS2ButtonOff.Click += new System.EventHandler(this.pbS2Button_Click);
+            this.pbS2ButtonOff.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS2ButtonOn_MouseDown);
             // 
             // pbS4ButtonOff
             // 
@@ -433,7 +447,7 @@ namespace FIPDisplayProfiler
             this.pbS4ButtonOff.Size = new System.Drawing.Size(26, 12);
             this.pbS4ButtonOff.TabIndex = 13;
             this.pbS4ButtonOff.TabStop = false;
-            this.pbS4ButtonOff.Click += new System.EventHandler(this.pbS4Button_Click);
+            this.pbS4ButtonOff.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS4ButtonOn_MouseDown);
             // 
             // pbS5ButtonOff
             // 
@@ -444,7 +458,7 @@ namespace FIPDisplayProfiler
             this.pbS5ButtonOff.Size = new System.Drawing.Size(26, 12);
             this.pbS5ButtonOff.TabIndex = 14;
             this.pbS5ButtonOff.TabStop = false;
-            this.pbS5ButtonOff.Click += new System.EventHandler(this.pbS5Button_Click);
+            this.pbS5ButtonOff.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS5ButtonOn_MouseDown);
             // 
             // pbS6ButtonOff
             // 
@@ -455,7 +469,19 @@ namespace FIPDisplayProfiler
             this.pbS6ButtonOff.Size = new System.Drawing.Size(26, 12);
             this.pbS6ButtonOff.TabIndex = 15;
             this.pbS6ButtonOff.TabStop = false;
-            this.pbS6ButtonOff.Click += new System.EventHandler(this.pbS6Button_Click);
+            this.pbS6ButtonOff.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS6ButtonOn_MouseDown);
+            // 
+            // pbS1ButtonOn
+            // 
+            this.pbS1ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pbS1ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s1_on;
+            this.pbS1ButtonOn.Location = new System.Drawing.Point(13, 32);
+            this.pbS1ButtonOn.Name = "pbS1ButtonOn";
+            this.pbS1ButtonOn.Size = new System.Drawing.Size(26, 12);
+            this.pbS1ButtonOn.TabIndex = 25;
+            this.pbS1ButtonOn.TabStop = false;
+            this.pbS1ButtonOn.Visible = false;
+            this.pbS1ButtonOn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS1ButtonOn_MouseDown);
             // 
             // pbS2ButtonOn
             // 
@@ -467,7 +493,7 @@ namespace FIPDisplayProfiler
             this.pbS2ButtonOn.TabIndex = 26;
             this.pbS2ButtonOn.TabStop = false;
             this.pbS2ButtonOn.Visible = false;
-            this.pbS2ButtonOn.Click += new System.EventHandler(this.pbS2Button_Click);
+            this.pbS2ButtonOn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS2ButtonOn_MouseDown);
             // 
             // pbS3ButtonOn
             // 
@@ -479,7 +505,7 @@ namespace FIPDisplayProfiler
             this.pbS3ButtonOn.TabIndex = 27;
             this.pbS3ButtonOn.TabStop = false;
             this.pbS3ButtonOn.Visible = false;
-            this.pbS3ButtonOn.Click += new System.EventHandler(this.pbS3Button_Click);
+            this.pbS3ButtonOn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS3ButtonOn_MouseDown);
             // 
             // pbS4ButtonOn
             // 
@@ -491,7 +517,7 @@ namespace FIPDisplayProfiler
             this.pbS4ButtonOn.TabIndex = 28;
             this.pbS4ButtonOn.TabStop = false;
             this.pbS4ButtonOn.Visible = false;
-            this.pbS4ButtonOn.Click += new System.EventHandler(this.pbS4Button_Click);
+            this.pbS4ButtonOn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS4ButtonOn_MouseDown);
             // 
             // pbS5ButtonOn
             // 
@@ -503,7 +529,7 @@ namespace FIPDisplayProfiler
             this.pbS5ButtonOn.TabIndex = 29;
             this.pbS5ButtonOn.TabStop = false;
             this.pbS5ButtonOn.Visible = false;
-            this.pbS5ButtonOn.Click += new System.EventHandler(this.pbS5Button_Click);
+            this.pbS5ButtonOn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS5ButtonOn_MouseDown);
             // 
             // pbS6ButtonOn
             // 
@@ -515,7 +541,7 @@ namespace FIPDisplayProfiler
             this.pbS6ButtonOn.TabIndex = 30;
             this.pbS6ButtonOn.TabStop = false;
             this.pbS6ButtonOn.Visible = false;
-            this.pbS6ButtonOn.Click += new System.EventHandler(this.pbS6Button_Click);
+            this.pbS6ButtonOn.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbS6ButtonOn_MouseDown);
             // 
             // pbPageButtonsOn
             // 
@@ -528,32 +554,6 @@ namespace FIPDisplayProfiler
             this.pbPageButtonsOn.TabStop = false;
             this.pbPageButtonsOn.Visible = false;
             this.pbPageButtonsOn.Click += new System.EventHandler(this.pbPageButtons_Click);
-            // 
-            // pbS1ButtonOn
-            // 
-            this.pbS1ButtonOn.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.pbS1ButtonOn.Image = global::FIPDisplayProfiler.Properties.Resources.fip_s1_on;
-            this.pbS1ButtonOn.Location = new System.Drawing.Point(13, 32);
-            this.pbS1ButtonOn.Name = "pbS1ButtonOn";
-            this.pbS1ButtonOn.Size = new System.Drawing.Size(26, 12);
-            this.pbS1ButtonOn.TabIndex = 25;
-            this.pbS1ButtonOn.TabStop = false;
-            this.pbS1ButtonOn.Visible = false;
-            this.pbS1ButtonOn.Click += new System.EventHandler(this.pbS1Button_Click);
-            // 
-            // simConnectCommandToolStripMenuItem
-            // 
-            this.simConnectCommandToolStripMenuItem.Name = "simConnectCommandToolStripMenuItem";
-            this.simConnectCommandToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
-            this.simConnectCommandToolStripMenuItem.Text = "SimConnect Command...";
-            this.simConnectCommandToolStripMenuItem.Click += new System.EventHandler(this.simConnectCommandToolStripMenuItem_Click);
-            // 
-            // simConnectCommandSequenceToolStripMenuItem
-            // 
-            this.simConnectCommandSequenceToolStripMenuItem.Name = "simConnectCommandSequenceToolStripMenuItem";
-            this.simConnectCommandSequenceToolStripMenuItem.Size = new System.Drawing.Size(262, 22);
-            this.simConnectCommandSequenceToolStripMenuItem.Text = "SimConnect Command Sequence...";
-            this.simConnectCommandSequenceToolStripMenuItem.Click += new System.EventHandler(this.simConnectCommandSequenceToolStripMenuItem_Click);
             // 
             // DeviceControl
             // 

@@ -33,7 +33,7 @@ namespace FIPToolKit.Models
         {
             if (FlightSimProvider.IsConnected)
             {
-                if (Action == FIPButtonAction.Set)
+                if (Action == FIPButtonAction.Set && !string.IsNullOrEmpty(Value))
                 {
                     float value;
                     if (float.TryParse(Value, out value))

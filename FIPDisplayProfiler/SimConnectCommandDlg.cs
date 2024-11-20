@@ -30,7 +30,7 @@ namespace FIPDisplayProfiler
             List<SimConnectEvent> events = SimConnectEvents.Instance.Events.Values.ToList();
             events.Sort((x, y) => x.Name.CompareTo(y.Name));
             cbSetValue.Items.AddRange(events.ToArray());
-            cbSetValue.Items.Insert(0, new SimConnectEvent() { Name = "--Select Attribute To Write--" });
+            cbSetValue.Items.Insert(0, new SimConnectEvent() { Id = SimConnectEventId.SelectAttributeToWrite });
         }
 
         private int IndexOfSetValue(string command)
@@ -144,7 +144,7 @@ namespace FIPDisplayProfiler
         {
             get
             {
-                return cbSetValue.SelectedIndex > 0 && !string.IsNullOrEmpty(tbValue.Text);
+                return cbSetValue.SelectedIndex > 0 && ((cbSetValue.SelectedItem as SimConnectEvent).Units.Equals("N/A", StringComparison.OrdinalIgnoreCase) || (!string.IsNullOrEmpty(tbValue.Text)));
             }
         }
 

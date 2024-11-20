@@ -185,7 +185,7 @@ namespace FIPToolKit.FlightSim
                 }
                 if (IsConnected)
                 {
-                    MicrosoftSimConnect.MapClientEventToSimEvent(evt.Id, evt.Name);
+                    MicrosoftSimConnect.MapClientEventToSimEvent(evt.Id, evt.Command);
                 }
             }
         }
@@ -528,7 +528,7 @@ namespace FIPToolKit.FlightSim
 
                     foreach(SimConnectEvent evt in Events.Values)
                     {
-                        MicrosoftSimConnect.MapClientEventToSimEvent(evt.Id, evt.Name);
+                        MicrosoftSimConnect.MapClientEventToSimEvent(evt.Id, evt.Command);
                     }
 
                     MicrosoftSimConnect.SubscribeToSystemEvent(SYSTEM_EVENT.SIM, "Sim");

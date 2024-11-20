@@ -344,13 +344,13 @@ namespace FIPDisplayProfiler
                     switch (controlSet.ControlSet)
                     {
                         case FIPFSUIPCControlSet.FsControl:
-                            return cbFsControl.SelectedIndex > 0;
+                            return cbFsControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                         case FIPFSUIPCControlSet.FsuipcControl:
-                            return cbFSUIPCControl.SelectedIndex > 0;
+                            return cbFSUIPCControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                         case FIPFSUIPCControlSet.FsuipcAutoPilotControl:
-                            return cbFSUIPCAutoPilotControl.SelectedIndex > 0;
+                            return cbFSUIPCAutoPilotControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                         case FIPFSUIPCControlSet.FsuipcAxisControl:
-                            return cbFSUIPCAxisControl.SelectedIndex > 0;
+                            return cbFSUIPCAxisControl.SelectedIndex > 0 && (cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Toggle || ((cbAction.SelectedItem as CommandDlgAction).Action == FIPButtonAction.Set && !string.IsNullOrEmpty(tbValue.Text));
                     }
                 }
                 return false;

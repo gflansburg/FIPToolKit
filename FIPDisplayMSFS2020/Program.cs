@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace FIPDisplayMSFS2020
+namespace FIPDisplayMSFS
 {
     // Commandline options
     public class Options

@@ -7,8 +7,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{D9BDAA4A-DB6C-4D77-9AEB-8F0210EC4BAD}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>FIPDisplayMSFS2020</RootNamespace>
-    <AssemblyName>FIPDisplayMSFS2020</AssemblyName>
+    <RootNamespace>FIPDisplayMSFS</RootNamespace>
+    <AssemblyName>FIPDisplayMSFS</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

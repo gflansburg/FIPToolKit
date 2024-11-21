@@ -17,32 +17,52 @@ namespace FIPToolKit.FlightSim
         {
         }
 
-        public static string GetExeXmlPath()
+        public static string Get2024ExeXmlPath()
+        {
+            return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe\\LocalCache\\exe.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+        }
+
+        public static string Get2024CommunityPath()
+        {
+            return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe\\LocalCache\\Packages\\Community", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+        }
+
+        public static string Get2024SimConnectIniPath()
+        {
+            return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe\\LocalState\\simconnect.ini", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+        }
+
+        public static string Get2024GamePath()
+        {
+            return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+        }
+
+        public static string Get2020ExeXmlPath()
         {
             return string.Format("{0}\\Local\\Packages\\Microsoft.FlightSimulator_8wekyb3d8bbwe\\LocalCache\\exe.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
         }
 
-        public static string GetSteamExeXmlPath()
+        public static string Get2020SteamExeXmlPath()
         {
             return string.Format("{0}\\Microsoft Flight Simulator\\exe.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
         }
 
-        public static string GetSimConnectIniPath()
+        public static string Get2020SimConnectIniPath()
         {
             return string.Format("{0}\\Local\\Packages\\Microsoft.FlightSimulator_8wekyb3d8bbwe\\LocalState\\simconnect.ini", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
         }
 
-        public static string GetSteamSimConnectIniPath()
+        public static string Get2020SteamSimConnectIniPath()
         {
             return string.Format("{0}\\Microsoft Flight Simulator\\simconnect.ini", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
         }
 
-        public static string GetGamePath()
+        public static string Get2020GamePath()
         {
             return string.Format("{0}\\Local\\Packages\\Microsoft.FlightSimulator_8wekyb3d8bbwe", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
         }
 
-        public static string GetSteamGamePath()
+        public static string Get2020SteamGamePath()
         {
             return string.Format("{0}\\Microsoft Flight Simulator", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
         }
@@ -82,7 +102,7 @@ namespace FIPToolKit.FlightSim
             if (!string.IsNullOrEmpty(filename) && File.Exists(filename))
             {
                 string xml = File.ReadAllText(filename);
-                if (!String.IsNullOrEmpty(xml))
+                if (!string.IsNullOrEmpty(xml))
                 {
                     //xml = xml.Replace("<SimBase.Document Type=\"SimConnect\" version=\"1,0\">", "<SimBase.Document>");
                     try

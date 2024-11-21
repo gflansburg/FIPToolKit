@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Linq;
 
-namespace FIPDisplayMSFS2020
+namespace FIPDisplayMSFS
 {
     public partial class FIPDisplay : FIPMapForm
     {
@@ -53,7 +53,7 @@ namespace FIPDisplayMSFS2020
                 options = value;
                 if (options != null && options.Run)
                 {
-                    Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS2020");
+                    Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS");
                     if (runningProcesses != null)
                     {
                         foreach (Process process in runningProcesses)
@@ -82,12 +82,14 @@ namespace FIPDisplayMSFS2020
                     {
                         directOutputRunning = true;
                     }
-                    Process[] flightSim = Process.GetProcessesByName("FlightSimulator");
-                    if (flightSim != null && flightSim.Length > 0)
+                    List<Process> flightSim = Process.GetProcessesByName("FlightSimulator").ToList();
+                    Process[] flightSim20204 = Process.GetProcessesByName("FlightSimulator2024");
+                    flightSim.AddRange(flightSim20204);
+                    if (flightSim != null && flightSim.Count > 0)
                     {
                         flightSimRunning = true;
                     }
-                    Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS2020");
+                    Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS");
                     if (runningProcesses != null)
                     {
                         foreach (Process process in runningProcesses)
@@ -102,33 +104,44 @@ namespace FIPDisplayMSFS2020
                     StringBuilder stringBuilder = new StringBuilder();
                     stringBuilder.AppendLine(string.Format("Plugin status: {0}", isRunning ? "Running" : "Not running"));
                     stringBuilder.AppendLine(string.Format("DirectOutput status: {0}", directOutputRunning ? "Running" : "Not running"));
-                    stringBuilder.AppendLine(string.Format("MSFS 2020 status: {0}", flightSimRunning ? "Running" : "Not running"));
+                    stringBuilder.AppendLine(string.Format("MSFS status: {0}", flightSimRunning ? "Running" : "Not running"));
                     using (RegistryKey regDirectOutput = Registry.LocalMachine.OpenSubKey("Software\\Saitek\\DirectOutput", false))
                     {
                         stringBuilder.AppendLine(string.Format("\nDirectOutput DLL location: {0}", regDirectOutput.GetValue("DirectOutput", string.Empty)));
                         regDirectOutput.Close();
                     }
+                    stringBuilder.AppendLine("\nName: FIP Display MSFS 2024 Plugin");
+                    SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.Get2024ExeXmlPath());
+                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(doc, "FIPDisplayMSFS") ? "Yes" : "No"));
+                    if (!string.IsNullOrEmpty(Tools.Get2024SimConnectIniPath()) && System.IO.File.Exists(Tools.Get2024SimConnectIniPath()))
+                    {
+                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2024SimConnectIniPath()));
+                    }
+                    if (!string.IsNullOrEmpty(Tools.Get2024ExeXmlPath()) && System.IO.File.Exists(Tools.Get2024ExeXmlPath()))
+                    {
+                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2024ExeXmlPath()));
+                    }
                     stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Plugin");
-                    SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.GetExeXmlPath());
-                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(doc, "FIPDisplayMSFS2020") ? "Yes" : "No"));
-                    if (!string.IsNullOrEmpty(Tools.GetSimConnectIniPath()) && System.IO.File.Exists(Tools.GetSimConnectIniPath()))
+                    doc = Tools.GetSimBaseDocument(Tools.Get2020ExeXmlPath());
+                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(doc, "FIPDisplayMSFS") ? "Yes" : "No"));
+                    if (!string.IsNullOrEmpty(Tools.Get2020SimConnectIniPath()) && System.IO.File.Exists(Tools.Get2020SimConnectIniPath()))
                     {
-                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.GetSimConnectIniPath()));
+                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2020SimConnectIniPath()));
                     }
-                    if (!string.IsNullOrEmpty(Tools.GetExeXmlPath()) && System.IO.File.Exists(Tools.GetExeXmlPath()))
+                    if (!string.IsNullOrEmpty(Tools.Get2020ExeXmlPath()) && System.IO.File.Exists(Tools.Get2020ExeXmlPath()))
                     {
-                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.GetExeXmlPath()));
+                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2020ExeXmlPath()));
                     }
-                    stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Plugin Steam");
-                    SimBaseDocument docSteam = Tools.GetSimBaseDocument(Tools.GetSteamExeXmlPath());
-                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(docSteam, "FIPDisplayMSFS2020") ? "Yes" : "No"));
-                    if (!string.IsNullOrEmpty(Tools.GetSteamSimConnectIniPath()) && System.IO.File.Exists(Tools.GetSteamSimConnectIniPath()))
+                    stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Steam Plugin");
+                    SimBaseDocument docSteam = Tools.GetSimBaseDocument(Tools.Get2020SteamExeXmlPath());
+                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(docSteam, "FIPDisplayMSFS") ? "Yes" : "No"));
+                    if (!string.IsNullOrEmpty(Tools.Get2020SteamSimConnectIniPath()) && System.IO.File.Exists(Tools.Get2020SteamSimConnectIniPath()))
                     {
-                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.GetSteamSimConnectIniPath()));
+                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2020SteamSimConnectIniPath()));
                     }
-                    if (!string.IsNullOrEmpty(Tools.GetSteamExeXmlPath()) && System.IO.File.Exists(Tools.GetSteamExeXmlPath()))
+                    if (!string.IsNullOrEmpty(Tools.Get2020SteamExeXmlPath()) && System.IO.File.Exists(Tools.Get2020SteamExeXmlPath()))
                     {
-                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.GetSteamExeXmlPath()));
+                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2020SteamExeXmlPath()));
                     }
                     Message = stringBuilder.ToString();
                     SystemSounds.Asterisk.Play();
@@ -137,7 +150,7 @@ namespace FIPDisplayMSFS2020
                 {
                     if (options.Force)
                     {
-                        Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS2020");
+                        Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS");
                         if (runningProcesses != null)
                         {
                             foreach (Process process in runningProcesses)
@@ -154,7 +167,7 @@ namespace FIPDisplayMSFS2020
                     }
                     else
                     {
-                        foreach (NativeMethods.WindowTitle windowTitle in NativeMethods.FindWindowsWithText("FIPDisplayMSFS2020"))
+                        foreach (NativeMethods.WindowTitle windowTitle in NativeMethods.FindWindowsWithText("FIPDisplayMSFS"))
                         {
                             if (windowTitle.ProcessId != Process.GetCurrentProcess().Id)
                             {
@@ -170,10 +183,10 @@ namespace FIPDisplayMSFS2020
                 }
                 else if(options.Install)
                 {
-                    bool installed = false;
-                    if (!string.IsNullOrEmpty(Tools.GetGamePath()) && Directory.Exists(Tools.GetGamePath()))
+                    bool installed2024 = false;
+                    if (!string.IsNullOrEmpty(Tools.Get2024GamePath()) && Directory.Exists(Tools.Get2024GamePath()))
                     {
-                        SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.GetExeXmlPath());
+                        SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.Get2024ExeXmlPath());
                         if (doc == null)
                         {
                             doc = new SimBaseDocument()
@@ -184,13 +197,13 @@ namespace FIPDisplayMSFS2020
                                 LaunchManualLoad = false
                             };
                         }
-                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS2020");
+                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS");
                         if (addon == null)
                         {
                             addon = new LaunchAddon()
                             {
                                 CommandLine = "-r" + (!string.IsNullOrEmpty(options.Settings) ? string.Format(" -s \"{0}\"", options.Settings) : string.Empty),
-                                Name = "FIPDisplayMSFS2020",
+                                Name = "FIPDisplayMSFS",
                                 Disabled = false,
                                 ManualLoad = false,
                                 NewConsole = false,
@@ -204,13 +217,13 @@ namespace FIPDisplayMSFS2020
                             addon.Disabled = false;
                             addon.Path = System.Reflection.Assembly.GetExecutingAssembly().Location;
                         }
-                        Tools.SaveSimBaseDocument(Tools.GetExeXmlPath(), doc);
-                        installed = true;
+                        Tools.SaveSimBaseDocument(Tools.Get2024ExeXmlPath(), doc);
+                        installed2024 = true;
                     }
-                    bool installedSteam = false;
-                    if (!string.IsNullOrEmpty(Tools.GetSteamGamePath()) && Directory.Exists(Tools.GetSteamGamePath()))
+                    bool installed = false;
+                    if (!string.IsNullOrEmpty(Tools.Get2020GamePath()) && Directory.Exists(Tools.Get2020GamePath()))
                     {
-                        SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.GetSteamExeXmlPath());
+                        SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.Get2020ExeXmlPath());
                         if (doc == null)
                         {
                             doc = new SimBaseDocument()
@@ -221,13 +234,50 @@ namespace FIPDisplayMSFS2020
                                 LaunchManualLoad = false
                             };
                         }
-                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS2020");
+                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS");
+                        if (addon == null)
+                        {
+                            addon = new LaunchAddon()
+                            {
+                                CommandLine = "-r" + (!string.IsNullOrEmpty(options.Settings) ? string.Format(" -s \"{0}\"", options.Settings) : string.Empty),
+                                Name = "FIPDisplayMSFS",
+                                Disabled = false,
+                                ManualLoad = false,
+                                NewConsole = false,
+                                Path = System.Reflection.Assembly.GetExecutingAssembly().Location
+                            };
+                            doc.LaunchAddons.Add(addon);
+                        }
+                        else
+                        {
+                            addon.CommandLine = "-r" + (!string.IsNullOrEmpty(options.Settings) ? string.Format(" -s \"{0}\"", options.Settings) : string.Empty);
+                            addon.Disabled = false;
+                            addon.Path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                        }
+                        Tools.SaveSimBaseDocument(Tools.Get2020ExeXmlPath(), doc);
+                        installed = true;
+                    }
+                    bool installedSteam = false;
+                    if (!string.IsNullOrEmpty(Tools.Get2020SteamGamePath()) && Directory.Exists(Tools.Get2020SteamGamePath()))
+                    {
+                        SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.Get2020SteamExeXmlPath());
+                        if (doc == null)
+                        {
+                            doc = new SimBaseDocument()
+                            {
+                                Descr = "SimConnect",
+                                Filename = "SimConnect.xml",
+                                Disabled = false,
+                                LaunchManualLoad = false
+                            };
+                        }
+                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS");
                         if (addon == null)
                         {
                             addon = new LaunchAddon()
                             {
                                 CommandLine = "-r",
-                                Name = "FIPDisplayMSFS2020",
+                                Name = "FIPDisplayMSFS",
                                 Disabled = false,
                                 Path = System.Reflection.Assembly.GetExecutingAssembly().Location
                             };
@@ -239,48 +289,64 @@ namespace FIPDisplayMSFS2020
                             addon.Disabled = false;
                             addon.Path = System.Reflection.Assembly.GetExecutingAssembly().Location;
                         }
-                        Tools.SaveSimBaseDocument(Tools.GetSteamExeXmlPath(), doc);
+                        Tools.SaveSimBaseDocument(Tools.Get2020SteamExeXmlPath(), doc);
                         installedSteam = true;
                     }
                     SystemSounds.Asterisk.Play();
                     StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine("FIP Display MSFS 2024 Plugin");
+                    stringBuilder.AppendLine(installed2024 ? "Install successful" : "Install unsuccessful");
                     stringBuilder.AppendLine("FIP Display MSFS 2020 Plugin");
                     stringBuilder.AppendLine(installed ? "Install successful" : "Install unsuccessful");
-                    stringBuilder.AppendLine("\nFIP Display MSFS 2020 Plugin Steam");
+                    stringBuilder.AppendLine("\nFIP Display MSFS 2020 Steam Plugin");
                     stringBuilder.AppendLine(installedSteam ? "Install successful" : "Install unsuccessful");
                     Message = stringBuilder.ToString();
                 }
                 else if(options.UnInstall)
                 {
-                    bool uninstalled = false;
-                    SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.GetExeXmlPath());
+                    bool uninstalled2024 = false;
+                    SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.Get2024ExeXmlPath());
                     if (doc != null)
                     {
-                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS2020");
+                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS");
                         if (addon != null)
                         {
                             doc.LaunchAddons.Remove(addon);
-                            Tools.SaveSimBaseDocument(Tools.GetExeXmlPath(), doc);
+                            Tools.SaveSimBaseDocument(Tools.Get2024ExeXmlPath(), doc);
+                            uninstalled2024 = true;
+                        }
+                    }
+                    bool uninstalled = false;
+                    doc = Tools.GetSimBaseDocument(Tools.Get2020ExeXmlPath());
+                    if (doc != null)
+                    {
+                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS");
+                        if (addon != null)
+                        {
+                            doc.LaunchAddons.Remove(addon);
+                            Tools.SaveSimBaseDocument(Tools.Get2020ExeXmlPath(), doc);
                             uninstalled = true;
                         }
                     }
                     bool uninstalledSteam = false;
-                    doc = Tools.GetSimBaseDocument(Tools.GetSteamExeXmlPath());
+                    doc = Tools.GetSimBaseDocument(Tools.Get2020SteamExeXmlPath());
                     if (doc != null)
                     {
-                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS2020");
+                        LaunchAddon addon = Tools.GetLaunchAddon(doc, "FIPDisplayMSFS");
                         if (addon == null)
                         {
                             doc.LaunchAddons.Remove(addon);
-                            Tools.SaveSimBaseDocument(Tools.GetSteamExeXmlPath(), doc);
+                            Tools.SaveSimBaseDocument(Tools.Get2020SteamExeXmlPath(), doc);
                             uninstalledSteam = true;
                         }
                     }
                     SystemSounds.Asterisk.Play();
                     StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.AppendLine("FIP Display MSFS 2020 Plugin");
+                    stringBuilder.AppendLine("FIP Display MSFS 2024 Plugin");
+                    stringBuilder.AppendLine(uninstalled2024 ? "Uninstall successful" : "Uninstall unsuccessful");
+                    stringBuilder.AppendLine("\nFIP Display MSFS 2020 Plugin");
                     stringBuilder.AppendLine(uninstalled ? "Uninstall successful" : "Uninstall unsuccessful");
-                    stringBuilder.AppendLine("\nFIP Display MSFS 2020 Plugin Steam");
+                    stringBuilder.AppendLine("\nFIP Display MSFS 2020 Steam Plugin");
                     stringBuilder.AppendLine(uninstalledSteam ? "Uninstall successful" : "Uninstall unsuccessful");
                     Message = stringBuilder.ToString();
                 }

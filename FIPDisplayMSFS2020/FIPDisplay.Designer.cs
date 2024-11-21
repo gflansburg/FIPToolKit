@@ -1,5 +1,5 @@
 ﻿
-namespace FIPDisplayMSFS2020
+namespace FIPDisplayMSFS
 {
     partial class FIPDisplay
     {
@@ -82,7 +82,7 @@ namespace FIPDisplayMSFS2020
             // pictureBox1
             // 
             this.pictureBox1.BackColor = System.Drawing.SystemColors.Window;
-            this.pictureBox1.Image = global::FIPDisplayMSFS2020.Properties.Resources.Information_icon;
+            this.pictureBox1.Image = global::FIPDisplayMSFS.Properties.Resources.Information_icon;
             this.pictureBox1.Location = new System.Drawing.Point(13, 13);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(32, 32);
@@ -129,7 +129,7 @@ namespace FIPDisplayMSFS2020
             this.MaximizeBox = false;
             this.Name = "FIPDisplay";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "FIPDisplayMSFS2020";
+            this.Text = "FIPDisplayMSFS";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.webView21)).EndInit();
             this.ResumeLayout(false);

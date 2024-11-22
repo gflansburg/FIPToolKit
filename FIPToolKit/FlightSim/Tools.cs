@@ -13,23 +13,53 @@ namespace FIPToolKit.FlightSim
 {
     public static class Tools
     {
+        const int BufferSize = 1024 * 1024;
+
         static Tools()
         {
         }
 
         public static string Get2024ExeXmlPath()
         {
-            return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe\\LocalCache\\exe.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+            return string.Format("{0}\\LocalCache\\exe.xml", Get2024GamePath());
         }
 
         public static string Get2024CommunityPath()
         {
-            return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe\\LocalCache\\Packages\\Community", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+            return string.Format("{0}\\LocalCache\\Packages\\Community", Get2024GamePath());
         }
 
         public static string Get2024SimConnectIniPath()
         {
-            return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe\\LocalState\\simconnect.ini", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+            return string.Format("{0}\\LocalState\\simconnect.ini", Get2024GamePath());
+        }
+
+        public static string Get2024UserCfg()
+        {
+            return string.Format("{0}\\LocalCache\\UserCfg.opt", Get2024GamePath());
+        }
+
+        public static string Get2024InstalledPackagesPath()
+        {
+            if (!string.IsNullOrEmpty(Get2024UserCfg()) && File.Exists(Get2024UserCfg()))
+            {
+                using (var fileStream = File.OpenRead(Get2024UserCfg()))
+                {
+                    using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+                    {
+                        string line;
+                        while ((line = streamReader.ReadLine()) != null)
+                        {
+                            line = line.Trim();
+                            if (line.StartsWith("InstalledPackagesPath", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return line.Substring(21).Replace("\"", string.Empty);
+                            }
+                        }
+                    }
+                }
+            }
+            return string.Format("{0}\\LocalCache\\Packages", Get2024GamePath());
         }
 
         public static string Get2024GamePath()
@@ -37,29 +67,144 @@ namespace FIPToolKit.FlightSim
             return string.Format("{0}\\Local\\Packages\\Microsoft.Limitless_8wekyb3d8bbwe", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
         }
 
-        public static string Get2020ExeXmlPath()
+        public static string Get2024SteamExeXmlPath()
         {
-            return string.Format("{0}\\Local\\Packages\\Microsoft.FlightSimulator_8wekyb3d8bbwe\\LocalCache\\exe.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+            return string.Format("{0}\\exe.xml", Get2024GamePath());
         }
 
-        public static string Get2020SteamExeXmlPath()
+        public static string Get2024SteamCommunityPath()
         {
-            return string.Format("{0}\\Microsoft Flight Simulator\\exe.xml", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+            return string.Format("{0}\\Community", Get2024SteamInstalledPackagesPath());
+        }
+
+        public static string Get2024SteamSimConnectIniPath()
+        {
+            return string.Format("{0}\\simconnect.ini", Get2024SteamGamePath());
+        }
+
+        public static string Get2024SteamUserCfg()
+        {
+            return string.Format("{0}\\LocalCache\\UserCfg.opt", Get2024SteamGamePath());
+        }
+
+        public static string Get2024SteamInstalledPackagesPath()
+        {
+            if (!string.IsNullOrEmpty(Get2024SteamUserCfg()) && File.Exists(Get2024SteamUserCfg()))
+            {
+                using (var fileStream = File.OpenRead(Get2024SteamUserCfg()))
+                {
+                    using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+                    {
+                        string line;
+                        while ((line = streamReader.ReadLine()) != null)
+                        {
+                            line = line.Trim();
+                            if (line.StartsWith("InstalledPackagesPath", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return line.Substring(21).Replace("\"", string.Empty);
+                            }
+                        }
+                    }
+                }
+            }
+            return string.Format("{0}\\LocalCache\\Packages", Get2024SteamGamePath());
+        }
+
+        public static string Get2024SteamGamePath()
+        {
+            return string.Format("{0}\\Microsoft Flight Simulator 2024", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+        }
+
+
+        public static string Get2020ExeXmlPath()
+        {
+            return string.Format("{0}\\LocalCache\\exe.xml", Get2020GamePath());
+        }
+
+        public static string Get2020CommunityPath()
+        {
+            return string.Format("{0}\\Community", Get2020InstalledPackagesPath());
         }
 
         public static string Get2020SimConnectIniPath()
         {
-            return string.Format("{0}\\Local\\Packages\\Microsoft.FlightSimulator_8wekyb3d8bbwe\\LocalState\\simconnect.ini", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+            return string.Format("{0}\\LocalState\\simconnect.ini", Get2020GamePath());
         }
 
-        public static string Get2020SteamSimConnectIniPath()
+        public static string Get2020UserCfg()
         {
-            return string.Format("{0}\\Microsoft Flight Simulator\\simconnect.ini", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+            return string.Format("{0}\\LocalCache\\UserCfg.opt", Get2020GamePath());
+        }
+
+        public static string Get2020InstalledPackagesPath()
+        {
+            if (!string.IsNullOrEmpty(Get2020UserCfg()) && File.Exists(Get2020UserCfg()))
+            {
+                using (var fileStream = File.OpenRead(Get2020UserCfg()))
+                {
+                    using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+                    {
+                        string line;
+                        while ((line = streamReader.ReadLine()) != null)
+                        {
+                            line = line.Trim();
+                            if (line.StartsWith("InstalledPackagesPath", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return line.Substring(21).Replace("\"", string.Empty);
+                            }
+                        }
+                    }
+                }
+            }
+            return string.Format("{0}\\LocalCache\\Packages", Get2020GamePath());
         }
 
         public static string Get2020GamePath()
         {
             return string.Format("{0}\\Local\\Packages\\Microsoft.FlightSimulator_8wekyb3d8bbwe", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).Replace("\\Roaming", String.Empty));
+        }
+
+        public static string Get2020SteamExeXmlPath()
+        {
+            return string.Format("{0}\\exe.xml", Get2020SteamGamePath());
+        }
+
+        public static string Get2020SteamCommunityPath()
+        {
+            return string.Format("{0}\\Community", Get2020SteamInstalledPackagesPath());
+        }
+
+        public static string Get2020SteamSimConnectIniPath()
+        {
+            return string.Format("{0}\\simconnect.ini", Get2020SteamGamePath());
+        }
+
+        public static string Get2020SteamUserCfg()
+        {
+            return string.Format("{0}\\LocalCache\\UserCfg.opt", Get2020SteamGamePath());
+        }
+
+        public static string Get2020SteamInstalledPackagesPath()
+        {
+            if (!string.IsNullOrEmpty(Get2020SteamUserCfg()) && File.Exists(Get2020SteamUserCfg()))
+            {
+                using (var fileStream = File.OpenRead(Get2020SteamUserCfg()))
+                {
+                    using (var streamReader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
+                    {
+                        string line;
+                        while ((line = streamReader.ReadLine()) != null)
+                        {
+                            line = line.Trim();
+                            if (line.StartsWith("InstalledPackagesPath", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return line.Substring(21).Replace("\"", string.Empty);
+                            }
+                        }
+                    }
+                }
+            }
+            return string.Format("{0}\\LocalCache\\Packages", Get2020SteamGamePath());
         }
 
         public static string Get2020SteamGamePath()

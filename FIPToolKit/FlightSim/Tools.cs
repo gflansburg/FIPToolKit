@@ -26,7 +26,7 @@ namespace FIPToolKit.FlightSim
 
         public static string Get2024CommunityPath()
         {
-            return string.Format("{0}\\LocalCache\\Packages\\Community", Get2024GamePath());
+            return string.Format("{0}\\Community", Get2024InstalledPackagesPath());
         }
 
         public static string Get2024SimConnectIniPath()

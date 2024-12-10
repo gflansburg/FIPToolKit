@@ -209,6 +209,8 @@ namespace FIPToolKit.FlightSim
             ReadyToFly readyToFly = IsReadyToFly;
             bool connected = IsConnected;
             string aircraftName = FalconBMSAircraftName;
+            double lat = Latitude;
+            double lng = Longitude;
             _lastFlightData = _sharedMemReader.GetCurrentData();
             _isConnected = _lastFlightData != null;
             if (_lastFlightData == null)
@@ -229,6 +231,15 @@ namespace FIPToolKit.FlightSim
             if (IsReadyToFly != readyToFly)
             {
                 ReadyToFly(IsReadyToFly);
+            }
+            else
+            {
+                double distance = Tools.DistanceTo(lat, lng, Latitude, Longitude);
+                //Have we moved more than 500M in 20 miliseconds?
+                if (distance >= 500)
+                {
+                    ReadyToFly(IsReadyToFly);
+                }
             }
             if (!(aircraftName ?? string.Empty).Equals(FalconBMSAircraftName ?? string.Empty, StringComparison.OrdinalIgnoreCase))
             {
@@ -276,9 +287,14 @@ namespace FIPToolKit.FlightSim
             var aircraftNames = new Dictionary<short, string>
                 {
                     { 61, "F-16C" },
-                    { 2, "F-15E" },
-                    { 3, "A-10C" },
-                    { 4, "F/A-18C" },
+                    { 30, "F-15E" },
+                    { 5, "A-10C" },
+                    { 46, "F-5E" },
+                    { 144, "F/A-18C" },
+                    { 23, "MIG-29A" },
+                    { 100, "SU-35S" },
+                    { 3, "AV-8B" },
+                    { 12, "F-4E" },
                     // Add more as necessary
                 };
             return aircraftNames.TryGetValue(vehicleACD, out var name) ? name : "Unknown Aircraft";

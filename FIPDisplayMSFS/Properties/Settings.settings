@@ -1,9 +1,33 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FIPDisplayMSFS2020.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FIPDisplayMSFS.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
     <Setting Name="DeviceSettings" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="XPlaneIPAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">127.0.0.1</Value>
+    </Setting>
+    <Setting Name="XPlanePort" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">49000</Value>
+    </Setting>
+    <Setting Name="DCSFromIPAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">239.255.50.10</Value>
+    </Setting>
+    <Setting Name="DCSToIPAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">127.0.0.1</Value>
+    </Setting>
+    <Setting Name="DCSFromPort" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">5010</Value>
+    </Setting>
+    <Setting Name="DCSToPort" Type="System.UInt16" Scope="User">
+      <Value Profile="(Default)">7778</Value>
+    </Setting>
+    <Setting Name="DCSBIOSJSONLocation" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="KeyAPIMode" Type="FIPToolKit.Models.KeyAPIModes" Scope="User">
+      <Value Profile="(Default)">FSUIPC</Value>
     </Setting>
   </Settings>
 </SettingsFile>

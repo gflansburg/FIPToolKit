@@ -1,7 +1,6 @@
 ﻿using FIPToolKit.FlightSim;
 using Saitek.DirectOutput;
 using XPlaneConnect;
-using static XPlaneConnect.Commands;
 
 namespace FIPToolKit.Models
 {

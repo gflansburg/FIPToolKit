@@ -322,14 +322,15 @@ namespace FIPToolKit.Models
                             PilotMarker.ATCType = flightSimProvider.ATCType;
                             PilotMarker.IsHeavy = flightSimProvider.IsHeavy;
                             PilotMarker.EngineType = flightSimProvider.EngineType;
-                            PilotMarker.Heading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.HeadingMagneticDegrees : flightSimProvider.HeadingTrueDegrees);
+                            PilotMarker.HeadingTrue = (float)flightSimProvider.HeadingTrueDegrees;
+                            PilotMarker.HeadingMag = (float)flightSimProvider.HeadingMagneticDegrees;
                             PilotMarker.Position = location;
                             PilotMarker.Airspeed = (int)(flightSimProvider.OnGround ? flightSimProvider.GroundSpeedKnots : flightSimProvider.AirSpeedIndicatedKnots);
                             PilotMarker.Altitude = (int)flightSimProvider.AltitudeMSL;
                             PilotMarker.AmbientTemperature = (int)flightSimProvider.AmbientTemperatureCelcius;
                             PilotMarker.AmbientWindDirection = (float)flightSimProvider.AmbientWindDirectionDegrees;
                             PilotMarker.AmbientWindVelocity = (int)flightSimProvider.AmbientWindSpeedKnots;
-                            PilotMarker.KohlsmanInchesMercury = flightSimProvider.KohlsmanInchesMercury;
+                            PilotMarker.PressureInchesMercury = flightSimProvider.PressureInchesMercury;
                             PilotMarker.GPSHeading = (float)(MapProperties.CompassMode == CompassMode.Magnetic ? flightSimProvider.GPSRequiredMagneticHeadingRadians : flightSimProvider.GPSRequiredTrueHeadingRadians);
                             PilotMarker.GPSIsActive = flightSimProvider.HasActiveWaypoint;
                             PilotMarker.GPSTrackDistance = (float)flightSimProvider.GPSCrossTrackErrorMeters;
@@ -382,7 +383,8 @@ namespace FIPToolKit.Models
                             PilotMarker.ATCType = string.Empty;
                             PilotMarker.EngineType = EngineType.Piston;
                             PilotMarker.IsHeavy = false;
-                            PilotMarker.Heading = 0f;
+                            PilotMarker.HeadingTrue = 0f;
+                            PilotMarker.HeadingMag = 0f;
                             PilotMarker.Airspeed = 0;
                             PilotMarker.Altitude = 0;
                             PilotMarker.AmbientTemperature = 0;
@@ -391,7 +393,7 @@ namespace FIPToolKit.Models
                             PilotMarker.Nav1RelativeBearing = 0;
                             PilotMarker.Nav2RelativeBearing = 0;
                             PilotMarker.AdfRelativeBearing = 0;
-                            PilotMarker.KohlsmanInchesMercury = 29.92d;
+                            PilotMarker.PressureInchesMercury = 29.92d;
                             PilotMarker.GPSHeading = 0;
                             PilotMarker.GPSIsActive = false;
                             PilotMarker.GPSTrackDistance = 0;
@@ -468,6 +470,14 @@ namespace FIPToolKit.Models
                         PilotMarker.ShowNav2 = MapProperties.ShowNav2;
                         PilotMarker.ShowAdf = MapProperties.ShowAdf;
                         PilotMarker.Font = MapProperties.Font;
+                        PilotMarker.HasADF = MapProperties.HasADF;
+                        PilotMarker.HasGPS = MapProperties.HasGPS;
+                        PilotMarker.HasHeadingBug = MapProperties.HasHeadingBug;
+                        PilotMarker.HasNav1 = MapProperties.HasNav1;
+                        PilotMarker.HasNav2 = MapProperties.HasNav2;
+                        PilotMarker.HasWind = MapProperties.HasWind;
+                        PilotMarker.HasTemperature = MapProperties.HasTemperature;
+                        PilotMarker.ShowTrueHeading = MapProperties.CompassMode == CompassMode.True;
                         Route.Stroke = new Pen(MapProperties.TrackColor, 2);
                         if (!MapProperties.ShowTrack)
                         {
@@ -498,7 +508,7 @@ namespace FIPToolKit.Models
             DateTime lastVatSimQuery = DateTime.MinValue;
             DateTime lastFlightShareQuery = DateTime.MinValue;
             bool updateMap = false;
-            while (!Stop)
+            while (!Stop && MapProperties.HasTraffic)
             {
                 try
                 {

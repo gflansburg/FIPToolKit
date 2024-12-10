@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using GMap.NET.WindowsForms;
 using GMap.NET;
@@ -71,6 +67,13 @@ namespace FIPToolKit.FlightSim
             }
         }
 
+        public bool HasWind { get; set; } = true;
+        public bool HasTemperature { get; set; } = true;
+        public bool HasADF { get; set; } = true;
+        public bool HasNav1 { get; set; } = true;
+        public bool HasNav2 { get; set; } = true;
+        public bool HasGPS { get; set; } = true;
+        public bool HasHeadingBug { get; set; } = true;
         public string ATCIdentifier { get; set; }
         public string ATCType { get; set; }
         public string ATCModel { get; set; }
@@ -88,13 +91,15 @@ namespace FIPToolKit.FlightSim
         public bool Nav2Available { get; set; }
         public int AdfRelativeBearing { get; set; }
         public bool ShowHeading { get; set; }
-        public float Heading { get; set; }
+        public float HeadingTrue { get; set; }
+        public float HeadingMag { get; set; }
+        public bool ShowTrueHeading { get; set; }
         public ColorEx OverlayColor { get; set; }
         public TemperatureUnit TemperatureUnit { get; set; }
         public int AmbientWindVelocity { get; set; }
         public float AmbientWindDirection { get; set; }
         public int AmbientTemperature { get; set; }
-        public double KohlsmanInchesMercury { get; set; }
+        public double PressureInchesMercury { get; set; }
         public int Altitude { get; set; }
         public int Airspeed { get; set; }
 
@@ -192,14 +197,14 @@ namespace FIPToolKit.FlightSim
                                 graphics.DrawRotatedTextAt(i * deg, GetNumeral(i), x, y, Font, brush, format);
                             }
                         }
-                        if (IsRunning)
+                        if (IsRunning && HasHeadingBug)
                         {
                             float x1 = (-1 * GetX(HeadingBug + 90, 85)) + 120;
                             float y1 = (-1 * GetY(HeadingBug + 90, 85)) + (!ShowHeading ? 135 : 120);
                             graphics.DrawRotatedImage(HeadingBug, Properties.Resources.heading_bug, x1, y1);
                         }
                         radius -= 5;
-                        if (ShowGPS && GPSIsActive && IsRunning)
+                        if (ShowGPS && GPSIsActive && IsRunning && HasGPS)
                         {
                             double oldRad = (radius / 2) - 3;
                             Point endPoint = new Point((int)((radius - 2) * Math.Sin(GPSHeading)), (int)(-(radius - 2) * Math.Cos(GPSHeading)));
@@ -220,7 +225,7 @@ namespace FIPToolKit.FlightSim
                             Point newStartPoint = new Point((int)((newRad) * Math.Sin(GPSHeading - newAngle + Math.PI)), (int)(-(newRad) * Math.Cos(GPSHeading - newAngle + Math.PI)));
                             graphics.DrawLine(pen, newStartPoint, newEndPoint);
                         }
-                        if (ShowAdf && IsRunning)
+                        if (ShowAdf && IsRunning && HasADF)
                         {
                             float radians = (float)((AdfRelativeBearing * Math.PI) / 180f);
                             Point endPoint = new Point((int)((radius - 2) * Math.Sin(radians)), (int)(-(radius - 2) * Math.Cos(radians)));
@@ -231,7 +236,7 @@ namespace FIPToolKit.FlightSim
                             pen.StartCap = LineCap.Round;
                             graphics.DrawLine(pen, startPoint, endPoint);
                         }
-                        if (ShowNav1 && Nav1Available && IsRunning)
+                        if (ShowNav1 && Nav1Available && IsRunning && HasNav1)
                         {
                             float radians = (float)((Nav1RelativeBearing * Math.PI) / 180f);
                             Point endPoint = new Point((int)((radius - 2) * Math.Sin(radians)), (int)(-(radius - 2) * Math.Cos(radians)));
@@ -242,7 +247,7 @@ namespace FIPToolKit.FlightSim
                             pen.StartCap = LineCap.Round;
                             graphics.DrawLine(pen, startPoint, endPoint);
                         }
-                        if (ShowNav2 && Nav2Available && IsRunning)
+                        if (ShowNav2 && Nav2Available && IsRunning && HasNav2)
                         {
                             float radians  = (float)((Nav2RelativeBearing * Math.PI) / 180f);
                             Point endPoint  = new Point((int)((radius - 2) * Math.Sin(radians)), (int)(-(radius - 2) * Math.Cos(radians)));
@@ -275,7 +280,7 @@ namespace FIPToolKit.FlightSim
                         //graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 225 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 240 - textSize.Height));
 
-                        text = string.Format("{0:0.00}\"", IsRunning ? KohlsmanInchesMercury : 29.92d);
+                        text = string.Format("{0:0.00}\"", IsRunning ? PressureInchesMercury : 29.92d);
                         textSize = graphics.MeasureString(text, Font);
                         //graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 210 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(281 - textSize.Width, 225 - textSize.Height));
@@ -285,10 +290,13 @@ namespace FIPToolKit.FlightSim
                         //graphics.DrawString(text, Font, brush, new PointF(5, 225 - textSize.Height));
                         graphics.DrawString(text, Font, brush, new PointF(5, 240 - textSize.Height));
 
-                        text = string.Format("{0}° {1}", TemperatureUnit == TemperatureUnit.Celsius ? (IsRunning ? AmbientTemperature : 0) : ((((IsRunning ? AmbientTemperature : 0) / 5) * 9) + 32), TemperatureUnit == TemperatureUnit.Celsius ? "C" : "F");
-                        graphics.DrawString(text, Font, brush, new PointF(5, 5));
+                        if (HasTemperature)
+                        {
+                            text = string.Format("{0}° {1}", TemperatureUnit == TemperatureUnit.Celsius ? (IsRunning ? AmbientTemperature : 0) : ((((IsRunning ? AmbientTemperature : 0) / 5) * 9) + 32), TemperatureUnit == TemperatureUnit.Celsius ? "C" : "F");
+                            graphics.DrawString(text, Font, brush, new PointF(5, 5));
+                        }
 
-                        int heading = IsRunning ? (int)Math.Round(Heading, 0) : 0;
+                        int heading = IsRunning ? (int)Math.Round(ShowTrueHeading? HeadingTrue : HeadingMag, 0) : 0;
                         if (heading == 0)
                         {
                             heading = 360;
@@ -312,29 +320,32 @@ namespace FIPToolKit.FlightSim
                             }
                         }
 
-                        int headingBug = IsRunning ? HeadingBug : 0;
-                        if (headingBug == 0)
+                        if (HasHeadingBug)
                         {
-                            headingBug = 360;
-                        }
-                        text = string.Format("{0}°", headingBug);
-                        textSize = graphics.MeasureString(text, Font);
-                        using (Pen pen2 = new Pen(OverlayColor, 1))
-                        {
-                            Rectangle headingRect = new Rectangle(73, 19, 40, (int)textSize.Height + 6);
-                            using (SolidBrush transBrush = new SolidBrush(Color.FromArgb(128, 128, 128, 128)))
+                            int headingBug = IsRunning ? HeadingBug : 0;
+                            if (headingBug == 0)
                             {
-                                graphics.FillRectangle(transBrush, headingRect);
+                                headingBug = 360;
                             }
-                            graphics.DrawRectangle(pen2, headingRect);
-                        }
-                        if (IsRunning)
-                        {
-                            graphics.DrawString(text, Font, Brushes.Cyan, new PointF(73 + ((40 - textSize.Width) / 2), 24));
-                            graphics.DrawImage(Properties.Resources.heading_arrow.ChangeToColor(OverlayColor), 131, 19 + textSize.Height + 6);
+                            text = string.Format("{0}°", headingBug);
+                            textSize = graphics.MeasureString(text, Font);
+                            using (Pen pen2 = new Pen(OverlayColor, 1))
+                            {
+                                Rectangle headingRect = new Rectangle(73, 19, 40, (int)textSize.Height + 6);
+                                using (SolidBrush transBrush = new SolidBrush(Color.FromArgb(128, 128, 128, 128)))
+                                {
+                                    graphics.FillRectangle(transBrush, headingRect);
+                                }
+                                graphics.DrawRectangle(pen2, headingRect);
+                            }
+                            if (IsRunning)
+                            {
+                                graphics.DrawString(text, Font, Brushes.Cyan, new PointF(73 + ((40 - textSize.Width) / 2), 24));
+                                graphics.DrawImage(Properties.Resources.heading_arrow.ChangeToColor(OverlayColor), 131, 19 + textSize.Height + 6);
+                            }
                         }
 
-                        using (Font atcFont = new System.Drawing.Font(Font.FontFamily, 6, Font.Style, GraphicsUnit.Point))
+                        using (Font atcFont = new Font(Font.FontFamily, 6, Font.Style, GraphicsUnit.Point))
                         {
                             text = IsRunning ? string.Format("{0} {1}", (ATCType ?? string.Empty).ToUpper(), (ATCModel ?? string.Empty).ToUpper()) : string.Empty;
                             textSize = graphics.MeasureString(text, atcFont);
@@ -346,74 +357,80 @@ namespace FIPToolKit.FlightSim
                             graphics.DrawString(text, atcFont, brush, new PointF(143 - (textSize.Width / 2), 5));
                         }
 
-                        text = string.Format("{0} kts.", IsRunning ? AmbientWindVelocity : 0);
-                        textSize = graphics.MeasureString(text, Font);
-                        PointF p = new PointF(266 - (textSize.Width / 2), 40);
-                        float windX = 266;
-                        if (p.X + textSize.Width > 281)
+                        if (HasWind)
                         {
-                            p.X = 281 - textSize.Width;
-                            windX = p.X + (textSize.Width / 2);
-                        }
-                        graphics.DrawString(text, Font, brush, p);
-
-                        GraphicsState state = graphics.Save();
-
-                        graphics.TranslateTransform(windX, 20);
-                        int radius = 15;
-                        float radians = (float)(((ShowHeading ? (IsRunning ? AmbientWindDirection : 0) - (IsRunning ? Heading : 0) + 180 : (IsRunning ? AmbientWindDirection : 0) + 180) * Math.PI) / 180f);
-                        Point endPoint = new Point((int)((radius - 2) * Math.Sin(radians)), (int)(-(radius - 2) * Math.Cos(radians)));
-                        Point startPoint = new Point(-endPoint.X, -endPoint.Y);
-                        using (Pen pen2 = new Pen(OverlayColor, 2f))
-                        {
-                            pen2.CustomEndCap = new AdjustableArrowCap(5, 5);
-                            pen2.StartCap = LineCap.Flat;
-                            graphics.DrawLine(pen2, startPoint, endPoint);
-                        }
-                        graphics.ResetTransform();
-
-                        using (Brush gpsBrush = new SolidBrush(Color.Magenta))
-                        {
-                            heading = IsRunning ? (int)Math.Round(GPSHeading * 180 / Math.PI, 0) : 0;
-                            if (heading == 0)
-                            {
-                                heading = 360;
-                            }
-                            text = string.Format("{0}°", heading);
+                            text = string.Format("{0} kts.", IsRunning ? AmbientWindVelocity : 0);
                             textSize = graphics.MeasureString(text, Font);
-                            using (Pen pen2 = new Pen(OverlayColor, 1))
+                            PointF p = new PointF(266 - (textSize.Width / 2), 40);
+                            float windX = 266;
+                            if (p.X + textSize.Width > 281)
                             {
-                                Rectangle gpsRect = new Rectangle(173, 19, 40, (int)textSize.Height + 6);
-                                using (SolidBrush transBrush2 = new SolidBrush(Color.FromArgb(128, 128, 128, 128)))
+                                p.X = 281 - textSize.Width;
+                                windX = p.X + (textSize.Width / 2);
+                            }
+                            graphics.DrawString(text, Font, brush, p);
+
+                            GraphicsState state = graphics.Save();
+
+                            graphics.TranslateTransform(windX, 20);
+                            int radius = 15;
+                            float radians = (float)(((ShowHeading ? (IsRunning ? AmbientWindDirection : 0) - (IsRunning ? ShowTrueHeading ? HeadingTrue : HeadingMag : 0) + 180 : (IsRunning ? AmbientWindDirection : 0) + 180) * Math.PI) / 180f);
+                            Point endPoint = new Point((int)((radius - 2) * Math.Sin(radians)), (int)(-(radius - 2) * Math.Cos(radians)));
+                            Point startPoint = new Point(-endPoint.X, -endPoint.Y);
+                            using (Pen pen2 = new Pen(OverlayColor, 2f))
+                            {
+                                pen2.CustomEndCap = new AdjustableArrowCap(5, 5);
+                                pen2.StartCap = LineCap.Flat;
+                                graphics.DrawLine(pen2, startPoint, endPoint);
+                            }
+                            graphics.ResetTransform();
+                        }
+
+                        if (HasGPS)
+                        {
+                            using (Brush gpsBrush = new SolidBrush(Color.Magenta))
+                            {
+                                heading = IsRunning ? (int)Math.Round(GPSHeading * 180 / Math.PI, 0) : 0;
+                                if (heading == 0)
                                 {
-                                    graphics.FillRectangle(transBrush2, gpsRect);
+                                    heading = 360;
                                 }
-                                graphics.DrawRectangle(pen2, gpsRect);
-                            }
-                            if (IsRunning)
-                            {
-                                graphics.DrawString(text, Font, gpsBrush, new PointF(173 + ((40 - textSize.Width) / 2), 24));
-                            }
-                            if (ShowGPS && GPSIsActive && IsRunning)
-                            {
-                                using (SolidBrush transBrush = new SolidBrush(Color.FromArgb(128, 0, 0, 0)))
+                                text = string.Format("{0}°", heading);
+                                textSize = graphics.MeasureString(text, Font);
+                                using (Pen pen2 = new Pen(OverlayColor, 1))
                                 {
-                                    double nm = (GPSTrackDistance / 1000) * 0.53996;
-                                    if (Math.Abs(nm) > 2)
+                                    Rectangle gpsRect = new Rectangle(173, 19, 40, (int)textSize.Height + 6);
+                                    using (SolidBrush transBrush2 = new SolidBrush(Color.FromArgb(128, 128, 128, 128)))
                                     {
-                                        text = string.Format("XTK {0:0.00}NM", nm);
-                                        textSize = graphics.MeasureString(text, Font);
-                                        graphics.FillRectangle(transBrush, new Rectangle((int)(143 - (textSize.Width / 2)), 155, (int)textSize.Width, (int)textSize.Height));
-                                        graphics.DrawString(text, Font, gpsBrush, new PointF(143 - (textSize.Width / 2), 155));
+                                        graphics.FillRectangle(transBrush2, gpsRect);
                                     }
-                                    text = "GPS";
-                                    textSize = graphics.MeasureString(text, Font);
-                                    graphics.FillRectangle(transBrush, new Rectangle((int)(143 - (textSize.Width / 2) - 25), 105, (int)textSize.Width, (int)textSize.Height));
-                                    graphics.DrawString(text, Font, gpsBrush, new PointF(143 - (textSize.Width / 2) - 25, 105));
-                                    text = "ENR";
-                                    textSize = graphics.MeasureString(text, Font);
-                                    graphics.FillRectangle(transBrush, new Rectangle((int)(143 - (textSize.Width / 2) + 25), 105, (int)textSize.Width, (int)textSize.Height));
-                                    graphics.DrawString(text, Font, gpsBrush, new PointF(143 - (textSize.Width / 2) + 25, 105));
+                                    graphics.DrawRectangle(pen2, gpsRect);
+                                }
+                                if (IsRunning)
+                                {
+                                    graphics.DrawString(text, Font, gpsBrush, new PointF(173 + ((40 - textSize.Width) / 2), 24));
+                                }
+                                if (ShowGPS && GPSIsActive && IsRunning && HasGPS)
+                                {
+                                    using (SolidBrush transBrush = new SolidBrush(Color.FromArgb(128, 0, 0, 0)))
+                                    {
+                                        double nm = (GPSTrackDistance / 1000) * 0.53996;
+                                        if (Math.Abs(nm) > 2)
+                                        {
+                                            text = string.Format("XTK {0:0.00}NM", nm);
+                                            textSize = graphics.MeasureString(text, Font);
+                                            graphics.FillRectangle(transBrush, new Rectangle((int)(143 - (textSize.Width / 2)), 155, (int)textSize.Width, (int)textSize.Height));
+                                            graphics.DrawString(text, Font, gpsBrush, new PointF(143 - (textSize.Width / 2), 155));
+                                        }
+                                        text = "GPS";
+                                        textSize = graphics.MeasureString(text, Font);
+                                        graphics.FillRectangle(transBrush, new Rectangle((int)(143 - (textSize.Width / 2) - 25), 105, (int)textSize.Width, (int)textSize.Height));
+                                        graphics.DrawString(text, Font, gpsBrush, new PointF(143 - (textSize.Width / 2) - 25, 105));
+                                        text = "ENR";
+                                        textSize = graphics.MeasureString(text, Font);
+                                        graphics.FillRectangle(transBrush, new Rectangle((int)(143 - (textSize.Width / 2) + 25), 105, (int)textSize.Width, (int)textSize.Height));
+                                        graphics.DrawString(text, Font, gpsBrush, new PointF(143 - (textSize.Width / 2) + 25, 105));
+                                    }
                                 }
                             }
                         }
@@ -478,7 +495,7 @@ namespace FIPToolKit.FlightSim
                             break;
                     }
                     //using (Bitmap bmp = airplane.RotateImage(ShowHeading ? 0f : Heading))
-                    using (Bitmap bmp = airplane.RotateImage(Heading))
+                    using (Bitmap bmp = airplane.RotateImage(HeadingTrue))
                     {
                         Size = new Size(bmp.Width, bmp.Height);
                         Offset = new Point(-Size.Width / 2, -Size.Height / 2);

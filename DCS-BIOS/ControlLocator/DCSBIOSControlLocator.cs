@@ -89,20 +89,20 @@ namespace DCS_BIOS.ControlLocator
         
         public static DCSBIOSOutput GetDCSBIOSOutput(string controlId, DCSBiosOutputType dcsBiosOutputType)
         {
-            return dcsBiosOutputType == DCSBiosOutputType.IntegerType ? GetUIntDCSBIOSOutput(controlId) : GetStringDCSBIOSOutput(controlId);
+            return dcsBiosOutputType == DCSBiosOutputType.IntegerType ? GetUShortDCSBIOSOutput(controlId) : GetStringDCSBIOSOutput(controlId);
         }
 
 
-        public static Tuple<DCSBIOSCommand, DCSBIOSOutput>  GetUIntCommandAndOutput(string controlId)
+        public static Tuple<DCSBIOSCommand, DCSBIOSOutput> GetUShortCommandAndOutput(string controlId)
         {
             var control = GetControl(controlId);
             var command = new DCSBIOSCommand(control);
-            var output = GetUIntDCSBIOSOutput(controlId);
+            var output = GetUShortDCSBIOSOutput(controlId);
 
             return new Tuple<DCSBIOSCommand, DCSBIOSOutput>(command, output);
         }
 
-        public static DCSBIOSOutput GetUIntDCSBIOSOutput(string controlId)
+        public static DCSBIOSOutput GetUShortDCSBIOSOutput(string controlId)
         {
             lock (LockObject)
             {
@@ -251,6 +251,17 @@ namespace DCS_BIOS.ControlLocator
             return _dcsbiosControls.Where(o => o.Outputs.Count > 0 && o.Outputs.Any(x => x.OutputDataType == dcsBiosOutputType));
         }
 
+        public static IEnumerable<DCSBIOSControl> GetOutputControls()
+        {
+            if (!Common.IsEmulationModesFlagSet(EmulationMode.DCSBIOSOutputEnabled))
+            {
+                return null;
+            }
+
+            LoadControls();
+            return _dcsbiosControls.Where(o => o.Outputs.Count > 0);
+        }
+
         public static IEnumerable<DCSBIOSControl> GetInputControls()
         {
             if (!Common.IsEmulationModesFlagSet(EmulationMode.DCSBIOSInputEnabled))
@@ -379,7 +390,7 @@ namespace DCS_BIOS.ControlLocator
             }
         }
 
-        private static List<DCSBIOSControl> ReadControlsFromDocJson(string fileFullPath)
+        public static List<DCSBIOSControl> ReadControlsFromDocJson(string fileFullPath)
         {
             // input is a map from category string to a map from key string to control definition
             // we read it all then flatten the grand children (the control definitions)

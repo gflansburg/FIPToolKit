@@ -392,7 +392,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public double PressureInchesMercury
+        public override double PressureInchesMercury
         {
             get
             {
@@ -1121,7 +1121,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public void Deinitialize(int timeOut = 1000)
+        public override void Deinitialize(int timeOut = 1000)
         {
             stop = true;
             if (_timerConnection != null)

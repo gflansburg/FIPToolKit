@@ -31,10 +31,19 @@ namespace FIPToolKit.Models
             CanPlayFirstSong = flightSimProvider.IsConnected;
             flightSimProvider.OnFlightDataReceived += FlightSimProvider_OnFlightDataReceived;
             flightSimProvider.OnConnected += FlightSimProvider_OnConnected;
+            flightSimProvider.OnQuit += FlightSimProvider_OnQuit;
             if (flightSimProvider.IsConnected)
             {
                 flightSimProvider.Connected();
+                flightSimProvider.FlightDataReceived();
             }
+        }
+
+        private void FlightSimProvider_OnQuit(FlightSimProviderBase sender)
+        {
+            ListenerLocation = LocalLocation;
+            cachedLocation = ListenerLocation;
+            CreatePlaylist();
         }
 
         private void FlightSimProvider_OnConnected(FlightSimProviderBase sender)
@@ -56,7 +65,7 @@ namespace FIPToolKit.Models
             }
             if (cachedLocation == null || Net.DistanceBetween(location.Latitude.Value, location.Longitude.Value, cachedLocation.Latitude.Value, cachedLocation.Longitude.Value) >= 1)
             {
-                cachedLocation = location;
+                cachedLocation = ListenerLocation;
                 CreatePlaylist();
             }
         }
@@ -121,7 +130,7 @@ namespace FIPToolKit.Models
                 {
                     LibrarySong = CurrentSong == null ? CurrentPage == MusicPlayerPage.Library ? LibrarySong : Library.Songs.OrderBy(s => s.Distance).FirstOrDefault() : CurrentSong;
                     LibraryArtist = Library.FirstArtist;
-                    LibraryAlbum = LibraryArtist.FirstAlbum;
+                    LibraryAlbum = LibraryArtist?.FirstAlbum;
                     CreatePlaylist();
                 }
             }
@@ -420,12 +429,12 @@ namespace FIPToolKit.Models
                     case SoftButtons.Button6:
                         if (CurrentPage == MusicPlayerPage.Player)
                         {
-                            if (!IsLoading && Library != null)
+                            if (!IsLoading && Library != null && Library.SongCount > 0)
                             {
                                 CurrentPage = MusicPlayerPage.Library;
                                 LibrarySong = CurrentSong == null ? Library.Songs.OrderBy(s => s.Distance).FirstOrDefault() : CurrentSong;
                                 LibraryArtist = Library.FirstArtist;
-                                LibraryAlbum = LibraryArtist.FirstAlbum;
+                                LibraryAlbum = LibraryArtist?.FirstAlbum;
                             }
                         }
                         else
@@ -568,7 +577,7 @@ namespace FIPToolKit.Models
                     case SoftButtons.Button2:
                         return (Player != null && Library != null && CurrentSong != null && !IsLoading);
                     case SoftButtons.Button6:
-                        return (Library != null && !IsLoading);
+                        return (!IsLoading && Library != null && Library.SongCount > 0);
                 }
             }
             else

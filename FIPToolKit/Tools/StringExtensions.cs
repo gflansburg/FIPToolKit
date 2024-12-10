@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -11,6 +12,12 @@ namespace FIPToolKit.Tools
 {
     public static class StringExtensions
     {
+        public static bool IsIPAddress(this string str)
+        {
+            IPAddress iPAddress;
+            return IPAddress.TryParse(str, out iPAddress);
+        }
+
         public static Guid ToGuid(this int value)
         {
             byte[] bytes = new byte[16];
@@ -227,6 +234,19 @@ namespace FIPToolKit.Tools
             var sentenceCase = Regex.Replace(lowerToUpper, @"(\p{Lu}+)(\p{Lu}\p{Ll})", "$1 $2");
             TextInfo tInfo = new CultureInfo(string.IsNullOrEmpty(language) ? "en-US" : language.Split(',')[0], false).TextInfo;
             return tInfo.ToTitleCase(sentenceCase).Replace(" A ", " a ", StringComparison.OrdinalIgnoreCase).Replace(" And ", " and ", StringComparison.OrdinalIgnoreCase).Replace("Atc", "ATC", StringComparison.OrdinalIgnoreCase).Replace("Ap", "AP").Replace("Adf", "ADF", StringComparison.OrdinalIgnoreCase).Replace("Egt", "EGT", StringComparison.OrdinalIgnoreCase).Replace("Dme", "DME", StringComparison.OrdinalIgnoreCase).Replace("G 1000", "G-1000", StringComparison.OrdinalIgnoreCase).Replace("G1000", "G-1000", StringComparison.OrdinalIgnoreCase).Replace("Gps", "GPS", StringComparison.OrdinalIgnoreCase).Replace("Mp", "MP").Replace("Vor", "VOR", StringComparison.OrdinalIgnoreCase).Replace("Vsi", "VSI", StringComparison.OrdinalIgnoreCase).Replace("Apu", "APU", StringComparison.OrdinalIgnoreCase).Replace("Pfd", "PFD", StringComparison.OrdinalIgnoreCase).Replace("Obs", "OBS", StringComparison.OrdinalIgnoreCase).Replace("Obi", "OBI", StringComparison.OrdinalIgnoreCase).Replace(" Vs ", " Vertical Speed ", StringComparison.OrdinalIgnoreCase).Replace("Fsuipc", "FSUIPC", StringComparison.OrdinalIgnoreCase).Replace("Fsuipcspeed", "FSUIPC Speed", StringComparison.OrdinalIgnoreCase).Replace("Lyp", "LYP", StringComparison.OrdinalIgnoreCase).Replace("Lua", "LUA", StringComparison.OrdinalIgnoreCase).Replace("Ptt", "PTT", StringComparison.OrdinalIgnoreCase).Replace("Pvt", "PVT", StringComparison.OrdinalIgnoreCase).Replace("APr ", "Apr ").Replace("OBServer", "Observer").Replace("Efis", "EFIS", StringComparison.OrdinalIgnoreCase).Replace("APaltChange", "AP Alt Change", StringComparison.OrdinalIgnoreCase).Replace("Nd ", "ND ").Replace("Iyp", "IYP", StringComparison.OrdinalIgnoreCase).Replace("Airlinetraffic", "Airline Traffic").Replace("Asnweathebroadcast", "Answer The Broadcast").Replace("Autodeleteai", "Auto Delete AI").Replace("Followme", "Follow Me").Replace("Postoggle", "Pos Toggle").Replace("Ndscale", "ND Scale").Replace("Cloudcover", "Cloud Cover").Replace("Mapitem", "Map Item").Replace("Inhg", "inHg").Replace("Comefly", "Come Fly").Replace("Keysend", "Key Send").Replace("Wideclients", "Wide Clients").Replace("Gatraffic Densityset", "GA Traffic Density Set").Replace("Logset", "Log Set").Replace("Mouselook", "Mouse Look").Replace("Mousemove Optiontoggle", "Mouse Move Option Toggle").Replace("Remotetextmenutoggle", "Remote Text Menu Toggle").Replace("Resimconnect", "Re-Sim Connect").Replace("Complexclouds", "Complex Clouds").Replace("Nninc", "Nn Inc").Replace("Toddle", "Toggle").Replace("Fracinc", "Frac Inc").Replace("Ils", "ILS").Replace("Hpa", "hPa").Replace("Mousebuttonswap", "Mouse Button Swap").Replace("Holdtoggle", "Hold Toggle").Replace("Ailerontrim", "Aileron Trim").Replace("Cowlflaps", "Cowl Flaps").Replace("Elevatortrim", "Elevator Trim").Replace("Leftbrake", "Left Brake").Replace("Rightbrake", "Right Brake").Replace("Ruddertrim", "Rudder Trim").Replace("Proppitch", "Prop Pitch").Replace("Panheading", "Pan Heading").Replace("Pantilt", "Pan Tilt").Replace("Panpitch", "Pan Pitch").Replace("Steeringtiller", "Steering Tiller").Replace("Slewahead", "Slew Ahead").Replace("Slewalt", "Slew Alt").Replace("Slewheading", "Slew Heading").Replace("Slewside", "Slew Side").Replace("VORADF", "VOR ADF").Replace("Antidetonation", "Anti-Detonation").Replace("Nt361", "NT361").Replace("Mfd", "MFD").Replace(" Of ", " of ").Replace("Antiskid", "Anti-Skid").Replace("Anti Ice", "Anti-Ice").Replace(" Bc ", " BC ").Replace(" Hdg ", " Heading ").Replace(" Alt ", " Altitude ").Replace(" Spd ", " Speed ").Replace("Zoomin", "Zoom In").Replace("Zoomout", "Zoom Out").Replace("Flightplan", "Flight Plan").Replace("Directto", "Direct To").Replace("Vnav", "VNav").Replace("Msl", "MSL").Replace(" Hud ", " HUD ");
+        }
+
+        public static string SplitCamelCase(this string s)
+        {
+            return Regex.Replace(
+                Regex.Replace(
+                    s,
+                    @"(\P{Ll})(\P{Ll}\p{Ll})",
+                    "$1 $2"
+                ),
+                @"(\p{Ll})(\P{Ll})",
+                "$1 $2"
+            );
         }
 
         public static string ToCamelCase(this string s, string language = "en-US")

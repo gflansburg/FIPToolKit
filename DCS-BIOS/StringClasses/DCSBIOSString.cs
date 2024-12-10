@@ -14,21 +14,21 @@ namespace DCS_BIOS.StringClasses
         /// has been received. It will be sent regardless.
         /// Only the first "build up" of the string uses this.
         /// </summary>
-        private readonly List<uint> _receivedAddresses = new();
+        private readonly List<ushort> _receivedAddresses = new();
         private readonly string[] _internalBuffer;
-        private readonly int _length;
-        private readonly uint _address;
+        private readonly ushort _length;
+        private readonly ushort _address;
 
-        //private readonly uint _debugAddress = 10244; //->10251 Mi-8MT R863, Frequency
+        //private readonly ushort _debugAddress = 10244; //->10251 Mi-8MT R863, Frequency
         public bool IsComplete => _receivedAddresses.Count == 0;
 
         public string StringValue => string.Join(string.Empty, _internalBuffer);
-        public uint Address
+        public ushort Address
         {
             get => _address;
         }
 
-        public DCSBIOSString(uint address, int length)
+        public DCSBIOSString(ushort address, ushort length)
         {
             _address = address;
             for (var i = _address; i < _address + length; i += 2)
@@ -46,12 +46,12 @@ namespace DCS_BIOS.StringClasses
         /// big memory reserved and the last addresses contain nothing.
         /// </summary>
         /// <param name="address"></param>
-        public void RemoveAddress(uint address)
+        public void RemoveAddress(ushort address)
         {
             _receivedAddresses.Remove(address);
         }
 
-        public bool IsMatch(uint address)
+        public bool IsMatch(ushort address)
         {
             if (address >= _address && address <= _address + _length)
             {
@@ -60,7 +60,7 @@ namespace DCS_BIOS.StringClasses
             return false;
         }
 
-        public void Add(uint address, string str1, string str2)
+        public void Add(ushort address, string str1, string str2)
         {
             if (address < _address || address >= _address + _length)
             {
@@ -84,7 +84,7 @@ namespace DCS_BIOS.StringClasses
             }
         }
 
-        public void Add(uint address, string str2)
+        public void Add(ushort address, string str2)
         {
             if (address >= _address && address < _address + _length)
             {

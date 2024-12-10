@@ -141,6 +141,9 @@ namespace FIPToolKit.FlightSim
         private double _kohlsmanInchesMercury = 29.92;
         public override double KohlsmanInchesMercury => _kohlsmanInchesMercury;
 
+        private double _pressureInchesMercury = 29.92;
+        public override double PressureInchesMercury => _pressureInchesMercury;
+
         private ReadyToFly _isReadyToFly;
         public override ReadyToFly IsReadyToFly => _isReadyToFly;
 
@@ -255,12 +258,15 @@ namespace FIPToolKit.FlightSim
 
         XPlaneProvider(string ip = "127.0.0.1", int xplanePort = 49000)
         {
-            XPlaneListenerIPAddress = ip;
-            XPlaneListenerPort = xplanePort;
+            UpdateConnection(ip, xplanePort);
+            Initialize();
+        }
+
+        public void UpdateConnection(string ip, int xplanePort)
+        {
             connector = new XPlaneConnector(ip, xplanePort);
             connector.OnDataRefUpdated += Connector_OnDataRefUpdated;
             connector.OnRawReceive += Connector_OnRawReceive;
-            Initialize();
         }
 
         private void Connector_OnRawReceive(string raw)
@@ -308,6 +314,34 @@ namespace FIPToolKit.FlightSim
                     _timerConnection.DoWork += _timerConnection_DoWork;
                     _timerConnection.RunWorkerAsync();
                 }
+            }
+        }
+
+        public override void Deinitialize(int timeOut = 1000)
+        {
+            stop = true;
+            if (_timerConnection != null)
+            {
+                DateTime stopTime = DateTime.Now;
+                while (_timerConnection.IsRunning)
+                {
+                    TimeSpan span = DateTime.Now - stopTime;
+                    if (span.TotalMilliseconds > timeOut)
+                    {
+                        break;
+                    }
+                    Thread.Sleep(10);
+                    if (_timerConnection == null)
+                    {
+                        break;
+                    }
+                }
+                if (_timerConnection != null && _timerConnection.IsRunning)
+                {
+                    _timerConnection.Abort();
+                }
+                _timerConnection.Dispose();
+                _timerConnection = null;
             }
         }
 
@@ -440,6 +474,11 @@ namespace FIPToolKit.FlightSim
                 _kohlsmanInchesMercury = value;
             });
 
+            connector.Subscribe(XPlaneStructs.DataRefs.DataRefList[DataRefId.WeatherBarometerCurrentInhg], Frequency, (element, value) =>
+            {
+                _pressureInchesMercury = value;
+            });
+
             connector.Subscribe(XPlaneStructs.DataRefs.DataRefList[DataRefId.WeatherWindSpeedKt], Frequency, (element, value) =>
             {
                 _ambientWindSpeedKnots = value;
@@ -503,6 +542,11 @@ namespace FIPToolKit.FlightSim
             connector.Subscribe(XPlaneStructs.DataRefs.DataRefList[DataRefId.Cockpit2RadiosIndicatorsGpsBearingDegMag], Frequency, (element, value) =>
             {
                 _gpsRequiredMagneticHeadingRadians = Math.Abs(value * (Math.PI / 180));
+            });
+
+            connector.Subscribe(XPlaneStructs.DataRefs.DataRefList[DataRefId.Cockpit2RadiosIndicatorsGpsBearingError], Frequency, (element, value) =>
+            {
+                _gpsCrossTrackErrorMeters = value;
             });
 
             connector.Subscribe(XPlaneStructs.DataRefs.DataRefList[DataRefId.CockpitGpsDestinationIndex], Frequency, (element, value) =>
@@ -827,6 +871,7 @@ namespace FIPToolKit.FlightSim
                 });
             }
         }
+        
         public override void SendControlToFS(string control, float value)
         {
             DataRefId xpControl;

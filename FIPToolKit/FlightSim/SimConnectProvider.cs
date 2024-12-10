@@ -46,6 +46,8 @@ namespace FIPToolKit.FlightSim
 
         public override double KohlsmanInchesMercury => FlightData.KOHLSMAN_SETTING_HG;
 
+        public override double PressureInchesMercury => FlightData.PRESSURE_IN_HG;
+
         public override ReadyToFly IsReadyToFly => IsRunning && !Location.IsEmpty() ? FlightSim.ReadyToFly.Ready : FlightSim.ReadyToFly.Loading;
 
         public override double GPSRequiredMagneticHeadingRadians => (AircraftId == 50 ? FlightData.GPS_WP_BEARING + Math.PI : FlightData.GPS_WP_BEARING);
@@ -341,7 +343,7 @@ namespace FIPToolKit.FlightSim
             }
         }
 
-        public void Deinitialize(int timeOut = 1000)
+        public override void Deinitialize(int timeOut = 1000)
         {
             _stop = true;
             if (_timer != null)

@@ -8,7 +8,7 @@ namespace FIPToolKit.FlightSim
 {
     public enum CompassMode
     {
-        True,
-        Magnetic
+        Magnetic,
+        True
     }
 }

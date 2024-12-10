@@ -12,7 +12,7 @@ namespace FIPDisplayMSFS.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.11.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.12.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -32,6 +32,102 @@ namespace FIPDisplayMSFS.Properties {
             }
             set {
                 this["DeviceSettings"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.1")]
+        public string XPlaneIPAddress {
+            get {
+                return ((string)(this["XPlaneIPAddress"]));
+            }
+            set {
+                this["XPlaneIPAddress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("49000")]
+        public ushort XPlanePort {
+            get {
+                return ((ushort)(this["XPlanePort"]));
+            }
+            set {
+                this["XPlanePort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("239.255.50.10")]
+        public string DCSFromIPAddress {
+            get {
+                return ((string)(this["DCSFromIPAddress"]));
+            }
+            set {
+                this["DCSFromIPAddress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.1")]
+        public string DCSToIPAddress {
+            get {
+                return ((string)(this["DCSToIPAddress"]));
+            }
+            set {
+                this["DCSToIPAddress"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5010")]
+        public ushort DCSFromPort {
+            get {
+                return ((ushort)(this["DCSFromPort"]));
+            }
+            set {
+                this["DCSFromPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("7778")]
+        public ushort DCSToPort {
+            get {
+                return ((ushort)(this["DCSToPort"]));
+            }
+            set {
+                this["DCSToPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string DCSBIOSJSONLocation {
+            get {
+                return ((string)(this["DCSBIOSJSONLocation"]));
+            }
+            set {
+                this["DCSBIOSJSONLocation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("FSUIPC")]
+        public global::FIPToolKit.Models.KeyAPIModes KeyAPIMode {
+            get {
+                return ((global::FIPToolKit.Models.KeyAPIModes)(this["KeyAPIMode"]));
+            }
+            set {
+                this["KeyAPIMode"] = value;
             }
         }
     }

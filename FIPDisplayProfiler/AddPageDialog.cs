@@ -30,7 +30,11 @@ namespace FIPDisplayProfiler
         XPlaneMap,
         XPlaneAirspeed,
         XPlaneAltimeter,
-        XPlaneRadio
+        XPlaneRadio,
+        DCSWorldMap,
+        DCSWorldAirspeed,
+        DCSWorldAltimeter,
+        DCSWorldRadio
     }
 
     public partial class AddPageDialog : Form
@@ -247,6 +251,34 @@ namespace FIPDisplayProfiler
             panelAltimeter.Enabled = false;
             panelRadio.Enabled = true;
             btnOK.Enabled = rbSimConnectRadio.Checked || rbFSUIPCRadio.Checked || rbXPlaneRadio.Checked;
+        }
+
+        private void rbDCSWorldMap_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.DCSWorldMap;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbDCSWorldAirspeed_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.DCSWorldAirspeed;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbDCSWorldAltimeter_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.DCSWorldAltimeter;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbDCSWorldRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.DCSWorldRadio;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
         }
     }
 }

@@ -44,6 +44,7 @@ namespace DCS_BIOS
         private UdpClient _udpReceiveClient;
         private UdpClient _udpSendClient;
         private Thread _dcsbiosListeningThread;
+        private Thread _dcsbiosConnectionThread;
         private readonly System.Timers.Timer _udpReceiveThrottleTimer = new(10) { AutoReset = true }; //Throttle UDP receive every 10 ms in case nothing is available
         private AutoResetEvent _udpReceiveThrottleAutoResetEvent = new(false);
         public string ReceiveFromIpUdp { get; set; } = "239.255.50.10";
@@ -53,6 +54,29 @@ namespace DCS_BIOS
         private IPEndPoint _ipEndPointReceiverUdp;
         private IPEndPoint _ipEndPointSenderUdp;
         public string ReceivedDataUdp { get; } = null;
+        private bool _isConnected = false;
+        public bool IsConnected
+        {
+            get
+            {
+                return _isConnected;
+            }
+            private set
+            {
+                if (_isConnected != value)
+                {
+                    _isConnected = value;
+                    if (_isConnected)
+                    {
+                        BIOSEventHandler.ConnectionActive(this);
+                    }
+                    else
+                    {
+                        BIOSEventHandler.ConnectionInActive(this);
+                    }
+                }
+            }
+        }
         /************************
         *************************
         ************************/
@@ -124,7 +148,7 @@ namespace DCS_BIOS
                 }
 
                 _udpReceiveThrottleAutoResetEvent = new(false);
-                
+
                 _dcsProtocolParser = DCSBIOSProtocolParser.GetParser();
 
                 _ipEndPointReceiverUdp = new IPEndPoint(IPAddress.Any, ReceivePortUdp);
@@ -143,14 +167,16 @@ namespace DCS_BIOS
                 _udpReceiveThrottleTimer.Elapsed += UdpReceiveThrottleTimer_Elapsed;
                 _udpReceiveThrottleTimer.Start();
                 _dcsbiosListeningThread = new Thread(ReceiveDataUdp);
+                _dcsbiosConnectionThread = new Thread(CheckConnection);
 
                 _isRunning = true;
-                
+
                 _sendThread = new Thread(SendCommands);
                 _sendThread.Start();
 
                 _dcsProtocolParser.Startup();
                 _dcsbiosListeningThread.Start();
+                _dcsbiosConnectionThread.Start();
             }
             catch (Exception ex)
             {
@@ -224,6 +250,7 @@ namespace DCS_BIOS
                                 DcsBiosNotificationMode.Parse)
                             {
                                 _dcsProtocolParser.AddArray(byteData);
+                                BIOSEventHandler.DCSBIOSBulkDataAvailable(this, byteData);
                             }
 
                             if ((_dcsBiosNotificationMode & DcsBiosNotificationMode.PassThrough) ==
@@ -254,6 +281,45 @@ namespace DCS_BIOS
                     SetLastException(ex);
                     Logger.Error(ex, "DCSBIOS.ReceiveData()");
                 }
+            }
+        }
+
+        public void CheckConnection()
+        {
+            try
+            {
+                IPEndPoint endPoint = new IPEndPoint(IPAddress.Parse(ReceiveFromIpUdp), ReceivePortUdp);
+                byte[] handshake = UTF8Encoding.ASCII.GetBytes("\n");
+                IPEndPoint remoteEP = null;
+                while (_isRunning)
+                {
+                    bool _isConnected = IsConnected;
+                    try
+                    {
+                        UdpClient connectionClient = new UdpClient();
+                        connectionClient.Connect(_ipEndPointSenderUdp);
+                        connectionClient.Client.ReceiveTimeout = 100;
+                        connectionClient.Send(handshake, 1);
+                        connectionClient.Receive(ref remoteEP);
+                        IsConnected = true;
+                    }
+                    catch (SocketException ex)
+                    {
+                        IsConnected = ex.ErrorCode != 10054;
+                    }
+                    if (IsConnected)
+                    {
+                        BIOSEventHandler.ConnectionActive(this);
+                    }
+                    else if (!IsConnected)
+                    {
+                        BIOSEventHandler.ConnectionInActive(this);
+                    }
+                    Thread.Sleep(100);
+                }
+            }
+            catch (Exception)
+            {
             }
         }
 

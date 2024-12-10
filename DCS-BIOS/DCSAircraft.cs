@@ -28,7 +28,7 @@
 
         public static DCSAircraft SelectedAircraft { get; set; }
 
-        private DCSAircraft(int id, string description, string jsonFilename, DCSBIOSLocation dcsbiosLocation)
+        public DCSAircraft(int id, string description, string jsonFilename, DCSBIOSLocation dcsbiosLocation)
         {
             ID = id;
             JSONFilename = jsonFilename;

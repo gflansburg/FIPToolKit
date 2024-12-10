@@ -9,7 +9,7 @@ namespace DCS_BIOS.StringClasses
     {
         private static DCSBIOSStringListener _dcsbiosStringListener;
 
-        private static void AddAddress(uint address, int length)
+        private static void AddAddress(ushort address, ushort length)
         {
             CheckInstance();
             _dcsbiosStringListener.AddStringAddress(address, length);

@@ -58,7 +58,7 @@ namespace DCS_BIOS.Serialized
                     {
                         // Console.WriteLine("Variable " + dcsbiosControl.identifier + " set to 0");
                         _variables.Add(dcsbiosControl.Identifier, 0);
-                        var dcsbiosOutput = DCSBIOSControlLocator.GetUIntDCSBIOSOutput(dcsbiosControl.Identifier);
+                        var dcsbiosOutput = DCSBIOSControlLocator.GetUShortDCSBIOSOutput(dcsbiosControl.Identifier);
                         _dcsbiosOutputs.Add(dcsbiosOutput);
                         DCSBIOSProtocolParser.RegisterAddressToBroadCast(dcsbiosOutput.Address);
                     }
@@ -80,7 +80,7 @@ namespace DCS_BIOS.Serialized
         /// <para>Get result via FormulaResult.</para>
         /// </summary>
         /// <returns></returns>
-        public bool Evaluate(uint address, uint data)
+        public bool Evaluate(ushort address, ushort data)
         {
             try
             {
@@ -89,12 +89,12 @@ namespace DCS_BIOS.Serialized
                 {
                     foreach (var dcsbiosOutput in _dcsbiosOutputs)
                     {
-                        if (!dcsbiosOutput.UIntValueHasChanged(address, data))
+                        if (!dcsbiosOutput.UShortValueHasChanged(address, data))
                         {
                             continue;
                         }
 
-                        _variables[dcsbiosOutput.ControlId] = dcsbiosOutput.LastUIntValue;
+                        _variables[dcsbiosOutput.ControlId] = dcsbiosOutput.LastUShortValue;
                         result = true;
                     }
 
@@ -120,7 +120,7 @@ namespace DCS_BIOS.Serialized
         /// If true do a subsequent call to Evaluate() to get new value
         /// </summary>
         /// <returns></returns>
-        public bool CheckForMatch(uint address, uint data)
+        public bool CheckForMatch(ushort address, ushort data)
         {
             try
             {
@@ -129,10 +129,10 @@ namespace DCS_BIOS.Serialized
                 {
                     foreach (var dcsbiosOutput in _dcsbiosOutputs)
                     {
-                        if (dcsbiosOutput.UIntValueHasChanged(address, data))
+                        if (dcsbiosOutput.UShortValueHasChanged(address, data))
                         {
                             result = true;
-                            _variables[dcsbiosOutput.ControlId] = dcsbiosOutput.LastUIntValue;
+                            _variables[dcsbiosOutput.ControlId] = dcsbiosOutput.LastUShortValue;
                         }
                     }
                 }

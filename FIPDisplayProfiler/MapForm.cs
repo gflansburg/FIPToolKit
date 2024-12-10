@@ -11,26 +11,26 @@ using System.Windows.Forms;
 
 namespace FIPDisplayProfiler
 {
-    public partial class FSUIPCMapForm : Form
+    public partial class MapForm : Form
     {
-        public FIPMapProperties FSUIPCMap { get; set; }
+        public FIPMapProperties MapProperties { get; set; }
 
         private Font _fontHolder;
 
-        public FSUIPCMapForm()
+        public MapForm()
         {
             InitializeComponent();
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            FSUIPCMap.Font = _fontHolder;
-            FSUIPCMap.FontColor = btnFontColor.BackColor;
-            FSUIPCMap.VatSimId = Convert.ToInt32(tbVatSimId.Text);
-            FSUIPCMap.MaxAIAircraft = Convert.ToInt32(numMaxAIAircraft.Value);
-            FSUIPCMap.MaxMPAircraft = Convert.ToInt32(numMaxMPAircraft.Value);
-            FSUIPCMap.AIPClientToken = tbAIPClientToken.Text;
-            FSUIPCMap.IsDirty = true;
+            MapProperties.Font = _fontHolder;
+            MapProperties.FontColor = btnFontColor.BackColor;
+            MapProperties.VatSimId = Convert.ToInt32(tbVatSimId.Text);
+            MapProperties.MaxAIAircraft = Convert.ToInt32(numMaxAIAircraft.Value);
+            MapProperties.MaxMPAircraft = Convert.ToInt32(numMaxMPAircraft.Value);
+            MapProperties.AIPClientToken = tbAIPClientToken.Text;
+            MapProperties.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();
         }
@@ -60,14 +60,14 @@ namespace FIPDisplayProfiler
 
         private void FSUIPCMapForm_Load(object sender, EventArgs e)
         {
-            _fontHolder = FSUIPCMap.Font;
-            tbFont.Font = new Font(FSUIPCMap.Font.FontFamily, tbFont.Font.Size, FSUIPCMap.Font.Style, FSUIPCMap.Font.Unit, FSUIPCMap.Font.GdiCharSet);
-            tbFont.Text = FSUIPCMap.Font.FontFamily.Name;
-            btnFontColor.BackColor = FSUIPCMap.FontColor;
-            tbVatSimId.Text = FSUIPCMap.VatSimId.ToString();
-            numMaxAIAircraft.Value = FSUIPCMap.MaxAIAircraft;
-            numMaxMPAircraft.Value = FSUIPCMap.MaxMPAircraft;
-            tbAIPClientToken.Text = FSUIPCMap.AIPClientToken;
+            _fontHolder = MapProperties.Font;
+            tbFont.Font = new Font(MapProperties.Font.FontFamily, tbFont.Font.Size, MapProperties.Font.Style, MapProperties.Font.Unit, MapProperties.Font.GdiCharSet);
+            tbFont.Text = MapProperties.Font.FontFamily.Name;
+            btnFontColor.BackColor = MapProperties.FontColor;
+            tbVatSimId.Text = MapProperties.VatSimId.ToString();
+            numMaxAIAircraft.Value = MapProperties.MaxAIAircraft;
+            numMaxMPAircraft.Value = MapProperties.MaxMPAircraft;
+            tbAIPClientToken.Text = MapProperties.AIPClientToken;
         }
 
         private void tbVatSimId_KeyPress(object sender, KeyPressEventArgs e)

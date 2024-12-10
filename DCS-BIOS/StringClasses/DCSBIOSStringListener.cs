@@ -35,7 +35,7 @@ namespace DCS_BIOS.StringClasses
             GC.SuppressFinalize(this);
         }
 
-        public void AddStringAddress(uint address, int length)
+        public void AddStringAddress(ushort address, ushort length)
         {
             if (_dcsBiosStrings.Any(o => o.Key == address) == false)
             {
@@ -51,7 +51,7 @@ namespace DCS_BIOS.StringClasses
             _dcsBiosStrings.RemoveWhere(o => o.Key == address);
         }
 
-        private void UpdateStrings(uint address, uint data)
+        private void UpdateStrings(ushort address, ushort data)
         {
             if (data == 0x55)
             {

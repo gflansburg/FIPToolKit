@@ -223,7 +223,7 @@ namespace FIPToolKit.FlightSim
             {
                 foreach (LaunchAddon launchAddon in doc.LaunchAddons)
                 {
-                    if (launchAddon.Name.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    if ((launchAddon.Name ?? string.Empty).Equals(key, StringComparison.OrdinalIgnoreCase))
                     {
                         return launchAddon;
                     }

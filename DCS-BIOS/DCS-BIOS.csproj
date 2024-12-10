@@ -153,5 +153,10 @@
   <ItemGroup>
     <None Include="icon_image.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="dcs-bios_modules.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

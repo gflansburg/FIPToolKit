@@ -4696,8 +4696,8 @@ namespace XPlaneConnect
         GraphicsVRTouchSpotLightLevel = 4692,
         GraphicsVREnabled = 4693,
         GraphicsVRUsing3DMouse = 4694,
-        GraphicsVRTeleportOnGround = 4695
-
+        GraphicsVRTeleportOnGround = 4695,
+        Cockpit2RadiosIndicatorsGpsBearingError = 4696
     }
 
     public class DataRefElement

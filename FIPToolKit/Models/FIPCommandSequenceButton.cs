@@ -6,12 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Xml.Serialization;
+using static FIPToolKit.FlightSim.FlightSimProviderBase;
 
 namespace FIPToolKit.Models
 {
     [Serializable]
     public abstract class FIPCommandSequenceButton : FIPButton
     {
+        public event FlightSimEventHandler OnConnected;
+        public event FlightSimEventHandler OnQuit;
+
         [XmlIgnore]
         [JsonIgnore]
         public FlightSimProviderBase FlightSimProvider { get; private set; }
@@ -40,6 +44,20 @@ namespace FIPToolKit.Models
         {
             FlightSimProvider = flightSimProvider;
             Sequence = new List<FIPCommandButton>();
+            flightSimProvider.OnConnected += FlightSimProvider_OnConnected;
+            flightSimProvider.OnQuit += FlightSimProvider_OnQuit;
+        }
+
+        private void FlightSimProvider_OnQuit(FlightSimProviderBase sender)
+        {
+            Page?.SetLEDs();
+            OnQuit?.Invoke(sender);
+        }
+
+        private void FlightSimProvider_OnConnected(FlightSimProviderBase sender)
+        {
+            Page?.SetLEDs();
+            OnConnected?.Invoke(sender);
         }
 
         public override void Execute()

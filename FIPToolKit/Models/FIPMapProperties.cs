@@ -2,6 +2,8 @@
 using FIPToolKit.FlightSim;
 using System;
 using System.Drawing;
+using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 
 namespace FIPToolKit.Models
 {
@@ -30,6 +32,38 @@ namespace FIPToolKit.Models
             _zoomLevel = 4;
             IsDirty = false;
         }
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasWind { get; set; } = true;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasTemperature { get; set; } = true;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasADF { get; set; } = true;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasNav1 { get; set; } = true;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasNav2 { get; set; } = true;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasGPS { get; set; } = true;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasHeadingBug { get; set; } = true;
+
+        [XmlIgnore]
+        [JsonIgnore]
+        public bool HasTraffic { get; set; } = true;
 
         private TemperatureUnit _temperatureUnit;
         public TemperatureUnit TemperatureUnit

@@ -1,7 +1,7 @@
 ﻿
 namespace FIPDisplayProfiler
 {
-    partial class FSUIPCMapForm
+    partial class MapForm
     {
         /// <summary>
         /// Required designer variable.

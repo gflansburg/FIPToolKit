@@ -241,7 +241,7 @@ namespace FIPToolKit.Models
                                 Rectangle destRect = new Rectangle(34, 0, 286, 240);
                                 if (MapProperties.ShowHeading)
                                 {
-                                    using (Bitmap rotated = map.Map.RotateImageByRadians(-(MapProperties.CompassMode == CompassMode.Magnetic ? FlightSimProvider.HeadingMagneticRadians : FlightSimProvider.HeadingTrueRadians)))
+                                    using (Bitmap rotated = map.Map.RotateImageByRadians(-(FlightSimProvider.HeadingTrueRadians)))
                                     {
                                         Rectangle srcRect = new Rectangle((rotated.Width - 286) / 2, ((rotated.Height - 240) / 2) - 15, 286, 240);
                                         graphics.DrawImage(rotated, destRect, srcRect, GraphicsUnit.Pixel);
@@ -378,30 +378,45 @@ namespace FIPToolKit.Models
                                     graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomin.SetOpacity(.5f), Color.White, false, SoftButtons.Button5);
                                     graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_zoomout.SetOpacity(.5f), Color.White, false, SoftButtons.Button6);
 
-                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_adf, Color.White, false, SoftButtons.Button1, 1);
-                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav1, Color.White, false, SoftButtons.Button2, 1);
-                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav2, Color.White, false, SoftButtons.Button3, 1);
-                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_gps, Color.White, false, SoftButtons.Button4, 1);
-                                    graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_traffic, Color.White, false, SoftButtons.Button5, 1);
-                                    if (MapProperties.ShowAdf)
+                                    if (MapProperties.HasADF)
                                     {
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Orange, true, SoftButtons.Button1, 1);
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_adf, Color.White, false, SoftButtons.Button1, 1);
+                                        if (MapProperties.ShowAdf)
+                                        {
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Orange, true, SoftButtons.Button1, 1);
+                                        }
                                     }
-                                    if (MapProperties.ShowNav1)
+                                    if (MapProperties.HasNav1)
                                     {
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Green, true, SoftButtons.Button2, 1);
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav1, Color.White, false, SoftButtons.Button2, 1);
+                                        if (MapProperties.ShowNav1)
+                                        {
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Green, true, SoftButtons.Button2, 1);
+                                        }
                                     }
-                                    if (MapProperties.ShowNav2)
+                                    if (MapProperties.HasNav2)
                                     {
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.SkyBlue, true, SoftButtons.Button3, 1);
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_nav2, Color.White, false, SoftButtons.Button3, 1);
+                                        if (MapProperties.ShowNav2)
+                                        {
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.SkyBlue, true, SoftButtons.Button3, 1);
+                                        }
                                     }
-                                    if (MapProperties.ShowGPS)
+                                    if (MapProperties.HasGPS)
                                     {
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Magenta, true, SoftButtons.Button4, 1);
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_gps, Color.White, false, SoftButtons.Button4, 1);
+                                        if (MapProperties.ShowGPS)
+                                        {
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.Magenta, true, SoftButtons.Button4, 1);
+                                        }
                                     }
-                                    if (MapProperties.ShowTraffic)
+                                    if (MapProperties.HasTraffic)
                                     {
-                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button5, 1);
+                                        graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_traffic, Color.White, false, SoftButtons.Button5, 1);
+                                        if (MapProperties.ShowTraffic)
+                                        {
+                                            graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_buttonon, Color.White, false, SoftButtons.Button5, 1);
+                                        }
                                     }
                                     graphics.AddButtonIcon(FIPToolKit.Properties.Resources.map_return, Color.White, false, SoftButtons.Button6, 1);
                                 }
@@ -566,31 +581,31 @@ namespace FIPToolKit.Models
                         switch (softButton)
                         {
                             case SoftButtons.Button1:
-                                if (FlightSimProvider.IsConnected)
+                                if (FlightSimProvider.IsConnected && MapProperties.HasADF)
                                 {
                                     MapProperties.ShowAdf = !MapProperties.ShowAdf;
                                 }
                                 break;
                             case SoftButtons.Button2:
-                                if (FlightSimProvider.IsConnected)
+                                if (FlightSimProvider.IsConnected && MapProperties.HasNav1)
                                 {
                                     MapProperties.ShowNav1 = !MapProperties.ShowNav1;
                                 }
                                 break;
                             case SoftButtons.Button3:
-                                if (FlightSimProvider.IsConnected)
+                                if (FlightSimProvider.IsConnected && MapProperties.HasNav2)
                                 {
                                     MapProperties.ShowNav2 = !MapProperties.ShowNav2;
                                 }
                                 break;
                             case SoftButtons.Button4:
-                                if (FlightSimProvider.IsConnected)
+                                if (FlightSimProvider.IsConnected && MapProperties.HasGPS)
                                 {
                                     MapProperties.ShowGPS = !MapProperties.ShowGPS;
                                 }
                                 break;
                             case SoftButtons.Button5:
-                                if (FlightSimProvider.IsConnected)
+                                if (FlightSimProvider.IsConnected && MapProperties.HasTraffic)
                                 {
                                     MapProperties.ShowTraffic = !MapProperties.ShowTraffic;
                                 }
@@ -791,7 +806,7 @@ namespace FIPToolKit.Models
                             case GPSPage.Track:
                                 return false;
                             case GPSPage.Data:
-                                return true;
+                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed && MapProperties.HasADF;
                             case GPSPage.Settings:
                                 return false;
                         }
@@ -808,7 +823,7 @@ namespace FIPToolKit.Models
                             case GPSPage.Track:
                                 return false;
                             case GPSPage.Data:
-                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed;
+                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed && MapProperties.HasNav1;
                             case GPSPage.Settings:
                                 return false;
                         }
@@ -825,7 +840,7 @@ namespace FIPToolKit.Models
                             case GPSPage.Track:
                                 return FlightSimProvider.IsConnected && Map != null && !IsDisposed;
                             case GPSPage.Data:
-                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed;
+                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed && MapProperties.HasNav2;
                             case GPSPage.Settings:
                                 return FlightSimProvider.IsConnected && Map != null && !IsDisposed;
                         }
@@ -842,7 +857,7 @@ namespace FIPToolKit.Models
                             case GPSPage.Track:
                                 return FlightSimProvider.IsConnected && Map != null && !IsDisposed;
                             case GPSPage.Data:
-                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed;
+                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed && MapProperties.HasGPS;
                             case GPSPage.Settings:
                                 return Map != null && !IsDisposed;
                         }
@@ -859,7 +874,7 @@ namespace FIPToolKit.Models
                             case GPSPage.Track:
                                 return false;
                             case GPSPage.Data:
-                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed;
+                                return FlightSimProvider.IsConnected && Map != null && !IsDisposed && MapProperties.HasTraffic;
                             case GPSPage.Settings:
                                 return Map != null && !IsDisposed;
                         }

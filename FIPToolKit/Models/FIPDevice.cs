@@ -326,6 +326,10 @@ namespace FIPToolKit.Models
                     DeviceClient.AddPage(page.Properties.Page, isActive ? PageFlags.SetAsActive : PageFlags.None);
                     page.IsAddedToDevice = true;
                     page.Device = this;
+                    foreach (FIPButton button in page.Buttons)
+                    {
+                        button.Page = page;
+                    }
                     IsDirty = true;
                     if (sendNotifcation)
                     {

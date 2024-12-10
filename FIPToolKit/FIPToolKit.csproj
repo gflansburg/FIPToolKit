@@ -177,6 +177,8 @@
     <Compile Include="Drawing\GraphicsHelper.cs" />
     <Compile Include="Drawing\ImageExtensions.cs" />
     <Compile Include="Drawing\WebP.cs" />
+    <Compile Include="FlightSim\DCSWorldCrossref.cs" />
+    <Compile Include="FlightSim\DCSWorldProvider.cs" />
     <Compile Include="FlightSim\FlightSimProviderBase.cs" />
     <Compile Include="FlightSim\FlightSimProviders.cs" />
     <Compile Include="FlightSim\SimConnectEvent.cs" />
@@ -188,6 +190,12 @@
     <Compile Include="Models\FIPAirspeed.cs" />
     <Compile Include="Models\FIPAltimeter.cs" />
     <Compile Include="Models\FIPCommandButton.cs" />
+    <Compile Include="Models\FIPDCSWorldAirspeed.cs" />
+    <Compile Include="Models\FIPDCSWorldAltimeter.cs" />
+    <Compile Include="Models\FIPDCSWorldCommandButton.cs" />
+    <Compile Include="Models\FIPDCSWorldCommandSequenceButton.cs" />
+    <Compile Include="Models\FIPDCSWorldMap.cs" />
+    <Compile Include="Models\FIPDCSWorldRadio.cs" />
     <Compile Include="Models\FIPFSUIPCCommandSequenceButton.cs" />
     <Compile Include="Models\FIPSimConnectCommandButton.cs" />
     <Compile Include="Models\FIPXPlaneCommandButton.cs" />
@@ -499,6 +507,10 @@
     <Content Include="SpotifyAPI.Web.Auth\Resources\ImplicitGrantAuth\index.html" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DCS-BIOS\DCS-BIOS.csproj">
+      <Project>{75827052-3a72-4296-ad55-321418988a8c}</Project>
+      <Name>DCS-BIOS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DirectOutputNet\DirectOutputNet.vcxproj">
       <Project>{85d24812-9c8d-4ca4-a56d-15539faca9b2}</Project>
       <Name>DirectOutputNet</Name>

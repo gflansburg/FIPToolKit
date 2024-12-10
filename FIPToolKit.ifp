@@ -1,0 +1,344 @@
+﻿
+[Header]
+ProjectFileVersion = 1.1
+[General]
+Program name = FIPToolKit
+Program version = 1.1.0
+Windows XP = 1
+Windows Server 2003 = 1
+Windows Vista = 1
+Windows Server 2008 = 1
+Windows 7 = 1
+Windows 8 = 1
+Windows 10 = 1
+Windows Server 2016 = 1
+Windows Server 2019 = 1
+Windows Server 2022 = 1
+Windows 11 = 1
+DoNotCheckOS = 1
+Company name = Gafware
+Website = https://www.gafware.com
+SFA = 1
+DFA = 1
+Comp = 1
+[Graphics]
+Wizard image = C:\Program Files (x86)\solicus\InstallForge\images\Wizard_1.bmp
+Header image = C:\Program Files (x86)\solicus\InstallForge\images\Header_1.bmp
+Show Label = 1
+VisualStylesEnabled = 0
+[Files]
+Installation path = <ApplicationData>\<Company>\<AppName>\
+Autcip = 1
+[Uninstall]
+Vwau = 0
+Website = 
+Include uninstaller = 1
+Uninstaller filename = Uninstall
+UseCustomDisplayIcon = 0
+CustomDisplayIcon = 
+[Licence]
+Licence dialog = 0
+[Finish]
+Sart program = 1
+Reboot computer = 0
+Program = <installpath>\FIPDisplayProfiler.exe
+ProgramArguments = 
+[Shortcuts]
+Allowtc = 1
+Shortcut path = <company>\<appname>\
+[Serialoptions]
+Allows = 0
+Number = 20
+Mask = 
+[SplashScreen]
+Image = C:\Users\Gafman\OneDrive\Pictures\FIPToolKitLogo.jpg
+Sound = 
+Time = 2
+PlaySound = 0
+Allow = 1
+[Build]
+File = C:\Users\Gafman\OneDrive\Documents\SetupFIPToolKit.exe
+SetupIconPath = C:\Users\Gafman\OneDrive\Documents\Visual Studio 2019\FIPDisplay\FIPToolKitIcon.ico
+UninstallIconPath = C:\Program Files (x86)\solicus\InstallForge\icons\modern.ico
+CompressionMethod = 2
+CompressionLevel = 2
+[Updater]
+Allow = 0
+1 = <appname>
+2 = <appversion>
+3 = http://
+4 = http://
+5 = http://
+6 = Update
+Language = 0
+RunProg = 
+RunProgs = 0
+Execdlls = 0
+[Languages]
+2
+[Files/Dirs]
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\libvlc\
+N/A
+[Folder]
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\CommandLine.dll
+220 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\DirectOutputNet.dll
+83.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\EntityFramework.dll
+4.8 MB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\EntityFramework.SqlServer.dll
+578.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\ffmpeg.exe
+34.1 MB
+exe
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\FIPDisplayMSFS.exe
+349 KB
+exe
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\FIPDisplayMSFS.exe.config
+5.6 KB
+config
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\FIPDisplayMSFS2020.exe
+348.5 KB
+exe
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\FIPDisplayProfiler.exe
+1.3 MB
+exe
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\FIPDisplayProfiler.exe.config
+6.9 KB
+config
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\FIPToolKit.dll
+4.4 MB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\FIPToolKit.dll.config
+4.5 KB
+config
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\fsuipcClient.dll
+613 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\GMap.NET.Core.dll
+304.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\GMap.NET.WindowsForms.dll
+154 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\LibVLCSharp.dll
+224 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\MediaToolkit.dll
+10.4 MB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Microsoft.Bcl.AsyncInterfaces.dll
+25.8 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Microsoft.FlightSimulator.SimConnect.dll
+149 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Microsoft.Web.WebView2.Core.dll
+589.6 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Microsoft.Web.WebView2.WinForms.dll
+37.6 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Microsoft.Web.WebView2.Wpf.dll
+81.1 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Newtonsoft.Json.dll
+695.3 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.AsyncEx.Context.dll
+13.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.AsyncEx.Coordination.dll
+40 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.AsyncEx.Interop.WaitHandles.dll
+8.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.AsyncEx.Oop.dll
+6.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.AsyncEx.Tasks.dll
+35 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.Cancellation.dll
+8.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.Collections.Deque.dll
+16.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Nito.Disposables.dll
+10 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\NLog.dll
+945 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\protobuf-net.Core.dll
+282.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\protobuf-net.dll
+271 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\RestSharp.dll
+208 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\SimConnect.dll
+65.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\SixLabors.ImageSharp.dll
+1.6 MB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\SQLite.Interop.dll
+1.9 MB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Buffers.dll
+23.3 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Collections.Immutable.dll
+253.3 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Data.SqlClient.dll
+124.8 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Data.SQLite.dll
+439.7 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Data.SQLite.EF6.dll
+201.7 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Data.SQLite.Linq.dll
+201.7 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.IO.Pipelines.dll
+82.8 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Memory.dll
+141.8 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Numerics.Vectors.dll
+107.8 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Runtime.CompilerServices.Unsafe.dll
+18.8 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Security.Principal.Windows.dll
+17.9 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Text.Encoding.CodePages.dll
+748.3 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Text.Encodings.Web.dll
+77.8 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Text.Json.dll
+709.3 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.Threading.Tasks.Extensions.dll
+27.3 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\System.ValueTuple.dll
+24.6 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\TagLibSharp.dll
+488.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Telerik.WinControls.dll
+4.8 MB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Telerik.WinControls.UI.dll
+6.8 MB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\TelerikCommon.dll
+909 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Unosquare.Labs.EmbedIO.dll
+247 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\Unosquare.Swan.Lite.dll
+163.5 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\WebView2Loader.dll
+162.1 KB
+dll
+C:\Users\Gafman\AppData\Roaming\Gafware\FIPToolKit\XPlaneConnect.dll
+2.6 MB
+dll
+[Licence_Begin]
+1336
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 MS Shell Dlg;}}
+{\*\generator Riched20 10.0.22621}\viewkind4\uc1 
+\pard\f0\fs17 MIT License\par
+\par
+Copyright (c) 2024 Gafware\par
+\par
+Permission is hereby granted, free of charge, to any person obtaining a copy\par
+of this software and associated documentation files (the "Software"), to deal\par
+in the Software without restriction, including without limitation the rights\par
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\par
+copies of the Software, and to permit persons to whom the Software is\par
+furnished to do so, subject to the following conditions:\par
+\par
+The above copyright notice and this permission notice shall be included in all\par
+copies or substantial portions of the Software.\par
+\par
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\par
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\par
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\par
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\par
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\par
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\par
+SOFTWARE.\par
+}
+ [Licence_End]
+[Registry]
+[Variables]
+[SCs]
+Startmenu
+FIP Display Profiler
+<installpath>\FIPDisplayProfiler.exe
+
+
+0
+Startmenu
+Start FIP Display MSFS 2020
+<installpath>\FIPDisplayMSFS2020.exe
+-r -force
+
+0
+Startmenu
+Stop FIP Display MSFS2020
+<installpath>\FIPDisplayMSFS2020.exe
+-s
+
+0
+Startmenu
+Check FIP Display MSFS2020
+<installpath>\FIPDisplayMSFS2020.exe
+-p
+
+0
+Startmenu
+Install FIP Display MSFS2020
+<installpath>\FIPDisplayMSFS2020.exe
+-i
+
+0
+Startmenu
+Uninstall FIP Display MSFS2020
+<installpath>\FIPDisplayMSFS2020.exe
+-u
+
+0
+Desktop
+FIP Display Profiler
+<installpath>\FIPDisplayProfiler.exe
+
+
+0
+[IFP_End]
+[Serials]
+[Serials_End]
+[Commands]

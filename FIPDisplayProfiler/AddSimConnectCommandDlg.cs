@@ -80,6 +80,7 @@ namespace FIPDisplayProfiler
 
         private void AddSimConnectCommandDlg_Load(object sender, EventArgs e)
         {
+            cbBreak.SelectedIndex = IndexOfBreakLength(Button.Break);
             cbSetValue.SelectedIndex = IndexOfSetValue(Button.Command);
             tbValue.Text = Button.Value;
             lblSetValueDescription.Text = (cbSetValue.SelectedItem as SimConnectEvent).Description;

@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
+using static FIPToolKit.FlightSim.FlightSimProviderBase;
 
 namespace FIPToolKit.Models
 {
@@ -17,6 +18,9 @@ namespace FIPToolKit.Models
     [Serializable]
     public abstract class FIPCommandButton : FIPButton
     {
+        public event FlightSimEventHandler OnConnected;
+        public event FlightSimEventHandler OnQuit;
+
         [XmlIgnore]
         [JsonIgnore]
         public FlightSimProviderBase FlightSimProvider { get; private set; }
@@ -24,6 +28,20 @@ namespace FIPToolKit.Models
         public FIPCommandButton(FlightSimProviderBase flightSimProvider)
         {
             FlightSimProvider = flightSimProvider;
+            flightSimProvider.OnConnected += FlightSimProvider_OnConnected;
+            flightSimProvider.OnQuit += FlightSimProvider_OnQuit;
+        }
+
+        private void FlightSimProvider_OnQuit(FlightSimProviderBase sender)
+        {
+            Page?.SetLEDs();
+            OnQuit?.Invoke(sender);
+        }
+
+        private void FlightSimProvider_OnConnected(FlightSimProviderBase sender)
+        {
+            Page?.SetLEDs();
+            OnConnected?.Invoke(sender);
         }
 
         private string _command;

@@ -15,6 +15,7 @@ using Microsoft.Web.WebView2.Core;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Linq;
+using FIPDisplayMSFS.Properties;
 
 namespace FIPDisplayMSFS
 {
@@ -74,87 +75,7 @@ namespace FIPDisplayMSFS
                 }
                 else if (options != null && options.Plugin)
                 {
-                    bool isRunning = false;
-                    bool directOutputRunning = false;
-                    bool flightSimRunning = false;
-                    Process[] directOutputService = Process.GetProcessesByName("DirectOutputService");
-                    if (directOutputService != null && directOutputService.Length > 0)
-                    {
-                        directOutputRunning = true;
-                    }
-                    List<Process> flightSim = Process.GetProcessesByName("FlightSimulator").ToList();
-                    Process[] flightSim20204 = Process.GetProcessesByName("FlightSimulator2024");
-                    flightSim.AddRange(flightSim20204);
-                    if (flightSim != null && flightSim.Count > 0)
-                    {
-                        flightSimRunning = true;
-                    }
-                    Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS");
-                    if (runningProcesses != null)
-                    {
-                        foreach (Process process in runningProcesses)
-                        {
-                            if (process.Id != Process.GetCurrentProcess().Id)
-                            {
-                                isRunning = true;
-                                break;
-                            }
-                        }
-                    }
-                    StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.AppendLine(string.Format("Plugin status: {0}", isRunning ? "Running" : "Not running"));
-                    stringBuilder.AppendLine(string.Format("DirectOutput status: {0}", directOutputRunning ? "Running" : "Not running"));
-                    stringBuilder.AppendLine(string.Format("MSFS status: {0}", flightSimRunning ? "Running" : "Not running"));
-                    using (RegistryKey regDirectOutput = Registry.LocalMachine.OpenSubKey("Software\\Saitek\\DirectOutput", false))
-                    {
-                        stringBuilder.AppendLine(string.Format("\nDirectOutput DLL location: {0}", regDirectOutput.GetValue("DirectOutput", string.Empty)));
-                        regDirectOutput.Close();
-                    }
-                    stringBuilder.AppendLine("\nName: FIP Display MSFS 2024 Plugin");
-                    SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.Get2024ExeXmlPath());
-                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(doc, "FIPDisplayMSFS") ? "Yes" : "No"));
-                    if (!string.IsNullOrEmpty(Tools.Get2024SimConnectIniPath()) && System.IO.File.Exists(Tools.Get2024SimConnectIniPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2024SimConnectIniPath()));
-                    }
-                    if (!string.IsNullOrEmpty(Tools.Get2024ExeXmlPath()) && System.IO.File.Exists(Tools.Get2024ExeXmlPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2024ExeXmlPath()));
-                    }
-                    stringBuilder.AppendLine("\nName: FIP Display MSFS 2024 Steam Plugin");
-                    SimBaseDocument docSteam = Tools.GetSimBaseDocument(Tools.Get2024SteamExeXmlPath());
-                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(docSteam, "FIPDisplayMSFS") ? "Yes" : "No"));
-                    if (!string.IsNullOrEmpty(Tools.Get2024SteamSimConnectIniPath()) && System.IO.File.Exists(Tools.Get2024SteamSimConnectIniPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2024SteamSimConnectIniPath()));
-                    }
-                    if (!string.IsNullOrEmpty(Tools.Get2024SteamExeXmlPath()) && System.IO.File.Exists(Tools.Get2024SteamExeXmlPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2024SteamExeXmlPath()));
-                    }
-                    stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Plugin");
-                    doc = Tools.GetSimBaseDocument(Tools.Get2020ExeXmlPath());
-                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(doc, "FIPDisplayMSFS") ? "Yes" : "No"));
-                    if (!string.IsNullOrEmpty(Tools.Get2020SimConnectIniPath()) && System.IO.File.Exists(Tools.Get2020SimConnectIniPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2020SimConnectIniPath()));
-                    }
-                    if (!string.IsNullOrEmpty(Tools.Get2020ExeXmlPath()) && System.IO.File.Exists(Tools.Get2020ExeXmlPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2020ExeXmlPath()));
-                    }
-                    stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Steam Plugin");
-                    docSteam = Tools.GetSimBaseDocument(Tools.Get2020SteamExeXmlPath());
-                    stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(docSteam, "FIPDisplayMSFS") ? "Yes" : "No"));
-                    if (!string.IsNullOrEmpty(Tools.Get2020SteamSimConnectIniPath()) && System.IO.File.Exists(Tools.Get2020SteamSimConnectIniPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2020SteamSimConnectIniPath()));
-                    }
-                    if (!string.IsNullOrEmpty(Tools.Get2020SteamExeXmlPath()) && System.IO.File.Exists(Tools.Get2020SteamExeXmlPath()))
-                    {
-                        stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2020SteamExeXmlPath()));
-                    }
-                    Message = stringBuilder.ToString();
+                    Message = About();
                     SystemSounds.Asterisk.Play();
                 }
                 else if (options != null && options.Quit)
@@ -429,11 +350,14 @@ namespace FIPDisplayMSFS
 
         private void FIPDisplay_OnMapUpdated(FIPMapForm sender)
         {
-            foreach (FIPDevice device in Engine.Devices)
+            if (Engine != null)
             {
-                foreach (FIPMap mapPage in device.Pages.Where(p => typeof(FIPMap).IsAssignableFrom(p.GetType())))
+                foreach (FIPDevice device in Engine.Devices)
                 {
-                    mapPage.UpdatePage();
+                    foreach (FIPMap mapPage in device.Pages.Where(p => typeof(FIPMap).IsAssignableFrom(p.GetType())))
+                    {
+                        mapPage.UpdatePage();
+                    }
                 }
             }
         }
@@ -955,6 +879,8 @@ namespace FIPDisplayMSFS
                 Engine = null;
                 FlightSimProviders.SimConnect.Deinitialize();
                 FlightSimProviders.FSUIPC.Deinitialize();
+                FlightSimProviders.XPlane.Deinitialize();
+                FlightSimProviders.DCSWorld.Deinitialize();
             }
             FIPFlightShare.CloseFlightShare();
         }
@@ -1043,6 +969,8 @@ namespace FIPDisplayMSFS
                     Engine = null;
                     FlightSimProviders.SimConnect.Deinitialize();
                     FlightSimProviders.FSUIPC.Deinitialize();
+                    FlightSimProviders.XPlane.Deinitialize();
+                    FlightSimProviders.DCSWorld.Deinitialize();
                 }
                 FIPFlightShare.CloseFlightShare();
             }
@@ -1377,6 +1305,161 @@ namespace FIPDisplayMSFS
                 }
             }
             return mute;
+        }
+
+        private void xPlaneSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            XPlaneSettings settings = new XPlaneSettings();
+            if (settings.ShowDialog(this) == DialogResult.OK)
+            {
+                FlightSimProviders.XPlane.UpdateConnection(Settings.Default.XPlaneIPAddress, Settings.Default.XPlanePort);
+            }
+        }
+
+        private void dCSWorldSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DCSWorldSettings settings = new DCSWorldSettings();
+            if (settings.ShowDialog(this) == DialogResult.OK)
+            {
+                FlightSimProviders.DCSWorld.UpdateConnection(Settings.Default.DCSBIOSJSONLocation, Settings.Default.DCSFromIPAddress, Settings.Default.DCSToIPAddress, Settings.Default.DCSFromPort, Settings.Default.DCSToPort);
+            }
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void FIPDisplay_Load(object sender, EventArgs e)
+        {
+            FlightSimProviders.XPlane.UpdateConnection(Settings.Default.XPlaneIPAddress, Settings.Default.XPlanePort);
+            FlightSimProviders.DCSWorld.UpdateConnection(string.IsNullOrEmpty(Settings.Default.DCSBIOSJSONLocation) ? Environment.ExpandEnvironmentVariables("%userprofile%\\Saved Games\\DCS\\Scripts\\DCS-BIOS\\doc\\json") : Settings.Default.DCSBIOSJSONLocation, Settings.Default.DCSFromIPAddress, Settings.Default.DCSToIPAddress, Settings.Default.DCSFromPort, Settings.Default.DCSToPort);
+            keybdeventToolStripMenuItem.Checked = Settings.Default.KeyAPIMode == KeyAPIModes.keybd_event;
+            sendInputToolStripMenuItem.Checked = Settings.Default.KeyAPIMode == KeyAPIModes.SendInput;
+            fSUIPCToolStripMenuItem.Checked = Settings.Default.KeyAPIMode == KeyAPIModes.FSUIPC;
+            FIPButton.KeyAPIMode = Settings.Default.KeyAPIMode;
+        }
+
+        private void UpdateKeyAPIMode()
+        {
+            Settings.Default.KeyAPIMode = keybdeventToolStripMenuItem.Checked ? KeyAPIModes.keybd_event : sendInputToolStripMenuItem.Checked ? KeyAPIModes.SendInput : KeyAPIModes.FSUIPC;
+            Settings.Default.Save();
+            FIPButton.KeyAPIMode = Settings.Default.KeyAPIMode;
+        }
+        private void keybdeventToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            keybdeventToolStripMenuItem.Checked = true;
+            sendInputToolStripMenuItem.Checked = false;
+            fSUIPCToolStripMenuItem.Checked = false;
+            UpdateKeyAPIMode();
+        }
+
+        private void sendInputToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            keybdeventToolStripMenuItem.Checked = false;
+            sendInputToolStripMenuItem.Checked = true;
+            fSUIPCToolStripMenuItem.Checked = false;
+            UpdateKeyAPIMode();
+        }
+
+        private void fSUIPCToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            keybdeventToolStripMenuItem.Checked = false;
+            sendInputToolStripMenuItem.Checked = false;
+            fSUIPCToolStripMenuItem.Checked = true;
+            UpdateKeyAPIMode();
+        }
+
+        private string About()
+        {
+            bool isRunning = false;
+            bool directOutputRunning = false;
+            bool flightSimRunning = false;
+            Process[] directOutputService = Process.GetProcessesByName("DirectOutputService");
+            if (directOutputService != null && directOutputService.Length > 0)
+            {
+                directOutputRunning = true;
+            }
+            List<Process> flightSim = Process.GetProcessesByName("FlightSimulator").ToList();
+            Process[] flightSim20204 = Process.GetProcessesByName("FlightSimulator2024");
+            flightSim.AddRange(flightSim20204);
+            if (flightSim != null && flightSim.Count > 0)
+            {
+                flightSimRunning = true;
+            }
+            Process[] runningProcesses = Process.GetProcessesByName("FIPDisplayMSFS");
+            if (runningProcesses != null)
+            {
+                foreach (Process process in runningProcesses)
+                {
+                    if (process.Id != Process.GetCurrentProcess().Id)
+                    {
+                        isRunning = true;
+                        break;
+                    }
+                }
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine(string.Format("Plugin status: {0}", isRunning ? "Running" : "Not running"));
+            stringBuilder.AppendLine(string.Format("DirectOutput status: {0}", directOutputRunning ? "Running" : "Not running"));
+            stringBuilder.AppendLine(string.Format("MSFS status: {0}", flightSimRunning ? "Running" : "Not running"));
+            using (RegistryKey regDirectOutput = Registry.LocalMachine.OpenSubKey("Software\\Saitek\\DirectOutput", false))
+            {
+                stringBuilder.AppendLine(string.Format("\nDirectOutput DLL location: {0}", regDirectOutput.GetValue("DirectOutput", string.Empty)));
+                regDirectOutput.Close();
+            }
+            stringBuilder.AppendLine("\nName: FIP Display MSFS 2024 Plugin");
+            SimBaseDocument doc = Tools.GetSimBaseDocument(Tools.Get2024ExeXmlPath());
+            stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(doc, "FIPDisplayMSFS") ? "Yes" : "No"));
+            if (!string.IsNullOrEmpty(Tools.Get2024SimConnectIniPath()) && System.IO.File.Exists(Tools.Get2024SimConnectIniPath()))
+            {
+                stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2024SimConnectIniPath()));
+            }
+            if (!string.IsNullOrEmpty(Tools.Get2024ExeXmlPath()) && System.IO.File.Exists(Tools.Get2024ExeXmlPath()))
+            {
+                stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2024ExeXmlPath()));
+            }
+            stringBuilder.AppendLine("\nName: FIP Display MSFS 2024 Steam Plugin");
+            SimBaseDocument docSteam = Tools.GetSimBaseDocument(Tools.Get2024SteamExeXmlPath());
+            stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(docSteam, "FIPDisplayMSFS") ? "Yes" : "No"));
+            if (!string.IsNullOrEmpty(Tools.Get2024SteamSimConnectIniPath()) && System.IO.File.Exists(Tools.Get2024SteamSimConnectIniPath()))
+            {
+                stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2024SteamSimConnectIniPath()));
+            }
+            if (!string.IsNullOrEmpty(Tools.Get2024SteamExeXmlPath()) && System.IO.File.Exists(Tools.Get2024SteamExeXmlPath()))
+            {
+                stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2024SteamExeXmlPath()));
+            }
+            stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Plugin");
+            doc = Tools.GetSimBaseDocument(Tools.Get2020ExeXmlPath());
+            stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(doc, "FIPDisplayMSFS") ? "Yes" : "No"));
+            if (!string.IsNullOrEmpty(Tools.Get2020SimConnectIniPath()) && System.IO.File.Exists(Tools.Get2020SimConnectIniPath()))
+            {
+                stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2020SimConnectIniPath()));
+            }
+            if (!string.IsNullOrEmpty(Tools.Get2020ExeXmlPath()) && System.IO.File.Exists(Tools.Get2020ExeXmlPath()))
+            {
+                stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2020ExeXmlPath()));
+            }
+            stringBuilder.AppendLine("\nName: FIP Display MSFS 2020 Steam Plugin");
+            docSteam = Tools.GetSimBaseDocument(Tools.Get2020SteamExeXmlPath());
+            stringBuilder.AppendLine(string.Format("Installed: {0}", Tools.IsPluginInstalled(docSteam, "FIPDisplayMSFS") ? "Yes" : "No"));
+            if (!string.IsNullOrEmpty(Tools.Get2020SteamSimConnectIniPath()) && System.IO.File.Exists(Tools.Get2020SteamSimConnectIniPath()))
+            {
+                stringBuilder.AppendLine(string.Format("SimConnect.ini location: {0}", Tools.Get2020SteamSimConnectIniPath()));
+            }
+            if (!string.IsNullOrEmpty(Tools.Get2020SteamExeXmlPath()) && System.IO.File.Exists(Tools.Get2020SteamExeXmlPath()))
+            {
+                stringBuilder.AppendLine(string.Format("exe.xml location: {0}", Tools.Get2020SteamExeXmlPath()));
+            }
+            return stringBuilder.ToString();
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutForm about = new AboutForm();
+            about.Message = About();
+            about.ShowDialog(this);
         }
     }
 }

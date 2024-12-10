@@ -81,6 +81,7 @@ namespace FIPToolKit.FlightSim
             public double GROUND_ALTITUDE;
             public double GROUND_VELOCITY;
             public double KOHLSMAN_SETTING_HG;
+            public double PRESSURE_IN_HG;
             public double AMBIENT_WIND_VELOCITY;
             public double AMBIENT_WIND_DIRECTION;
             public double AMBIENT_TEMPERATURE;
@@ -476,6 +477,7 @@ namespace FIPToolKit.FlightSim
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "GROUND ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "GROUND VELOCITY", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "KOHLSMAN SETTING HG:1", "inHg", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
+                    MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "AMBIENT PRESSURE", "inHg", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "AMBIENT WIND VELOCITY", "knots", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "AMBIENT WIND DIRECTION", "degrees", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);
                     MicrosoftSimConnect.AddToDataDefinition(DATA_DEFINE_ID.FLIGHTDATA, "AMBIENT TEMPERATURE", "celsius", SIMCONNECT_DATATYPE.FLOAT64, 0, Microsoft.FlightSimulator.SimConnect.SimConnect.SIMCONNECT_UNUSED);

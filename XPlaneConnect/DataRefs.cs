@@ -35,6 +35,7 @@ namespace XPlaneConnect
             DataRefList.Add(Cockpit2RadiosIndicatorsAdf2NavId.Id, Cockpit2RadiosIndicatorsAdf2NavId);
             DataRefList.Add(Cockpit2RadiosIndicatorsGpsNavId.Id, Cockpit2RadiosIndicatorsGpsNavId);
             DataRefList.Add(Cockpit2RadiosIndicatorsGps2NavId.Id, Cockpit2RadiosIndicatorsGps2NavId);
+            DataRefList.Add(Cockpit2RadiosIndicatorsGpsBearingError.Id, Cockpit2RadiosIndicatorsGpsBearingError);
             DataRefList.Add(Cockpit2RadiosIndicatorsDmeNavId.Id, Cockpit2RadiosIndicatorsDmeNavId);
             DataRefList.Add(Cockpit2RadiosIndicatorsNav3NavId.Id, Cockpit2RadiosIndicatorsNav3NavId);
             DataRefList.Add(Cockpit2RadiosIndicatorsNav4NavId.Id, Cockpit2RadiosIndicatorsNav4NavId);
@@ -73452,6 +73453,7 @@ namespace XPlaneConnect
                 };
             }
         }
+       
         private StringDataRefElement Cockpit2RadiosIndicatorsGps2NavId
         {
             get
@@ -73465,6 +73467,23 @@ namespace XPlaneConnect
                     Id = DataRefId.Cockpit2RadiosIndicatorsGps2NavId,
                     Writable = false,
                     DataType = "byte[150]"
+                };
+            }
+        }
+        private DataRefElement Cockpit2RadiosIndicatorsGpsBearingError
+        {
+            get
+            {
+                return new StringDataRefElement
+                {
+                    DataRef = "sim/cockpit2/radios/indicators/gps_bearing_error",
+                    Units = "nm",
+                    Description = "The lateral deviation from the desired GPS course",
+                    Frequency = DefaultFrequency,
+                    Name = "Cockpit2radios Indicators Bearing Error",
+                    Id = DataRefId.Cockpit2RadiosIndicatorsGpsBearingError,
+                    Writable = false,
+                    DataType = "float"
                 };
             }
         }

@@ -41,6 +41,8 @@ namespace FIPToolKit.Models
     [XmlInclude(typeof(FIPXPlaneCommandSequenceButton))]
     [XmlInclude(typeof(FIPSimConnectCommandButton))]
     [XmlInclude(typeof(FIPSimConnectCommandSequenceButton))]
+    [XmlInclude(typeof(FIPDCSWorldCommandButton))]
+    [XmlInclude(typeof(FIPDCSWorldCommandSequenceButton))]
     public abstract class FIPButton : IDisposable
     {
         public delegate void FIPButtonEventHandler(object sender, FIPButtonEventArgs e);

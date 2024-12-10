@@ -319,10 +319,32 @@ namespace FIPToolKit.Models
             Properties.Buttons.Add(button);
             Properties.IsDirty = true;
             button.Page = this;
+            if (typeof(FIPCommandButton).IsAssignableFrom(button.GetType()))
+            {
+                FIPCommandButton btn = (FIPCommandButton)button;
+                btn.OnConnected += FlightSim_OnConnected;
+                btn.OnQuit += FlightSim_OnQuit;
+            }
+            else if (typeof(FIPCommandSequenceButton).IsAssignableFrom(button.GetType()))
+            {
+                FIPCommandSequenceButton btn = (FIPCommandSequenceButton)button;
+                btn.OnConnected += FlightSim_OnConnected;
+                btn.OnQuit += FlightSim_OnQuit;
+            }
             UpdatePage();
             SetLEDs();
             button.OnButtonChange += Button_OnButtonChange;
 
+        }
+
+        private void FlightSim_OnQuit(FlightSim.FlightSimProviderBase sender)
+        {
+            SetLEDs();
+        }
+
+        private void FlightSim_OnConnected(FlightSim.FlightSimProviderBase sender)
+        {
+            SetLEDs();
         }
 
         private void Button_OnButtonChange(object sender, FIPButtonEventArgs e)

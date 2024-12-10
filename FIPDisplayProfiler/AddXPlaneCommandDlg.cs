@@ -129,6 +129,7 @@ namespace FIPDisplayProfiler
 
         private void AddXPlaneCommandDlg_Load(object sender, EventArgs e)
         {
+            cbBreak.SelectedIndex = IndexOfBreakLength(Button.Break);
             cbAction.SelectedIndex = IndexOfButtonAction(Button.Action);
             switch (Button.Action)
             {

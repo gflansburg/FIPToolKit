@@ -179,6 +179,12 @@
     <Compile Include="AboutDlg.Designer.cs">
       <DependentUpon>AboutDlg.cs</DependentUpon>
     </Compile>
+    <Compile Include="AddDCSWorldCommandDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddDCSWorldCommandDlg.Designer.cs">
+      <DependentUpon>AddDCSWorldCommandDlg.cs</DependentUpon>
+    </Compile>
     <Compile Include="AddSimConnectCommandDlg.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -196,6 +202,24 @@
     </Compile>
     <Compile Include="AddFSUIPCCommandDlg.Designer.cs">
       <DependentUpon>AddFSUIPCCommandDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DCSWorldCommandDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DCSWorldCommandDlg.Designer.cs">
+      <DependentUpon>DCSWorldCommandDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DCSWorldCommandSequenceDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DCSWorldCommandSequenceDlg.Designer.cs">
+      <DependentUpon>DCSWorldCommandSequenceDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DCSWorldSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DCSWorldSettings.Designer.cs">
+      <DependentUpon>DCSWorldSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="SimConnectCommandDlg.cs">
       <SubType>Form</SubType>
@@ -264,11 +288,11 @@
     <Compile Include="AirspeedForm.Designer.cs">
       <DependentUpon>AirspeedForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="FSUIPCMapForm.cs">
+    <Compile Include="MapForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FSUIPCMapForm.Designer.cs">
-      <DependentUpon>FSUIPCMapForm.cs</DependentUpon>
+    <Compile Include="MapForm.Designer.cs">
+      <DependentUpon>MapForm.cs</DependentUpon>
     </Compile>
     <Compile Include="FSUIPCCommandDlg.cs" />
     <Compile Include="FSUIPCCommandDlg.Designer.cs">
@@ -363,8 +387,17 @@
     <Compile Include="SlideShowForm.Designer.cs">
       <DependentUpon>SlideShowForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="XPlaneSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="XPlaneSettings.Designer.cs">
+      <DependentUpon>XPlaneSettings.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="AboutDlg.resx">
       <DependentUpon>AboutDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AddDCSWorldCommandDlg.resx">
+      <DependentUpon>AddDCSWorldCommandDlg.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AddSimConnectCommandDlg.resx">
       <DependentUpon>AddSimConnectCommandDlg.cs</DependentUpon>
@@ -377,6 +410,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="AddPageDialog.resx">
       <DependentUpon>AddPageDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DCSWorldCommandDlg.resx">
+      <DependentUpon>DCSWorldCommandDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DCSWorldCommandSequenceDlg.resx">
+      <DependentUpon>DCSWorldCommandSequenceDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DCSWorldSettings.resx">
+      <DependentUpon>DCSWorldSettings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SimConnectCommandDlg.resx">
       <DependentUpon>SimConnectCommandDlg.cs</DependentUpon>
@@ -411,8 +453,8 @@
     <EmbeddedResource Include="AirspeedForm.resx">
       <DependentUpon>AirspeedForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FSUIPCMapForm.resx">
-      <DependentUpon>FSUIPCMapForm.cs</DependentUpon>
+    <EmbeddedResource Include="MapForm.resx">
+      <DependentUpon>MapForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FSUIPCCommandDlg.resx">
       <DependentUpon>FSUIPCCommandDlg.cs</DependentUpon>
@@ -471,6 +513,9 @@
     <Content Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="XPlaneSettings.resx">
+      <DependentUpon>XPlaneSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -520,6 +565,10 @@
     <None Include="Resources\fip.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DCS-BIOS\DCS-BIOS.csproj">
+      <Project>{75827052-3a72-4296-ad55-321418988a8c}</Project>
+      <Name>DCS-BIOS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DirectOutputNet\DirectOutputNet.vcxproj">
       <Project>{85d24812-9c8d-4ca4-a56d-15539faca9b2}</Project>
       <Name>DirectOutputNet</Name>

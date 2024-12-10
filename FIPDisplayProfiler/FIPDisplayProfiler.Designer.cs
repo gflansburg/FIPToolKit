@@ -66,8 +66,8 @@ namespace FIPDisplayProfiler
             this.checkMSFSTimer = new System.Windows.Forms.Timer(this.components);
             this.webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             this.timerSpotify = new System.Windows.Forms.Timer(this.components);
-            this.xPlaneIPAddressToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.xPlanePortToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.xPlaneSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dCSWorldSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.webView21)).BeginInit();
@@ -168,8 +168,8 @@ namespace FIPDisplayProfiler
             this.closeFlightShareOnExitToolStripMenuItem,
             this.exitWhenMSFSQuitsToolStripMenuItem,
             this.keyAPIModeToolStripMenuItem,
-            this.xPlaneIPAddressToolStripMenuItem,
-            this.xPlanePortToolStripMenuItem});
+            this.xPlaneSettingsToolStripMenuItem,
+            this.dCSWorldSettingsToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
             this.optionsToolStripMenuItem.Text = "&Options";
@@ -380,19 +380,19 @@ namespace FIPDisplayProfiler
             // 
             this.timerSpotify.Tick += new System.EventHandler(this.timerSpotify_Tick);
             // 
-            // xPlaneIPAddressToolStripMenuItem
+            // xPlaneSettingsToolStripMenuItem
             // 
-            this.xPlaneIPAddressToolStripMenuItem.Name = "xPlaneIPAddressToolStripMenuItem";
-            this.xPlaneIPAddressToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
-            this.xPlaneIPAddressToolStripMenuItem.Text = "X-Plane &IP Address...";
-            this.xPlaneIPAddressToolStripMenuItem.Click += new System.EventHandler(this.xPlaneIPAddressToolStripMenuItem_Click);
+            this.xPlaneSettingsToolStripMenuItem.Name = "xPlaneSettingsToolStripMenuItem";
+            this.xPlaneSettingsToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.xPlaneSettingsToolStripMenuItem.Text = "X-Plane Settings...";
+            this.xPlaneSettingsToolStripMenuItem.Click += new System.EventHandler(this.xPlaneSettingsToolStripMenuItem_Click);
             // 
-            // xPlanePortToolStripMenuItem
+            // dCSWorldSettingsToolStripMenuItem
             // 
-            this.xPlanePortToolStripMenuItem.Name = "xPlanePortToolStripMenuItem";
-            this.xPlanePortToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
-            this.xPlanePortToolStripMenuItem.Text = "&X-Plane Port...";
-            this.xPlanePortToolStripMenuItem.Click += new System.EventHandler(this.xPlanePortToolStripMenuItem_Click);
+            this.dCSWorldSettingsToolStripMenuItem.Name = "dCSWorldSettingsToolStripMenuItem";
+            this.dCSWorldSettingsToolStripMenuItem.Size = new System.Drawing.Size(215, 22);
+            this.dCSWorldSettingsToolStripMenuItem.Text = "DCS World Settings...";
+            this.dCSWorldSettingsToolStripMenuItem.Click += new System.EventHandler(this.dCSWorldSettingsToolStripMenuItem_Click);
             // 
             // FIPDisplayProfiler
             // 
@@ -457,8 +457,8 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.ToolStripMenuItem autoSaveSettingsToolStripMenuItem;
         private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
         private System.Windows.Forms.Timer timerSpotify;
-        private System.Windows.Forms.ToolStripMenuItem xPlaneIPAddressToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem xPlanePortToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem xPlaneSettingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dCSWorldSettingsToolStripMenuItem;
     }
 }
 

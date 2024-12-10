@@ -19,7 +19,7 @@ namespace FIPDisplayProfiler
     {
         public FIPFSUIPCCommandButton Button { get; set; }
 
-        private class AddFSUIPCCommandDlgBreak
+        private class FSUIPCCommandDlgBreak
         {
             public KeyPressLengths BreakLength { get; set; }
             public string Name { get; set; }
@@ -60,7 +60,7 @@ namespace FIPDisplayProfiler
             InitializeComponent();
             foreach (KeyPressLengths keyPressLength in (KeyPressLengths[])Enum.GetValues(typeof(KeyPressLengths)))
             {
-                cbBreak.Items.Add(new AddFSUIPCCommandDlgBreak()
+                cbBreak.Items.Add(new FSUIPCCommandDlgBreak()
                 {
                     BreakLength = keyPressLength,
                     Name = Regex.Replace(keyPressLength.ToString(), "(\\B[A-Z])", " $1").Replace(" A ", " a ").Replace(" And ", " and ")
@@ -148,7 +148,7 @@ namespace FIPDisplayProfiler
         {
             for (int i = 0; i < cbBreak.Items.Count; i++)
             {
-                AddFSUIPCCommandDlgBreak addFSUIPCCommandDlgBreak = cbBreak.Items[i] as AddFSUIPCCommandDlgBreak;
+                FSUIPCCommandDlgBreak addFSUIPCCommandDlgBreak = cbBreak.Items[i] as FSUIPCCommandDlgBreak;
                 if (addFSUIPCCommandDlgBreak.BreakLength == breakLength)
                 {
                     return i;
@@ -237,7 +237,7 @@ namespace FIPDisplayProfiler
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            Button.Break = ((AddFSUIPCCommandDlgBreak)cbBreak.SelectedItem).BreakLength;
+            Button.Break = ((FSUIPCCommandDlgBreak)cbBreak.SelectedItem).BreakLength;
             Button.Action = (cbAction.SelectedItem as CommandDlgAction).Action;
             Button.ControlSet = (cbCommandSet.SelectedItem as FSUIPCCommandDlgControlSet).ControlSet;
             Button.Value = tbValue.Text;
@@ -252,6 +252,7 @@ namespace FIPDisplayProfiler
 
         private void AddFSUIPCCommandDlg_Load(object sender, EventArgs e)
         {
+            cbBreak.SelectedIndex = IndexOfBreakLength(Button.Break);
             cbFsControl.SelectedIndex = !string.IsNullOrEmpty(Button.Command) ? IndexOfFsControl((FsControl)Enum.Parse(typeof(FsControl), Button.Command, true)) : 0;
             cbFSUIPCControl.SelectedIndex = !string.IsNullOrEmpty(Button.SimControl) ? IndexOfFSUIPCControl((FSUIPCControl)Enum.Parse(typeof(FSUIPCControl), Button.SimControl, true)) : 0;
             cbFSUIPCAutoPilotControl.SelectedIndex = !string.IsNullOrEmpty(Button.AutoPilotControl) ? IndexOfFSUIPCAutoPilotControl((FSUIPCAutoPilotControl)Enum.Parse(typeof(FSUIPCAutoPilotControl), Button.AutoPilotControl, true)) : 0;

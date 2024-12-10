@@ -25,7 +25,7 @@ namespace DCS_BIOS.EventArgs
             OnDcsDataAddressValue -= dcsBiosDataListener.DcsBiosDataReceived;
         }
 
-        public static void DCSBIOSDataAvailable(object sender, uint address, uint data)
+        public static void DCSBIOSDataAvailable(object sender, ushort address, ushort data)
         {
             OnDcsDataAddressValue?.Invoke(sender, new DCSBIOSDataEventArgs { Address = address, Data = data });
         }        
@@ -62,6 +62,7 @@ namespace DCS_BIOS.EventArgs
          */
         public delegate void DcsConnectionActiveEventHandler(object sender, DCSBIOSConnectionEventArgs e);
         public static event DcsConnectionActiveEventHandler OnDcsConnectionActive;
+        public static event DcsConnectionActiveEventHandler OnDcsConnectionInActive;
 
         public static bool OnDcsConnectionActiveEventSubscribed()
         {
@@ -71,16 +72,23 @@ namespace DCS_BIOS.EventArgs
         public static void AttachConnectionListener(IDcsBiosConnectionListener connectionListener)
         {
             OnDcsConnectionActive += connectionListener.DcsBiosConnectionActive;
+            OnDcsConnectionInActive += connectionListener.DcsBiosConnectionInActive;
         }
 
         public static void DetachConnectionListener(IDcsBiosConnectionListener connectionListener)
         {
             OnDcsConnectionActive -= connectionListener.DcsBiosConnectionActive;
+            OnDcsConnectionInActive -= connectionListener.DcsBiosConnectionInActive;
         }
 
         public static void ConnectionActive(object sender)
         {
             OnDcsConnectionActive?.Invoke(sender, new DCSBIOSConnectionEventArgs()); // Informs main UI that data is coming
+        }
+
+        public static void ConnectionInActive(object sender)
+        {
+            OnDcsConnectionInActive?.Invoke(sender, new DCSBIOSConnectionEventArgs()); // Informs main UI that data is coming
         }
         /*
          *
@@ -104,7 +112,7 @@ namespace DCS_BIOS.EventArgs
             OnDCSBIOSStringReceived -= stringListener.DCSBIOSStringReceived;
         }
 
-        public static void DCSBIOSStringAvailable(object sender, uint address, string data)
+        public static void DCSBIOSStringAvailable(object sender, ushort address, string data)
         {
             OnDCSBIOSStringReceived?.Invoke(sender, new DCSBIOSStringDataEventArgs { Address = address, StringData = data });
         }

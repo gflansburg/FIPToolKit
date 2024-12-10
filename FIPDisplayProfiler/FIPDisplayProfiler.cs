@@ -269,6 +269,8 @@ namespace FIPDisplayProfiler
                 Engine = null;
                 FIPToolKit.FlightSim.FlightSimProviders.SimConnect.Deinitialize();
                 FIPToolKit.FlightSim.FlightSimProviders.FSUIPC.Deinitialize();
+                FIPToolKit.FlightSim.FlightSimProviders.XPlane.Deinitialize();
+                FIPToolKit.FlightSim.FlightSimProviders.DCSWorld.Deinitialize();
             }
             if (Settings.Default.CloseFlightShareOnExit)
             {
@@ -594,8 +596,8 @@ namespace FIPDisplayProfiler
             {
                 _loading = true;
                 await InitializeWebView2Async();
-                FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerIPAddress = Settings.Default.XPlaneIPAddress;
-                FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerPort = Settings.Default.XPlanePort;
+                FIPToolKit.FlightSim.FlightSimProviders.XPlane.UpdateConnection(Settings.Default.XPlaneIPAddress, Settings.Default.XPlanePort);
+                FIPToolKit.FlightSim.FlightSimProviders.DCSWorld.UpdateConnection(string.IsNullOrEmpty(Settings.Default.DCSBIOSJSONLocation) ? Environment.ExpandEnvironmentVariables("%userprofile%\\Saved Games\\DCS\\Scripts\\DCS-BIOS\\doc\\json") : Settings.Default.DCSBIOSJSONLocation, Settings.Default.DCSFromIPAddress, Settings.Default.DCSToIPAddress, Settings.Default.DCSFromPort, Settings.Default.DCSToPort);
                 startMinimizedToolStripMenuItem.Checked = Settings.Default.StartMinimized;
                 autoLoadLastProfileToolStripMenuItem.Checked = Settings.Default.AutoLoadLastProfile;
                 minimizeToSystemTrayToolStripMenuItem.Checked = Settings.Default.MinimizeToSystemTray;
@@ -997,16 +999,22 @@ namespace FIPDisplayProfiler
             }
         }
 
-        private void xPlaneIPAddressToolStripMenuItem_Click(object sender, EventArgs e)
+        private void xPlaneSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Settings.Default.XPlaneIPAddress = Prompt.ShowDialog(Settings.Default.XPlaneIPAddress, "IP Address:", "X-Plane Settings");
-            FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerIPAddress = Settings.Default.XPlaneIPAddress;
+            XPlaneSettings settings = new XPlaneSettings();
+            if (settings.ShowDialog(this) == DialogResult.OK)
+            {
+                FIPToolKit.FlightSim.FlightSimProviders.XPlane.UpdateConnection(Settings.Default.XPlaneIPAddress, Settings.Default.XPlanePort);
+            }
         }
 
-        private void xPlanePortToolStripMenuItem_Click(object sender, EventArgs e)
+        private void dCSWorldSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Settings.Default.XPlanePort = Prompt.ShowDialog(Settings.Default.XPlanePort, "Port:", "X-Plane Settings");
-            FIPToolKit.FlightSim.FlightSimProviders.XPlane.XPlaneListenerPort = Settings.Default.XPlanePort;
+            DCSWorldSettings settings = new DCSWorldSettings();
+            if (settings.ShowDialog(this) == DialogResult.OK)
+            {
+                FIPToolKit.FlightSim.FlightSimProviders.DCSWorld.UpdateConnection(Settings.Default.DCSBIOSJSONLocation, Settings.Default.DCSFromIPAddress, Settings.Default.DCSToIPAddress, Settings.Default.DCSFromPort, Settings.Default.DCSToPort);
+            }
         }
     }
 }

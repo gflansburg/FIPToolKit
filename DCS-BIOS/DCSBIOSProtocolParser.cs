@@ -42,18 +42,18 @@ namespace DCS_BIOS
         private readonly List<string> _errorsLogged = new(10);
 
         private DCSBiosStateEnum _state;
-        private uint _address;
-        private uint _count;
-        private uint _data;
+        private ushort _address;
+        private ushort _count;
+        private ushort _data;
         private byte _syncByteCount;
         private bool _shutdown;
         private static readonly object _lockListOfAddressesToBroascastObject = new();
-        private readonly List<uint> _listOfAddressesToBroascast = new();
+        private readonly List<ushort> _listOfAddressesToBroascast = new();
         public static DCSBIOSProtocolParser DCSBIOSProtocolParserSO;
         private AutoResetEvent _autoResetEvent = new(false);
 
         private readonly ConcurrentQueue<byte[]> _arrayQueue = new();
-        private Thread _processingThread;
+        //private Thread _processingThread;
 
         private DCSBIOSProtocolParser()
         {
@@ -90,8 +90,8 @@ namespace DCS_BIOS
         {
             _shutdown = false;
             _autoResetEvent = new (false);
-            _processingThread = new Thread(ProcessArraysThread);
-            _processingThread.Start();
+            //_processingThread = new Thread(ProcessArraysThread);
+            //_processingThread.Start();
         }
 
         public void Shutdown()
@@ -108,19 +108,20 @@ namespace DCS_BIOS
 
             _arrayQueue.Enqueue(bytes);
             _autoResetEvent.Set();
+            ProcessArraysThread();
         }
 
         private void ProcessArraysThread()
         {
             try
             {
-                while (!_shutdown)
+                //while (!_shutdown)
                 {
                     try
                     {
                         byte[] array = null;
                         
-                        while (_arrayQueue.TryDequeue(out array))
+                        while (_arrayQueue.TryDequeue(out array) && !_shutdown)
                         {
                             if (array != null)
                             {
@@ -136,7 +137,14 @@ namespace DCS_BIOS
                         Logger.Error(ex, $"DCSBIOSProtocolParser.ProcessArrays(), arrays to process : {_arrayQueue.Count}");
                     }
 
-                    _autoResetEvent.WaitOne();
+                    if (_autoResetEvent != null)
+                    {
+                        //_autoResetEvent.WaitOne();
+                    }
+                    else
+                    {
+                        //break;
+                    }
                 }
             }
             catch (Exception ex)
@@ -145,7 +153,7 @@ namespace DCS_BIOS
             }
         }
 
-        public static void RegisterAddressToBroadCast(uint address)
+        public static void RegisterAddressToBroadCast(ushort address)
         {
             GetParser();
             lock (_lockListOfAddressesToBroascastObject)
@@ -193,7 +201,7 @@ namespace DCS_BIOS
                         _state = DCSBiosStateEnum.ADDRESS_HIGH;
                         break;
                     case DCSBiosStateEnum.ADDRESS_HIGH:
-                        _address = (uint)(b << 8) | _address;
+                        _address = (ushort)((uint)(b << 8) | _address);
                         _state = _address != 0x5555 ? DCSBiosStateEnum.COUNT_LOW : DCSBiosStateEnum.WAIT_FOR_SYNC;
                         break;
                     case DCSBiosStateEnum.COUNT_LOW:
@@ -201,7 +209,7 @@ namespace DCS_BIOS
                         _state = DCSBiosStateEnum.COUNT_HIGH;
                         break;
                     case DCSBiosStateEnum.COUNT_HIGH:
-                        _count = (uint)(b << 8) | _count;
+                        _count = (ushort)((uint)(b << 8) | _count);
                         _state = DCSBiosStateEnum.DATA_LOW;
                         break;
                     case DCSBiosStateEnum.DATA_LOW:
@@ -210,7 +218,7 @@ namespace DCS_BIOS
                         _state = DCSBiosStateEnum.DATA_HIGH;
                         break;
                     case DCSBiosStateEnum.DATA_HIGH:
-                        _data = (uint)(b << 8) | _data;
+                        _data = (ushort)((uint)(b << 8) | _data);
                         _count--;
 
 

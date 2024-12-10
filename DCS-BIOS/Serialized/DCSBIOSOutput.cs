@@ -47,12 +47,14 @@ namespace DCS_BIOS.Serialized
     public class DCSBIOSOutput
     {
         // The target value used for comparison as chosen by the user
-        private uint _specifiedValueUInt;
+        private ushort _specifiedValueUShort;
 
-        private uint _address;
-        private volatile uint _lastUIntValue = uint.MaxValue;
+        private ushort _address;
+        private volatile ushort _lastUShortValue = ushort.MaxValue;
+        private volatile float _lastFloatValue = float.MaxValue;
         private volatile string _lastStringValue = "";
-        private bool _uintValueHasChanged;
+        private bool _ushortValueHasChanged;
+        private bool _floatValueHasChanged;
         private string _defaultVariableChangeValue = "3200";
 
         [NonSerialized] private object _lockObject = new();
@@ -75,7 +77,7 @@ namespace DCS_BIOS.Serialized
             switch (tmp.DCSBiosOutputType)
             {
                 case DCSBiosOutputType.IntegerType:
-                    tmp.SpecifiedValueUInt = dcsbiosOutput.SpecifiedValueUInt;
+                    tmp.SpecifiedValueUShort = dcsbiosOutput.SpecifiedValueUShort;
                     break;
             }
 
@@ -99,7 +101,7 @@ namespace DCS_BIOS.Serialized
 
             if (DCSBiosOutputType == DCSBiosOutputType.IntegerType)
             {
-                SpecifiedValueUInt = dcsbiosOutput.SpecifiedValueUInt;
+                SpecifiedValueUShort = dcsbiosOutput.SpecifiedValueUShort;
             }
         }
         public void Consume(DCSBIOSControl dcsbiosControl, DCSBiosOutputType dcsBiosOutputType)
@@ -158,7 +160,7 @@ namespace DCS_BIOS.Serialized
         /// <param name="data"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public bool UIntConditionIsMet(uint address, uint data)
+        public bool UShortConditionIsMet(ushort address, ushort data)
         {
             _lockObject ??= new object();
             var result = false;
@@ -170,20 +172,20 @@ namespace DCS_BIOS.Serialized
                     return false;
                 }
 
-                var newValue = (data & Mask) >> ShiftValue;
+                ushort newValue = (ushort)((data & Mask) >> ShiftValue);
 
                 var resultComparison = DCSBiosOutputComparison switch
                 {
-                    DCSBiosOutputComparison.BiggerThan => newValue > _specifiedValueUInt,
-                    DCSBiosOutputComparison.LessThan => newValue < _specifiedValueUInt,
-                    DCSBiosOutputComparison.NotEquals => newValue != _specifiedValueUInt,
-                    DCSBiosOutputComparison.Equals => newValue == _specifiedValueUInt,
+                    DCSBiosOutputComparison.BiggerThan => newValue > _specifiedValueUShort,
+                    DCSBiosOutputComparison.LessThan => newValue < _specifiedValueUShort,
+                    DCSBiosOutputComparison.NotEquals => newValue != _specifiedValueUShort,
+                    DCSBiosOutputComparison.Equals => newValue == _specifiedValueUShort,
                     _ => throw new Exception("Unexpected DCSBiosOutputComparison value")
                 };
 
-                result = resultComparison && !newValue.Equals(LastUIntValue);
-                //Debug.WriteLine($"(EvaluateUInt) Result={result} Target={_specifiedValueUInt} Last={LastUIntValue} New={newValue}");
-                LastUIntValue = newValue;
+                result = resultComparison && !newValue.Equals(LastUShortValue);
+                //Debug.WriteLine($"(EvaluateUShort) Result={result} Target={_specifiedValueUShort} Last={LastUShortValue} New={newValue}");
+                LastUShortValue = newValue;
             }
 
             return result;
@@ -199,7 +201,7 @@ namespace DCS_BIOS.Serialized
         /// <param name="address"></param>
         /// <param name="data"></param>
         /// <returns>Returns true when all checks are true.</returns>
-        public bool UIntValueHasChanged(uint address, uint data)
+        public bool UShortValueHasChanged(ushort address, ushort data)
         {
             _lockObject ??= new object();
 
@@ -211,14 +213,49 @@ namespace DCS_BIOS.Serialized
                     return false;
                 }
 
-                if (GetUIntValue(data) == LastUIntValue && !_uintValueHasChanged)
+                if (GetUShortValue(data) == LastUShortValue && !_ushortValueHasChanged)
                 {
                     // Value hasn't changed
                     return false;
                 }
 
-                _uintValueHasChanged = false;
-                LastUIntValue = GetUIntValue(data);
+                _ushortValueHasChanged = false;
+                LastUShortValue = GetUShortValue(data);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks :
+        /// <para>for address match</para>
+        /// <para>that new value differs from previous</para>
+        /// <para>stores new value</para>
+        /// 
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="data"></param>
+        /// <returns>Returns true when all checks are true.</returns>
+        public bool FloatValueHasChanged(ushort address, ushort data)
+        {
+            _lockObject ??= new object();
+
+            lock (_lockObject)
+            {
+                if (address != Address)
+                {
+                    // Not correct control
+                    return false;
+                }
+
+                if (GetFloatValue(data) == LastFloatValue && !_floatValueHasChanged)
+                {
+                    // Value hasn't changed
+                    return false;
+                }
+
+                _floatValueHasChanged = false;
+                LastFloatValue = GetFloatValue(data);
             }
 
             return true;
@@ -234,7 +271,7 @@ namespace DCS_BIOS.Serialized
         /// <param name="address"></param>
         /// <param name="stringData"></param>
         /// <returns>Returns true when all checks are true.</returns>
-        public bool StringValueHasChanged(uint address, string stringData)
+        public bool StringValueHasChanged(ushort address, string stringData)
         {
             _lockObject ??= new object();
 
@@ -256,7 +293,7 @@ namespace DCS_BIOS.Serialized
             return false;
         }
 
-        public uint GetUIntValue(uint data)
+        public ushort GetUShortValue(ushort data)
         {
             /*
              * Fugly workaround, side effect of using deep clone DCSBIOSDecoder is that this is null
@@ -265,8 +302,24 @@ namespace DCS_BIOS.Serialized
 
             lock (_lockObject)
             {
-                LastUIntValue = (data & Mask) >> ShiftValue;
-                return LastUIntValue;
+                LastUShortValue = (ushort)((data & Mask) >> ShiftValue);
+                return LastUShortValue;
+            }
+        }
+
+        public float GetFloatValue(ushort data)
+        {
+            /*
+             * Fugly workaround, side effect of using deep clone DCSBIOSDecoder is that this is null
+             */
+            _lockObject ??= new object();
+
+            lock (_lockObject)
+            {
+                ushort value = (ushort)((data & Mask) >> ShiftValue);
+                byte[] bytes = BitConverter.GetBytes(value);
+                LastFloatValue = bytes[1] * 256 + bytes[0];
+                return LastFloatValue;
             }
         }
 
@@ -277,7 +330,7 @@ namespace DCS_BIOS.Serialized
                 return "";
             }
 
-            return "DCSBiosOutput{" + ControlId + "|" + DCSBiosOutputComparison + "|" + _specifiedValueUInt + "}";
+            return "DCSBiosOutput{" + ControlId + "|" + DCSBiosOutputComparison + "|" + _specifiedValueUShort + "}";
         }
 
         public void ImportString(string str)
@@ -302,14 +355,14 @@ namespace DCS_BIOS.Serialized
             var dcsBIOSControl = DCSBIOSControlLocator.GetControl(ControlId);
             Consume(dcsBIOSControl, DCSBiosOutputType.IntegerType);
             DCSBiosOutputComparison = (DCSBiosOutputComparison)Enum.Parse(typeof(DCSBiosOutputComparison), entries[1]);
-            _specifiedValueUInt = (uint)int.Parse(entries[2]);
+            _specifiedValueUShort = (ushort)int.Parse(entries[2]);
         }
 
         [JsonProperty("ControlId", Required = Required.Default)]
         public string ControlId { get; set; }
 
         [JsonProperty("Address", Required = Required.Default)]
-        public uint Address
+        public ushort Address
         {
             get => _address;
             set
@@ -320,7 +373,7 @@ namespace DCS_BIOS.Serialized
         }
 
         [JsonProperty("Mask", Required = Required.Default)]
-        public uint Mask { get; set; }
+        public ushort Mask { get; set; }
 
         [JsonProperty("Shiftvalue", Required = Required.Default)]
         public int ShiftValue { get; set; }
@@ -332,9 +385,9 @@ namespace DCS_BIOS.Serialized
         public DCSBiosOutputComparison DCSBiosOutputComparison { get; set; } = DCSBiosOutputComparison.Equals;
 
         [JsonIgnore]
-        public uint SpecifiedValueUInt
+        public ushort SpecifiedValueUShort
         {
-            get => _specifiedValueUInt;
+            get => _specifiedValueUShort;
             set
             {
                 if (DCSBiosOutputType != DCSBiosOutputType.IntegerType)
@@ -342,7 +395,7 @@ namespace DCS_BIOS.Serialized
                     throw new Exception($"Invalid DCSBiosOutput. Specified value (trigger value) set to [int] but DCSBiosOutputType set to {DCSBiosOutputType}");
                 }
 
-                _specifiedValueUInt = value;
+                _specifiedValueUShort = value;
             }
         }
 
@@ -350,7 +403,7 @@ namespace DCS_BIOS.Serialized
         public string ControlDescription { get; set; }
 
         [JsonProperty("MaxValue", Required = Required.Default)]
-        public int MaxValue { get; set; }
+        public ushort MaxValue { get; set; }
 
         [JsonIgnore]
         public string AddressIdentifier { get; set; }
@@ -362,23 +415,37 @@ namespace DCS_BIOS.Serialized
         public string AddressMaskShiftIdentifier { get; set; }
 
         [JsonProperty("MaxLength", Required = Required.Default)]
-        public int MaxLength { get; set; }
+        public ushort MaxLength { get; set; }
 
         [Obsolete]
         [JsonIgnore]
         public string ControlType { get; set; }
         
         [JsonIgnore]
-        public uint LastUIntValue
+        public ushort LastUShortValue
         {
-            get => _lastUIntValue;
+            get => _lastUShortValue;
             set
             {
-                if (value != _lastUIntValue)
+                if (value != _lastUShortValue)
                 {
-                    _uintValueHasChanged = true;
+                    _ushortValueHasChanged = true;
                 }
-                _lastUIntValue = value;
+                _lastUShortValue = value;
+            }
+        }
+
+        [JsonIgnore]
+        public float LastFloatValue
+        {
+            get => _lastFloatValue;
+            set
+            {
+                if (value != _lastFloatValue)
+                {
+                    _floatValueHasChanged = true;
+                }
+                _lastFloatValue = value;
             }
         }
 
@@ -391,7 +458,7 @@ namespace DCS_BIOS.Serialized
 
         public static DCSBIOSOutput GetUpdateCounter()
         {
-            var counter = DCSBIOSControlLocator.GetUIntDCSBIOSOutput("_UPDATE_COUNTER");
+            var counter = DCSBIOSControlLocator.GetUShortDCSBIOSOutput("_UPDATE_COUNTER");
             return counter;
         }
 

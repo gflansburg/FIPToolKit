@@ -3,27 +3,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FIPToolKit.FlightSim
 {
     public abstract class FlightSimProviderBase
     {
-        public delegate void SimConnectEventHandler(FlightSimProviderBase sender);
-        public delegate void SimConnectTrafficEventHandler(FlightSimProviderBase sender, string callsign, Aircraft aircraft, TrafficEvent eventType);
-        public delegate void SimConnectReadyEventHandler(FlightSimProviderBase sender, ReadyToFly readyToFly);
-        public delegate void SimConnectAircraftChangeEventHandler(FlightSimProviderBase sender, int aircraftId);
-        public delegate void SimConnectErrorEventHandler(FlightSimProviderBase sender, string error);
-        public event SimConnectEventHandler OnConnected;
-        public event SimConnectEventHandler OnQuit;
-        public event SimConnectTrafficEventHandler OnTrafficReceived;
-        public event SimConnectEventHandler OnFlightDataReceived;
-        public event SimConnectReadyEventHandler OnReadyToFly;
-        public event SimConnectAircraftChangeEventHandler OnAircraftChange;
-        public event SimConnectEventHandler OnSetLeds;
-        public event SimConnectEventHandler OnStopTimer;
-        public event SimConnectEventHandler OnUdatePage;
-        public event SimConnectErrorEventHandler OnError;
+        public delegate void FlightSimEventHandler(FlightSimProviderBase sender);
+        public delegate void FlightSimTrafficEventHandler(FlightSimProviderBase sender, string callsign, Aircraft aircraft, TrafficEvent eventType);
+        public delegate void FlightSimReadyEventHandler(FlightSimProviderBase sender, ReadyToFly readyToFly);
+        public delegate void FlightSimAircraftChangeEventHandler(FlightSimProviderBase sender, int aircraftId);
+        public delegate void FlightSimErrorEventHandler(FlightSimProviderBase sender, string error);
+        public event FlightSimEventHandler OnConnected;
+        public event FlightSimEventHandler OnQuit;
+        public event FlightSimTrafficEventHandler OnTrafficReceived;
+        public event FlightSimEventHandler OnFlightDataReceived;
+        public event FlightSimReadyEventHandler OnReadyToFly;
+        public event FlightSimAircraftChangeEventHandler OnAircraftChange;
+        public event FlightSimEventHandler OnSetLeds;
+        public event FlightSimEventHandler OnStopTimer;
+        public event FlightSimEventHandler OnUdatePage;
+        public event FlightSimErrorEventHandler OnError;
+
+        public abstract void Deinitialize(int timeOut = 1000);
 
         public abstract void SendControlToFS(string control, float value);
         
@@ -69,6 +72,7 @@ namespace FIPToolKit.FlightSim
         public abstract double AmbientWindDirectionDegrees { get; }
         public abstract double AmbientWindSpeedKnots { get; }
         public abstract double KohlsmanInchesMercury { get; }
+        public abstract double PressureInchesMercury { get; }
         public abstract ReadyToFly IsReadyToFly { get; }
         public abstract double GPSRequiredMagneticHeadingRadians { get; }
         public abstract double GPSRequiredTrueHeadingRadians { get; }
@@ -109,9 +113,18 @@ namespace FIPToolKit.FlightSim
             OnReadyToFly?.Invoke(this, readyToFly);
         }
 
+        private bool _isSendingFlightData = false;
         public virtual void FlightDataReceived()
         {
-            OnFlightDataReceived?.Invoke(this);
+            if (!_isSendingFlightData)
+            {
+                _isSendingFlightData = true;
+                ThreadPool.QueueUserWorkItem(_ =>
+                {
+                    OnFlightDataReceived?.Invoke(this);
+                    _isSendingFlightData = false;
+                });
+            }
         }
 
         public virtual void TrafficReceived(string callsign, Aircraft aircraft, TrafficEvent eventType)
@@ -141,6 +154,22 @@ namespace FIPToolKit.FlightSim
         public virtual void Error(string error)
         {
             OnError?.Invoke(this, error);
+        }
+
+        public bool HasConnected
+        {
+            get
+            {
+                return OnConnected != null;
+            }
+        }
+
+        public bool HasQuit
+        {
+            get
+            {
+                return OnQuit != null;
+            }
         }
     }
 }

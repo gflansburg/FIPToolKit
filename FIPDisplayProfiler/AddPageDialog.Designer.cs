@@ -30,6 +30,22 @@ namespace FIPDisplayProfiler
         private void InitializeComponent()
         {
             this.pnlPageType = new System.Windows.Forms.Panel();
+            this.panelRadio = new System.Windows.Forms.Panel();
+            this.rbXPlaneRadio = new System.Windows.Forms.RadioButton();
+            this.rbFSUIPCRadio = new System.Windows.Forms.RadioButton();
+            this.rbSimConnectRadio = new System.Windows.Forms.RadioButton();
+            this.panelAltimeter = new System.Windows.Forms.Panel();
+            this.rbXPlaneAltimeter = new System.Windows.Forms.RadioButton();
+            this.rbFSUIPCAltimeter = new System.Windows.Forms.RadioButton();
+            this.rbSimConnectAltimeter = new System.Windows.Forms.RadioButton();
+            this.panelAirspeed = new System.Windows.Forms.Panel();
+            this.rbXPlaneAirspeed = new System.Windows.Forms.RadioButton();
+            this.rbFSUIPCAirspeed = new System.Windows.Forms.RadioButton();
+            this.rbSimConnectAirspeed = new System.Windows.Forms.RadioButton();
+            this.panelMap = new System.Windows.Forms.Panel();
+            this.rbXPlaneMap = new System.Windows.Forms.RadioButton();
+            this.rbFSUIPCMap = new System.Windows.Forms.RadioButton();
+            this.rbSimConnectMap = new System.Windows.Forms.RadioButton();
             this.rbRadio = new System.Windows.Forms.RadioButton();
             this.rbMusicPlayer = new System.Windows.Forms.RadioButton();
             this.rbScreenMirror = new System.Windows.Forms.RadioButton();
@@ -44,27 +60,15 @@ namespace FIPDisplayProfiler
             this.rbAnalogClock = new System.Windows.Forms.RadioButton();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.panelMap = new System.Windows.Forms.Panel();
-            this.rbSimConnectMap = new System.Windows.Forms.RadioButton();
-            this.rbFSUIPCMap = new System.Windows.Forms.RadioButton();
-            this.rbXPlaneMap = new System.Windows.Forms.RadioButton();
-            this.panelAirspeed = new System.Windows.Forms.Panel();
-            this.rbXPlaneAirspeed = new System.Windows.Forms.RadioButton();
-            this.rbFSUIPCAirspeed = new System.Windows.Forms.RadioButton();
-            this.rbSimConnectAirspeed = new System.Windows.Forms.RadioButton();
-            this.panelAltimeter = new System.Windows.Forms.Panel();
-            this.rbXPlaneAltimeter = new System.Windows.Forms.RadioButton();
-            this.rbFSUIPCAltimeter = new System.Windows.Forms.RadioButton();
-            this.rbSimConnectAltimeter = new System.Windows.Forms.RadioButton();
-            this.panelRadio = new System.Windows.Forms.Panel();
-            this.rbXPlaneRadio = new System.Windows.Forms.RadioButton();
-            this.rbFSUIPCRadio = new System.Windows.Forms.RadioButton();
-            this.rbSimConnectRadio = new System.Windows.Forms.RadioButton();
+            this.rbDCSWorldMap = new System.Windows.Forms.RadioButton();
+            this.rbDCSWorldAirspeed = new System.Windows.Forms.RadioButton();
+            this.rbDCSWorldAltimeter = new System.Windows.Forms.RadioButton();
+            this.rbDCSWorldRadio = new System.Windows.Forms.RadioButton();
             this.pnlPageType.SuspendLayout();
-            this.panelMap.SuspendLayout();
-            this.panelAirspeed.SuspendLayout();
-            this.panelAltimeter.SuspendLayout();
             this.panelRadio.SuspendLayout();
+            this.panelAltimeter.SuspendLayout();
+            this.panelAirspeed.SuspendLayout();
+            this.panelMap.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnlPageType
@@ -92,6 +96,198 @@ namespace FIPDisplayProfiler
             this.pnlPageType.Name = "pnlPageType";
             this.pnlPageType.Size = new System.Drawing.Size(386, 400);
             this.pnlPageType.TabIndex = 18;
+            // 
+            // panelRadio
+            // 
+            this.panelRadio.Controls.Add(this.rbDCSWorldRadio);
+            this.panelRadio.Controls.Add(this.rbXPlaneRadio);
+            this.panelRadio.Controls.Add(this.rbFSUIPCRadio);
+            this.panelRadio.Controls.Add(this.rbSimConnectRadio);
+            this.panelRadio.Enabled = false;
+            this.panelRadio.Location = new System.Drawing.Point(21, 373);
+            this.panelRadio.Name = "panelRadio";
+            this.panelRadio.Size = new System.Drawing.Size(362, 25);
+            this.panelRadio.TabIndex = 16;
+            // 
+            // rbXPlaneRadio
+            // 
+            this.rbXPlaneRadio.AutoSize = true;
+            this.rbXPlaneRadio.Location = new System.Drawing.Point(162, 4);
+            this.rbXPlaneRadio.Name = "rbXPlaneRadio";
+            this.rbXPlaneRadio.Size = new System.Drawing.Size(62, 17);
+            this.rbXPlaneRadio.TabIndex = 2;
+            this.rbXPlaneRadio.TabStop = true;
+            this.rbXPlaneRadio.Text = "X-Plane";
+            this.rbXPlaneRadio.UseVisualStyleBackColor = true;
+            this.rbXPlaneRadio.CheckedChanged += new System.EventHandler(this.rbXPlaneRadio_CheckedChanged);
+            // 
+            // rbFSUIPCRadio
+            // 
+            this.rbFSUIPCRadio.AutoSize = true;
+            this.rbFSUIPCRadio.Location = new System.Drawing.Point(92, 4);
+            this.rbFSUIPCRadio.Name = "rbFSUIPCRadio";
+            this.rbFSUIPCRadio.Size = new System.Drawing.Size(63, 17);
+            this.rbFSUIPCRadio.TabIndex = 1;
+            this.rbFSUIPCRadio.TabStop = true;
+            this.rbFSUIPCRadio.Text = "FSUIPC";
+            this.rbFSUIPCRadio.UseVisualStyleBackColor = true;
+            this.rbFSUIPCRadio.CheckedChanged += new System.EventHandler(this.rbFSUIPCRadio_CheckedChanged);
+            // 
+            // rbSimConnectRadio
+            // 
+            this.rbSimConnectRadio.AutoSize = true;
+            this.rbSimConnectRadio.Location = new System.Drawing.Point(3, 3);
+            this.rbSimConnectRadio.Name = "rbSimConnectRadio";
+            this.rbSimConnectRadio.Size = new System.Drawing.Size(82, 17);
+            this.rbSimConnectRadio.TabIndex = 0;
+            this.rbSimConnectRadio.TabStop = true;
+            this.rbSimConnectRadio.Text = "SimConnect";
+            this.rbSimConnectRadio.UseVisualStyleBackColor = true;
+            this.rbSimConnectRadio.CheckedChanged += new System.EventHandler(this.rbSimConnectRadio_CheckedChanged);
+            // 
+            // panelAltimeter
+            // 
+            this.panelAltimeter.Controls.Add(this.rbDCSWorldAltimeter);
+            this.panelAltimeter.Controls.Add(this.rbXPlaneAltimeter);
+            this.panelAltimeter.Controls.Add(this.rbFSUIPCAltimeter);
+            this.panelAltimeter.Controls.Add(this.rbSimConnectAltimeter);
+            this.panelAltimeter.Enabled = false;
+            this.panelAltimeter.Location = new System.Drawing.Point(21, 319);
+            this.panelAltimeter.Name = "panelAltimeter";
+            this.panelAltimeter.Size = new System.Drawing.Size(362, 25);
+            this.panelAltimeter.TabIndex = 15;
+            // 
+            // rbXPlaneAltimeter
+            // 
+            this.rbXPlaneAltimeter.AutoSize = true;
+            this.rbXPlaneAltimeter.Location = new System.Drawing.Point(162, 4);
+            this.rbXPlaneAltimeter.Name = "rbXPlaneAltimeter";
+            this.rbXPlaneAltimeter.Size = new System.Drawing.Size(62, 17);
+            this.rbXPlaneAltimeter.TabIndex = 2;
+            this.rbXPlaneAltimeter.TabStop = true;
+            this.rbXPlaneAltimeter.Text = "X-Plane";
+            this.rbXPlaneAltimeter.UseVisualStyleBackColor = true;
+            this.rbXPlaneAltimeter.CheckedChanged += new System.EventHandler(this.rbXPlaneAltimeter_CheckedChanged);
+            // 
+            // rbFSUIPCAltimeter
+            // 
+            this.rbFSUIPCAltimeter.AutoSize = true;
+            this.rbFSUIPCAltimeter.Location = new System.Drawing.Point(92, 4);
+            this.rbFSUIPCAltimeter.Name = "rbFSUIPCAltimeter";
+            this.rbFSUIPCAltimeter.Size = new System.Drawing.Size(63, 17);
+            this.rbFSUIPCAltimeter.TabIndex = 1;
+            this.rbFSUIPCAltimeter.TabStop = true;
+            this.rbFSUIPCAltimeter.Text = "FSUIPC";
+            this.rbFSUIPCAltimeter.UseVisualStyleBackColor = true;
+            this.rbFSUIPCAltimeter.CheckedChanged += new System.EventHandler(this.rbFSUIPCAltimeter_CheckedChanged);
+            // 
+            // rbSimConnectAltimeter
+            // 
+            this.rbSimConnectAltimeter.AutoSize = true;
+            this.rbSimConnectAltimeter.Location = new System.Drawing.Point(3, 3);
+            this.rbSimConnectAltimeter.Name = "rbSimConnectAltimeter";
+            this.rbSimConnectAltimeter.Size = new System.Drawing.Size(82, 17);
+            this.rbSimConnectAltimeter.TabIndex = 0;
+            this.rbSimConnectAltimeter.TabStop = true;
+            this.rbSimConnectAltimeter.Text = "SimConnect";
+            this.rbSimConnectAltimeter.UseVisualStyleBackColor = true;
+            this.rbSimConnectAltimeter.CheckedChanged += new System.EventHandler(this.rbSimConnectAltimeter_CheckedChanged);
+            // 
+            // panelAirspeed
+            // 
+            this.panelAirspeed.Controls.Add(this.rbDCSWorldAirspeed);
+            this.panelAirspeed.Controls.Add(this.rbXPlaneAirspeed);
+            this.panelAirspeed.Controls.Add(this.rbFSUIPCAirspeed);
+            this.panelAirspeed.Controls.Add(this.rbSimConnectAirspeed);
+            this.panelAirspeed.Enabled = false;
+            this.panelAirspeed.Location = new System.Drawing.Point(21, 265);
+            this.panelAirspeed.Name = "panelAirspeed";
+            this.panelAirspeed.Size = new System.Drawing.Size(362, 25);
+            this.panelAirspeed.TabIndex = 14;
+            // 
+            // rbXPlaneAirspeed
+            // 
+            this.rbXPlaneAirspeed.AutoSize = true;
+            this.rbXPlaneAirspeed.Location = new System.Drawing.Point(162, 4);
+            this.rbXPlaneAirspeed.Name = "rbXPlaneAirspeed";
+            this.rbXPlaneAirspeed.Size = new System.Drawing.Size(62, 17);
+            this.rbXPlaneAirspeed.TabIndex = 2;
+            this.rbXPlaneAirspeed.TabStop = true;
+            this.rbXPlaneAirspeed.Text = "X-Plane";
+            this.rbXPlaneAirspeed.UseVisualStyleBackColor = true;
+            this.rbXPlaneAirspeed.CheckedChanged += new System.EventHandler(this.rbXPlaneAirspeed_CheckedChanged);
+            // 
+            // rbFSUIPCAirspeed
+            // 
+            this.rbFSUIPCAirspeed.AutoSize = true;
+            this.rbFSUIPCAirspeed.Location = new System.Drawing.Point(92, 4);
+            this.rbFSUIPCAirspeed.Name = "rbFSUIPCAirspeed";
+            this.rbFSUIPCAirspeed.Size = new System.Drawing.Size(63, 17);
+            this.rbFSUIPCAirspeed.TabIndex = 1;
+            this.rbFSUIPCAirspeed.TabStop = true;
+            this.rbFSUIPCAirspeed.Text = "FSUIPC";
+            this.rbFSUIPCAirspeed.UseVisualStyleBackColor = true;
+            this.rbFSUIPCAirspeed.CheckedChanged += new System.EventHandler(this.rbFSUIPCAirspeed_CheckedChanged);
+            // 
+            // rbSimConnectAirspeed
+            // 
+            this.rbSimConnectAirspeed.AutoSize = true;
+            this.rbSimConnectAirspeed.Location = new System.Drawing.Point(3, 3);
+            this.rbSimConnectAirspeed.Name = "rbSimConnectAirspeed";
+            this.rbSimConnectAirspeed.Size = new System.Drawing.Size(82, 17);
+            this.rbSimConnectAirspeed.TabIndex = 0;
+            this.rbSimConnectAirspeed.TabStop = true;
+            this.rbSimConnectAirspeed.Text = "SimConnect";
+            this.rbSimConnectAirspeed.UseVisualStyleBackColor = true;
+            this.rbSimConnectAirspeed.CheckedChanged += new System.EventHandler(this.rbSimConnectAirspeed_CheckedChanged);
+            // 
+            // panelMap
+            // 
+            this.panelMap.Controls.Add(this.rbDCSWorldMap);
+            this.panelMap.Controls.Add(this.rbXPlaneMap);
+            this.panelMap.Controls.Add(this.rbFSUIPCMap);
+            this.panelMap.Controls.Add(this.rbSimConnectMap);
+            this.panelMap.Enabled = false;
+            this.panelMap.Location = new System.Drawing.Point(21, 211);
+            this.panelMap.Name = "panelMap";
+            this.panelMap.Size = new System.Drawing.Size(362, 25);
+            this.panelMap.TabIndex = 13;
+            // 
+            // rbXPlaneMap
+            // 
+            this.rbXPlaneMap.AutoSize = true;
+            this.rbXPlaneMap.Location = new System.Drawing.Point(162, 4);
+            this.rbXPlaneMap.Name = "rbXPlaneMap";
+            this.rbXPlaneMap.Size = new System.Drawing.Size(62, 17);
+            this.rbXPlaneMap.TabIndex = 2;
+            this.rbXPlaneMap.TabStop = true;
+            this.rbXPlaneMap.Text = "X-Plane";
+            this.rbXPlaneMap.UseVisualStyleBackColor = true;
+            this.rbXPlaneMap.CheckedChanged += new System.EventHandler(this.rbXPlaneMap_CheckedChanged);
+            // 
+            // rbFSUIPCMap
+            // 
+            this.rbFSUIPCMap.AutoSize = true;
+            this.rbFSUIPCMap.Location = new System.Drawing.Point(92, 4);
+            this.rbFSUIPCMap.Name = "rbFSUIPCMap";
+            this.rbFSUIPCMap.Size = new System.Drawing.Size(63, 17);
+            this.rbFSUIPCMap.TabIndex = 1;
+            this.rbFSUIPCMap.TabStop = true;
+            this.rbFSUIPCMap.Text = "FSUIPC";
+            this.rbFSUIPCMap.UseVisualStyleBackColor = true;
+            this.rbFSUIPCMap.CheckedChanged += new System.EventHandler(this.rbFSUIPCMap_CheckedChanged);
+            // 
+            // rbSimConnectMap
+            // 
+            this.rbSimConnectMap.AutoSize = true;
+            this.rbSimConnectMap.Location = new System.Drawing.Point(3, 3);
+            this.rbSimConnectMap.Name = "rbSimConnectMap";
+            this.rbSimConnectMap.Size = new System.Drawing.Size(82, 17);
+            this.rbSimConnectMap.TabIndex = 0;
+            this.rbSimConnectMap.TabStop = true;
+            this.rbSimConnectMap.Text = "SimConnect";
+            this.rbSimConnectMap.UseVisualStyleBackColor = true;
+            this.rbSimConnectMap.CheckedChanged += new System.EventHandler(this.rbSimConnectMap_CheckedChanged);
             // 
             // rbRadio
             // 
@@ -249,193 +445,53 @@ namespace FIPDisplayProfiler
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // panelMap
+            // rbDCSWorldMap
             // 
-            this.panelMap.Controls.Add(this.rbXPlaneMap);
-            this.panelMap.Controls.Add(this.rbFSUIPCMap);
-            this.panelMap.Controls.Add(this.rbSimConnectMap);
-            this.panelMap.Enabled = false;
-            this.panelMap.Location = new System.Drawing.Point(21, 211);
-            this.panelMap.Name = "panelMap";
-            this.panelMap.Size = new System.Drawing.Size(362, 25);
-            this.panelMap.TabIndex = 13;
+            this.rbDCSWorldMap.AutoSize = true;
+            this.rbDCSWorldMap.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldMap.Name = "rbDCSWorldMap";
+            this.rbDCSWorldMap.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldMap.TabIndex = 3;
+            this.rbDCSWorldMap.TabStop = true;
+            this.rbDCSWorldMap.Text = "DCS World";
+            this.rbDCSWorldMap.UseVisualStyleBackColor = true;
+            this.rbDCSWorldMap.CheckedChanged += new System.EventHandler(this.rbDCSWorldMap_CheckedChanged);
             // 
-            // rbSimConnectMap
+            // rbDCSWorldAirspeed
             // 
-            this.rbSimConnectMap.AutoSize = true;
-            this.rbSimConnectMap.Location = new System.Drawing.Point(3, 3);
-            this.rbSimConnectMap.Name = "rbSimConnectMap";
-            this.rbSimConnectMap.Size = new System.Drawing.Size(82, 17);
-            this.rbSimConnectMap.TabIndex = 0;
-            this.rbSimConnectMap.TabStop = true;
-            this.rbSimConnectMap.Text = "SimConnect";
-            this.rbSimConnectMap.UseVisualStyleBackColor = true;
-            this.rbSimConnectMap.CheckedChanged += new System.EventHandler(this.rbSimConnectMap_CheckedChanged);
+            this.rbDCSWorldAirspeed.AutoSize = true;
+            this.rbDCSWorldAirspeed.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldAirspeed.Name = "rbDCSWorldAirspeed";
+            this.rbDCSWorldAirspeed.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldAirspeed.TabIndex = 4;
+            this.rbDCSWorldAirspeed.TabStop = true;
+            this.rbDCSWorldAirspeed.Text = "DCS World";
+            this.rbDCSWorldAirspeed.UseVisualStyleBackColor = true;
+            this.rbDCSWorldAirspeed.CheckedChanged += new System.EventHandler(this.rbDCSWorldAirspeed_CheckedChanged);
             // 
-            // rbFSUIPCMap
+            // rbDCSWorldAltimeter
             // 
-            this.rbFSUIPCMap.AutoSize = true;
-            this.rbFSUIPCMap.Location = new System.Drawing.Point(92, 4);
-            this.rbFSUIPCMap.Name = "rbFSUIPCMap";
-            this.rbFSUIPCMap.Size = new System.Drawing.Size(63, 17);
-            this.rbFSUIPCMap.TabIndex = 1;
-            this.rbFSUIPCMap.TabStop = true;
-            this.rbFSUIPCMap.Text = "FSUIPC";
-            this.rbFSUIPCMap.UseVisualStyleBackColor = true;
-            this.rbFSUIPCMap.CheckedChanged += new System.EventHandler(this.rbFSUIPCMap_CheckedChanged);
+            this.rbDCSWorldAltimeter.AutoSize = true;
+            this.rbDCSWorldAltimeter.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldAltimeter.Name = "rbDCSWorldAltimeter";
+            this.rbDCSWorldAltimeter.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldAltimeter.TabIndex = 4;
+            this.rbDCSWorldAltimeter.TabStop = true;
+            this.rbDCSWorldAltimeter.Text = "DCS World";
+            this.rbDCSWorldAltimeter.UseVisualStyleBackColor = true;
+            this.rbDCSWorldAltimeter.CheckedChanged += new System.EventHandler(this.rbDCSWorldAltimeter_CheckedChanged);
             // 
-            // rbXPlaneMap
+            // rbDCSWorldRadio
             // 
-            this.rbXPlaneMap.AutoSize = true;
-            this.rbXPlaneMap.Location = new System.Drawing.Point(162, 4);
-            this.rbXPlaneMap.Name = "rbXPlaneMap";
-            this.rbXPlaneMap.Size = new System.Drawing.Size(62, 17);
-            this.rbXPlaneMap.TabIndex = 2;
-            this.rbXPlaneMap.TabStop = true;
-            this.rbXPlaneMap.Text = "X-Plane";
-            this.rbXPlaneMap.UseVisualStyleBackColor = true;
-            this.rbXPlaneMap.CheckedChanged += new System.EventHandler(this.rbXPlaneMap_CheckedChanged);
-            // 
-            // panelAirspeed
-            // 
-            this.panelAirspeed.Controls.Add(this.rbXPlaneAirspeed);
-            this.panelAirspeed.Controls.Add(this.rbFSUIPCAirspeed);
-            this.panelAirspeed.Controls.Add(this.rbSimConnectAirspeed);
-            this.panelAirspeed.Enabled = false;
-            this.panelAirspeed.Location = new System.Drawing.Point(21, 265);
-            this.panelAirspeed.Name = "panelAirspeed";
-            this.panelAirspeed.Size = new System.Drawing.Size(362, 25);
-            this.panelAirspeed.TabIndex = 14;
-            // 
-            // rbXPlaneAirspeed
-            // 
-            this.rbXPlaneAirspeed.AutoSize = true;
-            this.rbXPlaneAirspeed.Location = new System.Drawing.Point(162, 4);
-            this.rbXPlaneAirspeed.Name = "rbXPlaneAirspeed";
-            this.rbXPlaneAirspeed.Size = new System.Drawing.Size(62, 17);
-            this.rbXPlaneAirspeed.TabIndex = 2;
-            this.rbXPlaneAirspeed.TabStop = true;
-            this.rbXPlaneAirspeed.Text = "X-Plane";
-            this.rbXPlaneAirspeed.UseVisualStyleBackColor = true;
-            this.rbXPlaneAirspeed.CheckedChanged += new System.EventHandler(this.rbXPlaneAirspeed_CheckedChanged);
-            // 
-            // rbFSUIPCAirspeed
-            // 
-            this.rbFSUIPCAirspeed.AutoSize = true;
-            this.rbFSUIPCAirspeed.Location = new System.Drawing.Point(92, 4);
-            this.rbFSUIPCAirspeed.Name = "rbFSUIPCAirspeed";
-            this.rbFSUIPCAirspeed.Size = new System.Drawing.Size(63, 17);
-            this.rbFSUIPCAirspeed.TabIndex = 1;
-            this.rbFSUIPCAirspeed.TabStop = true;
-            this.rbFSUIPCAirspeed.Text = "FSUIPC";
-            this.rbFSUIPCAirspeed.UseVisualStyleBackColor = true;
-            this.rbFSUIPCAirspeed.CheckedChanged += new System.EventHandler(this.rbFSUIPCAirspeed_CheckedChanged);
-            // 
-            // rbSimConnectAirspeed
-            // 
-            this.rbSimConnectAirspeed.AutoSize = true;
-            this.rbSimConnectAirspeed.Location = new System.Drawing.Point(3, 3);
-            this.rbSimConnectAirspeed.Name = "rbSimConnectAirspeed";
-            this.rbSimConnectAirspeed.Size = new System.Drawing.Size(82, 17);
-            this.rbSimConnectAirspeed.TabIndex = 0;
-            this.rbSimConnectAirspeed.TabStop = true;
-            this.rbSimConnectAirspeed.Text = "SimConnect";
-            this.rbSimConnectAirspeed.UseVisualStyleBackColor = true;
-            this.rbSimConnectAirspeed.CheckedChanged += new System.EventHandler(this.rbSimConnectAirspeed_CheckedChanged);
-            // 
-            // panelAltimeter
-            // 
-            this.panelAltimeter.Controls.Add(this.rbXPlaneAltimeter);
-            this.panelAltimeter.Controls.Add(this.rbFSUIPCAltimeter);
-            this.panelAltimeter.Controls.Add(this.rbSimConnectAltimeter);
-            this.panelAltimeter.Enabled = false;
-            this.panelAltimeter.Location = new System.Drawing.Point(21, 319);
-            this.panelAltimeter.Name = "panelAltimeter";
-            this.panelAltimeter.Size = new System.Drawing.Size(362, 25);
-            this.panelAltimeter.TabIndex = 15;
-            // 
-            // rbXPlaneAltimeter
-            // 
-            this.rbXPlaneAltimeter.AutoSize = true;
-            this.rbXPlaneAltimeter.Location = new System.Drawing.Point(162, 4);
-            this.rbXPlaneAltimeter.Name = "rbXPlaneAltimeter";
-            this.rbXPlaneAltimeter.Size = new System.Drawing.Size(62, 17);
-            this.rbXPlaneAltimeter.TabIndex = 2;
-            this.rbXPlaneAltimeter.TabStop = true;
-            this.rbXPlaneAltimeter.Text = "X-Plane";
-            this.rbXPlaneAltimeter.UseVisualStyleBackColor = true;
-            this.rbXPlaneAltimeter.CheckedChanged += new System.EventHandler(this.rbXPlaneAltimeter_CheckedChanged);
-            // 
-            // rbFSUIPCAltimeter
-            // 
-            this.rbFSUIPCAltimeter.AutoSize = true;
-            this.rbFSUIPCAltimeter.Location = new System.Drawing.Point(92, 4);
-            this.rbFSUIPCAltimeter.Name = "rbFSUIPCAltimeter";
-            this.rbFSUIPCAltimeter.Size = new System.Drawing.Size(63, 17);
-            this.rbFSUIPCAltimeter.TabIndex = 1;
-            this.rbFSUIPCAltimeter.TabStop = true;
-            this.rbFSUIPCAltimeter.Text = "FSUIPC";
-            this.rbFSUIPCAltimeter.UseVisualStyleBackColor = true;
-            this.rbFSUIPCAltimeter.CheckedChanged += new System.EventHandler(this.rbFSUIPCAltimeter_CheckedChanged);
-            // 
-            // rbSimConnectAltimeter
-            // 
-            this.rbSimConnectAltimeter.AutoSize = true;
-            this.rbSimConnectAltimeter.Location = new System.Drawing.Point(3, 3);
-            this.rbSimConnectAltimeter.Name = "rbSimConnectAltimeter";
-            this.rbSimConnectAltimeter.Size = new System.Drawing.Size(82, 17);
-            this.rbSimConnectAltimeter.TabIndex = 0;
-            this.rbSimConnectAltimeter.TabStop = true;
-            this.rbSimConnectAltimeter.Text = "SimConnect";
-            this.rbSimConnectAltimeter.UseVisualStyleBackColor = true;
-            this.rbSimConnectAltimeter.CheckedChanged += new System.EventHandler(this.rbSimConnectAltimeter_CheckedChanged);
-            // 
-            // panelRadio
-            // 
-            this.panelRadio.Controls.Add(this.rbXPlaneRadio);
-            this.panelRadio.Controls.Add(this.rbFSUIPCRadio);
-            this.panelRadio.Controls.Add(this.rbSimConnectRadio);
-            this.panelRadio.Enabled = false;
-            this.panelRadio.Location = new System.Drawing.Point(21, 373);
-            this.panelRadio.Name = "panelRadio";
-            this.panelRadio.Size = new System.Drawing.Size(362, 25);
-            this.panelRadio.TabIndex = 16;
-            // 
-            // rbXPlaneRadio
-            // 
-            this.rbXPlaneRadio.AutoSize = true;
-            this.rbXPlaneRadio.Location = new System.Drawing.Point(162, 4);
-            this.rbXPlaneRadio.Name = "rbXPlaneRadio";
-            this.rbXPlaneRadio.Size = new System.Drawing.Size(62, 17);
-            this.rbXPlaneRadio.TabIndex = 2;
-            this.rbXPlaneRadio.TabStop = true;
-            this.rbXPlaneRadio.Text = "X-Plane";
-            this.rbXPlaneRadio.UseVisualStyleBackColor = true;
-            this.rbXPlaneRadio.CheckedChanged += new System.EventHandler(this.rbXPlaneRadio_CheckedChanged);
-            // 
-            // rbFSUIPCRadio
-            // 
-            this.rbFSUIPCRadio.AutoSize = true;
-            this.rbFSUIPCRadio.Location = new System.Drawing.Point(92, 4);
-            this.rbFSUIPCRadio.Name = "rbFSUIPCRadio";
-            this.rbFSUIPCRadio.Size = new System.Drawing.Size(63, 17);
-            this.rbFSUIPCRadio.TabIndex = 1;
-            this.rbFSUIPCRadio.TabStop = true;
-            this.rbFSUIPCRadio.Text = "FSUIPC";
-            this.rbFSUIPCRadio.UseVisualStyleBackColor = true;
-            this.rbFSUIPCRadio.CheckedChanged += new System.EventHandler(this.rbFSUIPCRadio_CheckedChanged);
-            // 
-            // rbSimConnectRadio
-            // 
-            this.rbSimConnectRadio.AutoSize = true;
-            this.rbSimConnectRadio.Location = new System.Drawing.Point(3, 3);
-            this.rbSimConnectRadio.Name = "rbSimConnectRadio";
-            this.rbSimConnectRadio.Size = new System.Drawing.Size(82, 17);
-            this.rbSimConnectRadio.TabIndex = 0;
-            this.rbSimConnectRadio.TabStop = true;
-            this.rbSimConnectRadio.Text = "SimConnect";
-            this.rbSimConnectRadio.UseVisualStyleBackColor = true;
-            this.rbSimConnectRadio.CheckedChanged += new System.EventHandler(this.rbSimConnectRadio_CheckedChanged);
+            this.rbDCSWorldRadio.AutoSize = true;
+            this.rbDCSWorldRadio.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldRadio.Name = "rbDCSWorldRadio";
+            this.rbDCSWorldRadio.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldRadio.TabIndex = 4;
+            this.rbDCSWorldRadio.TabStop = true;
+            this.rbDCSWorldRadio.Text = "DCS World";
+            this.rbDCSWorldRadio.UseVisualStyleBackColor = true;
+            this.rbDCSWorldRadio.CheckedChanged += new System.EventHandler(this.rbDCSWorldRadio_CheckedChanged);
             // 
             // AddPageDialog
             // 
@@ -457,14 +513,14 @@ namespace FIPDisplayProfiler
             this.Load += new System.EventHandler(this.AddPageDialog_Load);
             this.pnlPageType.ResumeLayout(false);
             this.pnlPageType.PerformLayout();
-            this.panelMap.ResumeLayout(false);
-            this.panelMap.PerformLayout();
-            this.panelAirspeed.ResumeLayout(false);
-            this.panelAirspeed.PerformLayout();
-            this.panelAltimeter.ResumeLayout(false);
-            this.panelAltimeter.PerformLayout();
             this.panelRadio.ResumeLayout(false);
             this.panelRadio.PerformLayout();
+            this.panelAltimeter.ResumeLayout(false);
+            this.panelAltimeter.PerformLayout();
+            this.panelAirspeed.ResumeLayout(false);
+            this.panelAirspeed.PerformLayout();
+            this.panelMap.ResumeLayout(false);
+            this.panelMap.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -502,5 +558,9 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.RadioButton rbXPlaneRadio;
         private System.Windows.Forms.RadioButton rbFSUIPCRadio;
         private System.Windows.Forms.RadioButton rbSimConnectRadio;
+        private System.Windows.Forms.RadioButton rbDCSWorldMap;
+        private System.Windows.Forms.RadioButton rbDCSWorldAltimeter;
+        private System.Windows.Forms.RadioButton rbDCSWorldAirspeed;
+        private System.Windows.Forms.RadioButton rbDCSWorldRadio;
     }
 }

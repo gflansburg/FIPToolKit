@@ -31,7 +31,7 @@ namespace FIPDisplayProfiler
             Radio.AutoPlay = cbAutoPlay.Checked;
             Radio.Resume = cbResume.Checked;
             Radio.PauseOtherMedia = cbPauseOtherMedia.Checked;
-            Radio.RadioDistance = rb50.Checked ? RadioDistance.NM50 : rb100.Checked ? RadioDistance.NM100 : rb250.Checked ? RadioDistance.NM500 : RadioDistance.NM500;
+            Radio.RadioDistance = rb50.Checked ? RadioDistance.NM50 : rb100.Checked ? RadioDistance.NM100 : rb250.Checked ? RadioDistance.NM250 : RadioDistance.NM500;
             Radio.IsDirty = true;
             DialogResult = DialogResult.OK;
             this.Close();

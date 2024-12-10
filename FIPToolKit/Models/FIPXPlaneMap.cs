@@ -6,6 +6,7 @@ namespace FIPToolKit.Models
     {
         public FIPXPlaneMap(FIPMapProperties properties) : base(properties, FlightSimProviders.XPlane)
         {
+            properties.HasTraffic = false;
         }
     }
 }

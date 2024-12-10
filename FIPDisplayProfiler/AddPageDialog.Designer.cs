@@ -31,18 +31,22 @@ namespace FIPDisplayProfiler
         {
             this.pnlPageType = new System.Windows.Forms.Panel();
             this.panelRadio = new System.Windows.Forms.Panel();
+            this.rbDCSWorldRadio = new System.Windows.Forms.RadioButton();
             this.rbXPlaneRadio = new System.Windows.Forms.RadioButton();
             this.rbFSUIPCRadio = new System.Windows.Forms.RadioButton();
             this.rbSimConnectRadio = new System.Windows.Forms.RadioButton();
             this.panelAltimeter = new System.Windows.Forms.Panel();
+            this.rbDCSWorldAltimeter = new System.Windows.Forms.RadioButton();
             this.rbXPlaneAltimeter = new System.Windows.Forms.RadioButton();
             this.rbFSUIPCAltimeter = new System.Windows.Forms.RadioButton();
             this.rbSimConnectAltimeter = new System.Windows.Forms.RadioButton();
             this.panelAirspeed = new System.Windows.Forms.Panel();
+            this.rbDCSWorldAirspeed = new System.Windows.Forms.RadioButton();
             this.rbXPlaneAirspeed = new System.Windows.Forms.RadioButton();
             this.rbFSUIPCAirspeed = new System.Windows.Forms.RadioButton();
             this.rbSimConnectAirspeed = new System.Windows.Forms.RadioButton();
             this.panelMap = new System.Windows.Forms.Panel();
+            this.rbDCSWorldMap = new System.Windows.Forms.RadioButton();
             this.rbXPlaneMap = new System.Windows.Forms.RadioButton();
             this.rbFSUIPCMap = new System.Windows.Forms.RadioButton();
             this.rbSimConnectMap = new System.Windows.Forms.RadioButton();
@@ -60,10 +64,10 @@ namespace FIPDisplayProfiler
             this.rbAnalogClock = new System.Windows.Forms.RadioButton();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.rbDCSWorldMap = new System.Windows.Forms.RadioButton();
-            this.rbDCSWorldAirspeed = new System.Windows.Forms.RadioButton();
-            this.rbDCSWorldAltimeter = new System.Windows.Forms.RadioButton();
-            this.rbDCSWorldRadio = new System.Windows.Forms.RadioButton();
+            this.rbFalconBMSMap = new System.Windows.Forms.RadioButton();
+            this.rbFalconBMSAirspeed = new System.Windows.Forms.RadioButton();
+            this.rbFalconBMSAltimeter = new System.Windows.Forms.RadioButton();
+            this.tbFalconBMSRadio = new System.Windows.Forms.RadioButton();
             this.pnlPageType.SuspendLayout();
             this.panelRadio.SuspendLayout();
             this.panelAltimeter.SuspendLayout();
@@ -94,11 +98,14 @@ namespace FIPDisplayProfiler
             this.pnlPageType.Controls.Add(this.rbAnalogClock);
             this.pnlPageType.Location = new System.Drawing.Point(13, 12);
             this.pnlPageType.Name = "pnlPageType";
-            this.pnlPageType.Size = new System.Drawing.Size(386, 400);
+            this.pnlPageType.Size = new System.Drawing.Size(427, 400);
             this.pnlPageType.TabIndex = 18;
             // 
             // panelRadio
             // 
+            this.panelRadio.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelRadio.Controls.Add(this.tbFalconBMSRadio);
             this.panelRadio.Controls.Add(this.rbDCSWorldRadio);
             this.panelRadio.Controls.Add(this.rbXPlaneRadio);
             this.panelRadio.Controls.Add(this.rbFSUIPCRadio);
@@ -106,8 +113,20 @@ namespace FIPDisplayProfiler
             this.panelRadio.Enabled = false;
             this.panelRadio.Location = new System.Drawing.Point(21, 373);
             this.panelRadio.Name = "panelRadio";
-            this.panelRadio.Size = new System.Drawing.Size(362, 25);
+            this.panelRadio.Size = new System.Drawing.Size(403, 25);
             this.panelRadio.TabIndex = 16;
+            // 
+            // rbDCSWorldRadio
+            // 
+            this.rbDCSWorldRadio.AutoSize = true;
+            this.rbDCSWorldRadio.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldRadio.Name = "rbDCSWorldRadio";
+            this.rbDCSWorldRadio.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldRadio.TabIndex = 4;
+            this.rbDCSWorldRadio.TabStop = true;
+            this.rbDCSWorldRadio.Text = "DCS World";
+            this.rbDCSWorldRadio.UseVisualStyleBackColor = true;
+            this.rbDCSWorldRadio.CheckedChanged += new System.EventHandler(this.rbDCSWorldRadio_CheckedChanged);
             // 
             // rbXPlaneRadio
             // 
@@ -147,6 +166,9 @@ namespace FIPDisplayProfiler
             // 
             // panelAltimeter
             // 
+            this.panelAltimeter.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelAltimeter.Controls.Add(this.rbFalconBMSAltimeter);
             this.panelAltimeter.Controls.Add(this.rbDCSWorldAltimeter);
             this.panelAltimeter.Controls.Add(this.rbXPlaneAltimeter);
             this.panelAltimeter.Controls.Add(this.rbFSUIPCAltimeter);
@@ -154,8 +176,20 @@ namespace FIPDisplayProfiler
             this.panelAltimeter.Enabled = false;
             this.panelAltimeter.Location = new System.Drawing.Point(21, 319);
             this.panelAltimeter.Name = "panelAltimeter";
-            this.panelAltimeter.Size = new System.Drawing.Size(362, 25);
+            this.panelAltimeter.Size = new System.Drawing.Size(403, 25);
             this.panelAltimeter.TabIndex = 15;
+            // 
+            // rbDCSWorldAltimeter
+            // 
+            this.rbDCSWorldAltimeter.AutoSize = true;
+            this.rbDCSWorldAltimeter.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldAltimeter.Name = "rbDCSWorldAltimeter";
+            this.rbDCSWorldAltimeter.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldAltimeter.TabIndex = 4;
+            this.rbDCSWorldAltimeter.TabStop = true;
+            this.rbDCSWorldAltimeter.Text = "DCS World";
+            this.rbDCSWorldAltimeter.UseVisualStyleBackColor = true;
+            this.rbDCSWorldAltimeter.CheckedChanged += new System.EventHandler(this.rbDCSWorldAltimeter_CheckedChanged);
             // 
             // rbXPlaneAltimeter
             // 
@@ -195,6 +229,9 @@ namespace FIPDisplayProfiler
             // 
             // panelAirspeed
             // 
+            this.panelAirspeed.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelAirspeed.Controls.Add(this.rbFalconBMSAirspeed);
             this.panelAirspeed.Controls.Add(this.rbDCSWorldAirspeed);
             this.panelAirspeed.Controls.Add(this.rbXPlaneAirspeed);
             this.panelAirspeed.Controls.Add(this.rbFSUIPCAirspeed);
@@ -202,8 +239,20 @@ namespace FIPDisplayProfiler
             this.panelAirspeed.Enabled = false;
             this.panelAirspeed.Location = new System.Drawing.Point(21, 265);
             this.panelAirspeed.Name = "panelAirspeed";
-            this.panelAirspeed.Size = new System.Drawing.Size(362, 25);
+            this.panelAirspeed.Size = new System.Drawing.Size(403, 25);
             this.panelAirspeed.TabIndex = 14;
+            // 
+            // rbDCSWorldAirspeed
+            // 
+            this.rbDCSWorldAirspeed.AutoSize = true;
+            this.rbDCSWorldAirspeed.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldAirspeed.Name = "rbDCSWorldAirspeed";
+            this.rbDCSWorldAirspeed.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldAirspeed.TabIndex = 4;
+            this.rbDCSWorldAirspeed.TabStop = true;
+            this.rbDCSWorldAirspeed.Text = "DCS World";
+            this.rbDCSWorldAirspeed.UseVisualStyleBackColor = true;
+            this.rbDCSWorldAirspeed.CheckedChanged += new System.EventHandler(this.rbDCSWorldAirspeed_CheckedChanged);
             // 
             // rbXPlaneAirspeed
             // 
@@ -243,6 +292,9 @@ namespace FIPDisplayProfiler
             // 
             // panelMap
             // 
+            this.panelMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelMap.Controls.Add(this.rbFalconBMSMap);
             this.panelMap.Controls.Add(this.rbDCSWorldMap);
             this.panelMap.Controls.Add(this.rbXPlaneMap);
             this.panelMap.Controls.Add(this.rbFSUIPCMap);
@@ -250,8 +302,20 @@ namespace FIPDisplayProfiler
             this.panelMap.Enabled = false;
             this.panelMap.Location = new System.Drawing.Point(21, 211);
             this.panelMap.Name = "panelMap";
-            this.panelMap.Size = new System.Drawing.Size(362, 25);
+            this.panelMap.Size = new System.Drawing.Size(403, 25);
             this.panelMap.TabIndex = 13;
+            // 
+            // rbDCSWorldMap
+            // 
+            this.rbDCSWorldMap.AutoSize = true;
+            this.rbDCSWorldMap.Location = new System.Drawing.Point(230, 4);
+            this.rbDCSWorldMap.Name = "rbDCSWorldMap";
+            this.rbDCSWorldMap.Size = new System.Drawing.Size(78, 17);
+            this.rbDCSWorldMap.TabIndex = 3;
+            this.rbDCSWorldMap.TabStop = true;
+            this.rbDCSWorldMap.Text = "DCS World";
+            this.rbDCSWorldMap.UseVisualStyleBackColor = true;
+            this.rbDCSWorldMap.CheckedChanged += new System.EventHandler(this.rbDCSWorldMap_CheckedChanged);
             // 
             // rbXPlaneMap
             // 
@@ -426,7 +490,7 @@ namespace FIPDisplayProfiler
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnOK.Enabled = false;
-            this.btnOK.Location = new System.Drawing.Point(324, 418);
+            this.btnOK.Location = new System.Drawing.Point(365, 418);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -438,60 +502,60 @@ namespace FIPDisplayProfiler
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(243, 418);
+            this.btnCancel.Location = new System.Drawing.Point(284, 418);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 17;
             this.btnCancel.Text = "&Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
-            // rbDCSWorldMap
+            // rbFalconBMSMap
             // 
-            this.rbDCSWorldMap.AutoSize = true;
-            this.rbDCSWorldMap.Location = new System.Drawing.Point(230, 4);
-            this.rbDCSWorldMap.Name = "rbDCSWorldMap";
-            this.rbDCSWorldMap.Size = new System.Drawing.Size(78, 17);
-            this.rbDCSWorldMap.TabIndex = 3;
-            this.rbDCSWorldMap.TabStop = true;
-            this.rbDCSWorldMap.Text = "DCS World";
-            this.rbDCSWorldMap.UseVisualStyleBackColor = true;
-            this.rbDCSWorldMap.CheckedChanged += new System.EventHandler(this.rbDCSWorldMap_CheckedChanged);
+            this.rbFalconBMSMap.AutoSize = true;
+            this.rbFalconBMSMap.Location = new System.Drawing.Point(314, 4);
+            this.rbFalconBMSMap.Name = "rbFalconBMSMap";
+            this.rbFalconBMSMap.Size = new System.Drawing.Size(83, 17);
+            this.rbFalconBMSMap.TabIndex = 4;
+            this.rbFalconBMSMap.TabStop = true;
+            this.rbFalconBMSMap.Text = "Falcon BMS";
+            this.rbFalconBMSMap.UseVisualStyleBackColor = true;
+            this.rbFalconBMSMap.CheckedChanged += new System.EventHandler(this.rbFalconBMSMap_CheckedChanged);
             // 
-            // rbDCSWorldAirspeed
+            // rbFalconBMSAirspeed
             // 
-            this.rbDCSWorldAirspeed.AutoSize = true;
-            this.rbDCSWorldAirspeed.Location = new System.Drawing.Point(230, 4);
-            this.rbDCSWorldAirspeed.Name = "rbDCSWorldAirspeed";
-            this.rbDCSWorldAirspeed.Size = new System.Drawing.Size(78, 17);
-            this.rbDCSWorldAirspeed.TabIndex = 4;
-            this.rbDCSWorldAirspeed.TabStop = true;
-            this.rbDCSWorldAirspeed.Text = "DCS World";
-            this.rbDCSWorldAirspeed.UseVisualStyleBackColor = true;
-            this.rbDCSWorldAirspeed.CheckedChanged += new System.EventHandler(this.rbDCSWorldAirspeed_CheckedChanged);
+            this.rbFalconBMSAirspeed.AutoSize = true;
+            this.rbFalconBMSAirspeed.Location = new System.Drawing.Point(314, 4);
+            this.rbFalconBMSAirspeed.Name = "rbFalconBMSAirspeed";
+            this.rbFalconBMSAirspeed.Size = new System.Drawing.Size(83, 17);
+            this.rbFalconBMSAirspeed.TabIndex = 5;
+            this.rbFalconBMSAirspeed.TabStop = true;
+            this.rbFalconBMSAirspeed.Text = "Falcon BMS";
+            this.rbFalconBMSAirspeed.UseVisualStyleBackColor = true;
+            this.rbFalconBMSAirspeed.CheckedChanged += new System.EventHandler(this.rbFalconBMSAirspeed_CheckedChanged);
             // 
-            // rbDCSWorldAltimeter
+            // rbFalconBMSAltimeter
             // 
-            this.rbDCSWorldAltimeter.AutoSize = true;
-            this.rbDCSWorldAltimeter.Location = new System.Drawing.Point(230, 4);
-            this.rbDCSWorldAltimeter.Name = "rbDCSWorldAltimeter";
-            this.rbDCSWorldAltimeter.Size = new System.Drawing.Size(78, 17);
-            this.rbDCSWorldAltimeter.TabIndex = 4;
-            this.rbDCSWorldAltimeter.TabStop = true;
-            this.rbDCSWorldAltimeter.Text = "DCS World";
-            this.rbDCSWorldAltimeter.UseVisualStyleBackColor = true;
-            this.rbDCSWorldAltimeter.CheckedChanged += new System.EventHandler(this.rbDCSWorldAltimeter_CheckedChanged);
+            this.rbFalconBMSAltimeter.AutoSize = true;
+            this.rbFalconBMSAltimeter.Location = new System.Drawing.Point(314, 4);
+            this.rbFalconBMSAltimeter.Name = "rbFalconBMSAltimeter";
+            this.rbFalconBMSAltimeter.Size = new System.Drawing.Size(83, 17);
+            this.rbFalconBMSAltimeter.TabIndex = 5;
+            this.rbFalconBMSAltimeter.TabStop = true;
+            this.rbFalconBMSAltimeter.Text = "Falcon BMS";
+            this.rbFalconBMSAltimeter.UseVisualStyleBackColor = true;
+            this.rbFalconBMSAltimeter.CheckedChanged += new System.EventHandler(this.rbFalconBMSAltimeter_CheckedChanged);
             // 
-            // rbDCSWorldRadio
+            // tbFalconBMSRadio
             // 
-            this.rbDCSWorldRadio.AutoSize = true;
-            this.rbDCSWorldRadio.Location = new System.Drawing.Point(230, 4);
-            this.rbDCSWorldRadio.Name = "rbDCSWorldRadio";
-            this.rbDCSWorldRadio.Size = new System.Drawing.Size(78, 17);
-            this.rbDCSWorldRadio.TabIndex = 4;
-            this.rbDCSWorldRadio.TabStop = true;
-            this.rbDCSWorldRadio.Text = "DCS World";
-            this.rbDCSWorldRadio.UseVisualStyleBackColor = true;
-            this.rbDCSWorldRadio.CheckedChanged += new System.EventHandler(this.rbDCSWorldRadio_CheckedChanged);
+            this.tbFalconBMSRadio.AutoSize = true;
+            this.tbFalconBMSRadio.Location = new System.Drawing.Point(314, 4);
+            this.tbFalconBMSRadio.Name = "tbFalconBMSRadio";
+            this.tbFalconBMSRadio.Size = new System.Drawing.Size(83, 17);
+            this.tbFalconBMSRadio.TabIndex = 5;
+            this.tbFalconBMSRadio.TabStop = true;
+            this.tbFalconBMSRadio.Text = "Falcon BMS";
+            this.tbFalconBMSRadio.UseVisualStyleBackColor = true;
+            this.tbFalconBMSRadio.CheckedChanged += new System.EventHandler(this.tbFalconBMSRadio_CheckedChanged);
             // 
             // AddPageDialog
             // 
@@ -499,7 +563,7 @@ namespace FIPDisplayProfiler
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(411, 453);
+            this.ClientSize = new System.Drawing.Size(452, 453);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.pnlPageType);
@@ -562,5 +626,9 @@ namespace FIPDisplayProfiler
         private System.Windows.Forms.RadioButton rbDCSWorldAltimeter;
         private System.Windows.Forms.RadioButton rbDCSWorldAirspeed;
         private System.Windows.Forms.RadioButton rbDCSWorldRadio;
+        private System.Windows.Forms.RadioButton tbFalconBMSRadio;
+        private System.Windows.Forms.RadioButton rbFalconBMSAltimeter;
+        private System.Windows.Forms.RadioButton rbFalconBMSAirspeed;
+        private System.Windows.Forms.RadioButton rbFalconBMSMap;
     }
 }

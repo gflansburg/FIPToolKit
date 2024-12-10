@@ -34,7 +34,11 @@ namespace FIPDisplayProfiler
         DCSWorldMap,
         DCSWorldAirspeed,
         DCSWorldAltimeter,
-        DCSWorldRadio
+        DCSWorldRadio,
+        FalconBMSMap,
+        FalconBMSAirspeed,
+        FalconBMSAltimeter,
+        FalconBMSRadio
     }
 
     public partial class AddPageDialog : Form
@@ -277,6 +281,34 @@ namespace FIPDisplayProfiler
         private void rbDCSWorldRadio_CheckedChanged(object sender, EventArgs e)
         {
             PageType = PageType.DCSWorldRadio;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbFalconBMSMap_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.FalconBMSMap;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbFalconBMSAirspeed_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.FalconBMSAirspeed;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void rbFalconBMSAltimeter_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.FalconBMSAltimeter;
+            btnOK.Enabled = true;
+            cbSettable.Enabled = false;
+        }
+
+        private void tbFalconBMSRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            PageType = PageType.FalconBMSRadio;
             btnOK.Enabled = true;
             cbSettable.Enabled = false;
         }

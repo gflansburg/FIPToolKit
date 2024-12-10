@@ -5,30 +5,30 @@ using System.Collections.Generic;
 
 namespace FIPToolKit.FlightSim
 {
-    public class XPlaneCrossref
+    public class FalconBMSCrossref
     {
         public string AircraftName { get; set; }
         public int AircraftId { get; set; }
 
-        public static List<XPlaneCrossref> GetXPlaneCrossref()
+        public static List<FalconBMSCrossref> GetFalconBMSCrossref()
         {
             try
             {
                 RestClient client = new RestClient("https://cloud.gafware.com/Home");
-                RestRequest request = new RestRequest("GetXPlaneCrossref", Method.Get);
+                RestRequest request = new RestRequest("GetFalconBMSCrossref", Method.Get);
                 RestResponse response = client.Execute(request);
                 if (response.IsSuccessful)
                 {
-                    return JsonConvert.DeserializeObject<List<XPlaneCrossref>>(response.Content);
+                    return JsonConvert.DeserializeObject<List<FalconBMSCrossref>>(response.Content);
                 }
             }
             catch (Exception)
             {
                 // Offline?
             }
-            return new List<XPlaneCrossref>()
+            return new List<FalconBMSCrossref>()
             {
-                /*new XPlaneCrossref()
+                /*new FalconBMSCrossref()
                 {
 
                 }*/

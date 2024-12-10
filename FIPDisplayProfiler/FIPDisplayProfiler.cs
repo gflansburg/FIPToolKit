@@ -271,6 +271,7 @@ namespace FIPDisplayProfiler
                 FIPToolKit.FlightSim.FlightSimProviders.FSUIPC.Deinitialize();
                 FIPToolKit.FlightSim.FlightSimProviders.XPlane.Deinitialize();
                 FIPToolKit.FlightSim.FlightSimProviders.DCSWorld.Deinitialize();
+                FIPToolKit.FlightSim.FlightSimProviders.FalconBMS.Deinitialize();
             }
             if (Settings.Default.CloseFlightShareOnExit)
             {

@@ -944,6 +944,100 @@ namespace FIPDisplayProfiler
                             }
                         }
                         break;
+                    case PageType.FalconBMSMap:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (typeof(FIPFalconBMSMap).IsAssignableFrom(fipPage.GetType()))
+                                {
+                                    MessageBox.Show(this, "You can only have one Falcon BMS Map per device.", "Falcon BMS Map", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            MapForm form = new MapForm()
+                            {
+                                MapProperties = new FIPMapProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                FIPFalconBMSMap page = new FIPFalconBMSMap(form.MapProperties);
+                                page.OnQuit += FIPMap_OnQuit;
+                                page.OnCenterPlane += FIPMap_OnCenterPlane;
+                                page.OnConnected += FIPMap_OnConnected;
+                                page.OnFlightDataReceived += FIPMap_OnFlightDataReceived;
+                                page.OnInvalidateMap += FIPMap_OnInvalidateMap;
+                                page.OnPropertiesChanged += FIPMap_OnPropertiesChanged;
+                                page.OnReadyToFly += FIPMap_OnReadyToFly;
+                                page.OnRequestMapForm += FIPMap_OnRequestMapForm;
+                                page.OnRequestMapImage += FIPMap_OnRequestMapImage;
+                                page.OnTrafficReceived += FIPMap_OnTrafficReceived;
+                                page.LoadSettings();
+                                Device.AddPage(page, true);
+                            }
+                        }
+                        break;
+                    case PageType.FalconBMSRadio:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (typeof(FIPFalconBMSRadio).IsAssignableFrom(fipPage.GetType()))
+                                {
+                                    MessageBox.Show(this, "You can only have one Falcon BMS Radio per device.", "Falcon BMS Radio", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            RadioForm form = new RadioForm()
+                            {
+                                Radio = new FIPRadioProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                form.Radio.Mute = GetInitialMute(false);
+                                form.Radio.Volume = GetInitialVolume(100);
+                                FIPXPlaneRadio page = new FIPXPlaneRadio(form.Radio);
+                                page.OnCanPlay += DeviceControl_OnCanPlay;
+                                page.OnVolumeChanged += MusicPlayer_OnVolumeChanged;
+                                page.OnMuteChanged += MusicPlayer_OnMuteChanged;
+                                page.OnActive += Page_OnActive;
+                                page.OnInactive += Page_OnInactive;
+                                page.Init();
+                                Device.AddPage(page, true);
+                            }
+                        }
+                        break;
+                    case PageType.FalconBMSAirspeed:
+                        {
+                            foreach (FIPPage fipPage in Device.Pages)
+                            {
+                                if (typeof(FIPFalconBMSAirspeed).IsAssignableFrom(fipPage.GetType()))
+                                {
+                                    MessageBox.Show(this, "You can only have one Falcon BMS Airspeed Indicator per device.", "Falcon BMS Airspeed Indicator", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                                    return;
+                                }
+                            }
+                            AirspeedForm form = new AirspeedForm()
+                            {
+                                AirspeedGauge = new FIPAirspeedProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                FIPFalconBMSAirspeed page = new FIPFalconBMSAirspeed(form.AirspeedGauge);
+                                Device.AddPage(page, true);
+                            }
+                        }
+                        break;
+                    case PageType.FalconBMSAltimeter:
+                        {
+                            AltimeterForm form = new AltimeterForm()
+                            {
+                                Altimeter = new FIPAltimeterProperties()
+                            };
+                            if (form.ShowDialog(this) == DialogResult.OK)
+                            {
+                                Device.AddPage(new FIPFalconBMSAltimeter(form.Altimeter), true);
+                            }
+                        }
+                        break;
                 }
             }
         }

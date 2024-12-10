@@ -179,6 +179,8 @@
     <Compile Include="Drawing\WebP.cs" />
     <Compile Include="FlightSim\DCSWorldCrossref.cs" />
     <Compile Include="FlightSim\DCSWorldProvider.cs" />
+    <Compile Include="FlightSim\FalconBMSCrossref.cs" />
+    <Compile Include="FlightSim\FalconBMSProvider.cs" />
     <Compile Include="FlightSim\FlightSimProviderBase.cs" />
     <Compile Include="FlightSim\FlightSimProviders.cs" />
     <Compile Include="FlightSim\SimConnectEvent.cs" />
@@ -196,6 +198,10 @@
     <Compile Include="Models\FIPDCSWorldCommandSequenceButton.cs" />
     <Compile Include="Models\FIPDCSWorldMap.cs" />
     <Compile Include="Models\FIPDCSWorldRadio.cs" />
+    <Compile Include="Models\FIPFalconBMSAirspeed.cs" />
+    <Compile Include="Models\FIPFalconBMSAltimeter.cs" />
+    <Compile Include="Models\FIPFalconBMSMap.cs" />
+    <Compile Include="Models\FIPFalconBMSRadio.cs" />
     <Compile Include="Models\FIPFSUIPCCommandSequenceButton.cs" />
     <Compile Include="Models\FIPSimConnectCommandButton.cs" />
     <Compile Include="Models\FIPXPlaneCommandButton.cs" />
@@ -514,6 +520,10 @@
     <ProjectReference Include="..\DirectOutputNet\DirectOutputNet.vcxproj">
       <Project>{85d24812-9c8d-4ca4-a56d-15539faca9b2}</Project>
       <Name>DirectOutputNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\F4SharedMem\F4SharedMem.csproj">
+      <Project>{3d963487-be7b-483e-bdec-806e938c1226}</Project>
+      <Name>F4SharedMem</Name>
     </ProjectReference>
     <ProjectReference Include="..\MediaToolkit\MediaToolkit.csproj">
       <Project>{124ab335-eeac-416f-b06b-80ad3cf56e38}</Project>

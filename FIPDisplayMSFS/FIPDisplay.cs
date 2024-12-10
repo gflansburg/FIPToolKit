@@ -881,6 +881,7 @@ namespace FIPDisplayMSFS
                 FlightSimProviders.FSUIPC.Deinitialize();
                 FlightSimProviders.XPlane.Deinitialize();
                 FlightSimProviders.DCSWorld.Deinitialize();
+                FlightSimProviders.FalconBMS.Deinitialize();
             }
             FIPFlightShare.CloseFlightShare();
         }

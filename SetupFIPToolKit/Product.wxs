@@ -14,6 +14,7 @@
     <Property Id="SCRIPTSDIRECTORY" Value="TARGETSCRIPTSDIRECTORY" />
     
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="DesktopFolder" SourceName="Desktop" />
       <Directory Id="AppDataFolder">
         <Directory Id="CompanyFolder" Name="Gafware">
           <Directory Id="INSTALLDIR" Name="FIPToolKit">
@@ -27,7 +28,13 @@
                   KeyPath="yes" />
             </Component>
             <Component Id="MainExecutable" Guid="EB329834-CEB3-44BE-ACE3-32DD5B85977D">
-              <File Id="FIPDisplayProfilerExe" Source="$(var.SourceDir)\FIPDisplayProfiler.exe" />
+              <File Id="FIPDisplayProfilerExe" Source="$(var.SourceDir)\FIPDisplayProfiler.exe">
+                <Shortcut
+                          Id="DesktopShortcut"
+                          Directory="DesktopFolder"
+                          Name="FIP Display Profiler"
+                          WorkingDirectory="INSTALLDIR" />
+              </File>
               <File Id="FIPDisplayProfilerConfig" Source="$(var.SourceDir)\FIPDisplayProfiler.exe.config" />
               <File Id="FIPDisplayMSFSExe" Source="$(var.SourceDir)\FIPDisplayMSFS.exe" />
               <File Id="FIPDisplayMSFSConfig" Source="$(var.SourceDir)\FIPDisplayMSFS.exe.config" />

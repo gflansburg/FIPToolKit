@@ -283,7 +283,7 @@ namespace FIPToolKit.FlightSim
         {
             try
             {
-                if (OutputControls.ContainsKey(controlId))
+                if (OutputControls != null && OutputControls.ContainsKey(controlId))
                 {
                     var control = OutputControls[controlId];
                     if (control != null && control.Outputs.Count > 0)

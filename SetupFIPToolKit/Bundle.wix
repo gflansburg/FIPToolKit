@@ -1,0 +1,15 @@
+﻿<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+  <Bundle Name="FIPToolKit Installer" Version="1.3.0.0" Manufacturer="Gafware" UpgradeCode="34507997-BA0F-4563-854C-F89CB8C4D288">
+    <WixVariable Id="WixBundleIcon" Value="FIPToolKitIcon.ico" />
+    <WixVariable Id="WixBundleCompressed" Value="yes" />
+	<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+		<bal:WixStandardBootstrapperApplication 
+			LicenseFile="EULA.rtf"
+			LogoFile="FIPToolKitIcon.bmp"	/>
+	</BootstrapperApplicationRef>
+    <Chain>
+		<MsiPackage SourceFile="bin\Debug\SetupFIPToolKit.msi" Vital="yes" DisplayInternalUI="yes"  />
+    </Chain>
+  </Bundle>
+</Wix>

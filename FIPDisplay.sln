@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XPlaneConnect", "XPlaneConn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "F4SharedMem", "F4SharedMem\F4SharedMem.csproj", "{3D963487-BE7B-483E-BDEC-806E938C1226}"
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "SetupFIPToolKit", "SetupFIPToolKit\SetupFIPToolKit.wixproj", "{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,24 @@ Global
 		{3D963487-BE7B-483E-BDEC-806E938C1226}.Release|x64.Build.0 = Release|Any CPU
 		{3D963487-BE7B-483E-BDEC-806E938C1226}.Release|x86.ActiveCfg = Release|Any CPU
 		{3D963487-BE7B-483E-BDEC-806E938C1226}.Release|x86.Build.0 = Release|Any CPU
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Debug|Any CPU.Build.0 = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Debug|x64.ActiveCfg = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Debug|x64.Build.0 = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Debug|x86.ActiveCfg = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Debug|x86.Build.0 = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.DebugToConsole|Any CPU.ActiveCfg = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.DebugToConsole|Any CPU.Build.0 = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.DebugToConsole|x64.ActiveCfg = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.DebugToConsole|x64.Build.0 = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.DebugToConsole|x86.ActiveCfg = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.DebugToConsole|x86.Build.0 = Debug|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Release|Any CPU.ActiveCfg = Release|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Release|Any CPU.Build.0 = Release|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Release|x64.ActiveCfg = Release|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Release|x64.Build.0 = Release|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Release|x86.ActiveCfg = Release|x86
+		{730D18E6-BB67-4594-8CF0-FBDE9E59BEB4}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

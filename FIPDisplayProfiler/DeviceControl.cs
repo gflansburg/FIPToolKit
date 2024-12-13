@@ -900,7 +900,7 @@ namespace FIPDisplayProfiler
                             {
                                 form.Radio.Mute = GetInitialMute(false);
                                 form.Radio.Volume = GetInitialVolume(100);
-                                FIPXPlaneRadio page = new FIPXPlaneRadio(form.Radio);
+                                FIPDCSWorldRadio page = new FIPDCSWorldRadio(form.Radio);
                                 page.OnCanPlay += DeviceControl_OnCanPlay;
                                 page.OnVolumeChanged += MusicPlayer_OnVolumeChanged;
                                 page.OnMuteChanged += MusicPlayer_OnMuteChanged;
@@ -994,7 +994,7 @@ namespace FIPDisplayProfiler
                             {
                                 form.Radio.Mute = GetInitialMute(false);
                                 form.Radio.Volume = GetInitialVolume(100);
-                                FIPXPlaneRadio page = new FIPXPlaneRadio(form.Radio);
+                                FIPFalconBMSRadio page = new FIPFalconBMSRadio(form.Radio);
                                 page.OnCanPlay += DeviceControl_OnCanPlay;
                                 page.OnVolumeChanged += MusicPlayer_OnVolumeChanged;
                                 page.OnMuteChanged += MusicPlayer_OnMuteChanged;

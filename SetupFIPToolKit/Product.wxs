@@ -17,6 +17,15 @@
       <Directory Id="AppDataFolder">
         <Directory Id="CompanyFolder" Name="Gafware">
           <Directory Id="INSTALLDIR" Name="FIPToolKit">
+            <Component Id="RegistryComponent" Guid="528D2E6F-27CB-46F6-A1D6-C5D8A5E64150">
+              <RegistryValue
+                  Root="HKCU"
+                  Key="Software\Gafware\FIPToolKit"
+                  Name="InstallPath"
+                  Value="[INSTALLDIR]"
+                  Type="string"
+                  KeyPath="yes" />
+            </Component>
             <Component Id="MainExecutable" Guid="EB329834-CEB3-44BE-ACE3-32DD5B85977D">
               <File Id="FIPDisplayProfilerExe" Source="$(var.SourceDir)\FIPDisplayProfiler.exe" />
               <File Id="FIPDisplayProfilerConfig" Source="$(var.SourceDir)\FIPDisplayProfiler.exe.config" />
@@ -1920,11 +1929,13 @@
       <ComponentRef Id="RemovePluginsFolder" />
       <ComponentRef Id="AppFolderRemoval" />
       <ComponentRef Id="CompanyFolderRemoval" />
+      <ComponentRef Id="RegistryComponent" />
     </Feature>
 
     <WixVariable Id="WixUIBannerBmp" Value="FIPToolKitBanner.bmp" />
     <WixVariable Id="WixUIDialogBmp" Value="FIPToolKitDialog.png" />
     <WixVariable Id="WixUIInfoIco" Value="FIPToolKitIcon.ico" />
+    <WixVariable Id="WixUILicenseRtf" Value="EULA.rtf" />
 
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch FIP Display Profiler" />
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
@@ -1971,10 +1982,13 @@
 
       <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
 
-      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg">NOT Installed</Publish>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="LicenseAgreementDlg">NOT Installed</Publish>
       <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">Installed AND PATCH</Publish>
 
-      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg">1</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg">1</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg">LicenseAccepted = "1"</Publish>
+
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
       <Publish Dialog="InstallDirDlg" Control="Next" Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
       <Publish Dialog="InstallDirDlg" Control="Next" Event="DoAction" Value="WixUIValidatePath" Order="2">NOT WIXUI_DONTVALIDATEPATH</Publish>
       <Publish Dialog="InstallDirDlg" Control="Next" Event="SpawnDialog" Value="InvalidDirDlg" Order="3"><![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
@@ -2015,6 +2029,6 @@
               ExeCommand=""
               Return="asyncNoWait"
               Impersonate="yes" />
-    
+
   </Product>
 </Wix>

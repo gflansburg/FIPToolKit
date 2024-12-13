@@ -46,6 +46,10 @@
     <Content Include="FIPToolKitDialog.png" />
     <Content Include="FIPToolKitIcon.bmp" />
     <Content Include="FIPToolKitIcon.ico" />
+    <Content Include="CustomRtfTheme.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CustomRtfTheme.wxl" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
@@ -54,7 +58,8 @@
   </Target>
   <PropertyGroup>
     <PostBuildEvent>"C:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" -ext WixBalExtension -out "$(ProjectDir)Bundle.wixobj" "$(ProjectDir)Bundle.wix"
-"C:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -ext WixBalExtension -out "$(TargetDir)SetupFIPToolKit.exe" "$(ProjectDir)Bundle.wixobj"</PostBuildEvent>
+"C:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -ext WixBalExtension -out "$(TargetDir)SetupFIPToolKit.exe" "$(ProjectDir)Bundle.wixobj"
+del "$(ProjectDir)Bundle.wixobj"</PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

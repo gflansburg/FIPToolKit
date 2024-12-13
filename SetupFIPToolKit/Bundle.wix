@@ -1,15 +1,24 @@
 ﻿<?xml version="1.0"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+         xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
   <Bundle Name="FIPToolKit Installer" Version="1.3.0.0" Manufacturer="Gafware" UpgradeCode="34507997-BA0F-4563-854C-F89CB8C4D288">
     <WixVariable Id="WixBundleIcon" Value="FIPToolKitIcon.ico" />
     <WixVariable Id="WixBundleCompressed" Value="yes" />
-	<BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
-		<bal:WixStandardBootstrapperApplication 
-			LicenseFile="EULA.rtf"
-			LogoFile="FIPToolKitIcon.bmp"	/>
-	</BootstrapperApplicationRef>
+    <Variable Name="InstallFolder" Type="string" Value="[AppDataFolder]Gafware\FIPToolKit\" />
+	  <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+		  <bal:WixStandardBootstrapperApplication 
+			  LicenseFile="EULA.rtf"
+			  LogoFile="FIPToolKitIcon.bmp"
+        ThemeFile="CustomRtfTheme.xml"
+        LocalizationFile="CustomRtfTheme.wxl"
+        SuppressOptionsUI="yes"
+        LaunchTargetElevatedId="MyAEEId" />
+    </BootstrapperApplicationRef>
     <Chain>
-		<MsiPackage SourceFile="bin\Debug\SetupFIPToolKit.msi" Vital="yes" DisplayInternalUI="yes"  />
+      <MsiPackage SourceFile="bin\Debug\en-us\SetupFIPToolKit.msi" Vital="yes" DisplayInternalUI="yes">
+        <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
+      </MsiPackage>
     </Chain>
+    <!--<Variable Name="LaunchTarget" Value="[InstallFolder]FIPDisplayProfiler.exe" />-->
   </Bundle>
 </Wix>

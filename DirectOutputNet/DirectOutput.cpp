@@ -34,6 +34,8 @@ bool DirectOutputClient::_GetDirectOutputFilename(LPTSTR filename, DWORD length)
 		DWORD size(length * sizeof(filename[0]));
 		// Note: this DirectOutput entry will point to the correct version on x86 or x64 systems
 		lRet = RegQueryValueEx(hk, TEXT("DirectOutput"), 0, 0, (LPBYTE)filename, &size);
+		if (lRet != ERROR_SUCCESS)
+			lRet = RegQueryValueEx(hk, TEXT("DirectOutput_Saitek"), 0, 0, (LPBYTE)filename, &size);
 		if (ERROR_SUCCESS == lRet)
 			retval = true;
 		RegCloseKey(hk);

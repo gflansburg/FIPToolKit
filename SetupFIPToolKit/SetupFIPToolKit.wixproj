@@ -58,8 +58,8 @@
     <Error Text="The WiX Toolset v3.11 build tools must be installed to build this project. To download the WiX Toolset, see https://wixtoolset.org/releases/v3.11/stable" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>"C:\Program Files (x86)\WiX Toolset v3.11\bin\candle.exe" -ext WixBalExtension -out "$(ProjectDir)Bundle.wixobj" "$(ProjectDir)Bundle.wix"
-"C:\Program Files (x86)\WiX Toolset v3.11\bin\light.exe" -ext WixBalExtension -out "$(TargetDir)SetupFIPToolKit.exe" "$(ProjectDir)Bundle.wixobj"
+    <PostBuildEvent>"C:\Program Files (x86)\WiX Toolset v3.14\bin\candle.exe" -ext WixBalExtension -out "$(ProjectDir)Bundle.wixobj" "$(ProjectDir)Bundle.wix"
+"C:\Program Files (x86)\WiX Toolset v3.14\bin\light.exe" -ext WixBalExtension -out "$(TargetDir)SetupFIPToolKit.exe" "$(ProjectDir)Bundle.wixobj"
 del "$(ProjectDir)Bundle.wixobj"</PostBuildEvent>
   </PropertyGroup>
   <!--

@@ -15,7 +15,7 @@
         LaunchTargetElevatedId="MyAEEId" />
     </BootstrapperApplicationRef>
     <Chain>
-      <MsiPackage SourceFile="bin\Debug\en-us\SetupFIPToolKit.msi" Vital="yes" DisplayInternalUI="yes">
+      <MsiPackage SourceFile="bin\Release\en-us\SetupFIPToolKit.msi" Vital="yes" DisplayInternalUI="yes">
         <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
       </MsiPackage>
     </Chain>

@@ -8,7 +8,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>SetupFIPToolKit</OutputName>
     <OutputType>Package</OutputType>
-	<DefineConstants>SourceDir=C:\temp\FIPToolKit;DCSDir=C:\temp\Scripts</DefineConstants>
+    <DefineConstants>SourceDir=C:\temp\FIPToolKit;DCSDir=C:\temp\Scripts</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -48,6 +48,9 @@
     <Content Include="FIPToolKitIcon.bmp" />
     <Content Include="FIPToolKitIcon.ico" />
     <Content Include="CustomRtfTheme.xml" />
+    <Content Include="VC_redist.x64.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="CustomRtfTheme.wxl" />

@@ -15,6 +15,11 @@
         LaunchTargetElevatedId="MyAEEId" />
     </BootstrapperApplicationRef>
     <Chain>
+      <ExePackage Id="VCRedist"
+                      SourceFile="VC_redist.x64.exe"
+                      InstallCommand="/quiet /norestart"
+                      Permanent="yes"
+                      Vital="yes" />
       <MsiPackage SourceFile="bin\Release\en-us\SetupFIPToolKit.msi" Vital="yes" DisplayInternalUI="yes">
         <MsiProperty Name="INSTALLDIR" Value="[InstallFolder]" />
       </MsiPackage>

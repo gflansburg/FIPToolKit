@@ -8,6 +8,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>SetupFIPToolKit</OutputName>
     <OutputType>Package</OutputType>
+	<DefineConstants>SourceDir=C:\temp\FIPToolKit;DCSDir=C:\temp\Scripts</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
